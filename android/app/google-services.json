@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "759454344713",
+    "firebase_url": "https://bodyfitclubtt-9acd8-default-rtdb.europe-west1.firebasedatabase.app",
     "project_id": "bodyfitclubtt-9acd8",
     "storage_bucket": "bodyfitclubtt-9acd8.firebasestorage.app"
   },
@@ -12,7 +13,28 @@
           "package_name": "com.example.bodyfitclubtt"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "759454344713-4mpl7gb2098vmedc6oue6vt80r2ciggc.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.bodyfitclubtt",
+            "certificate_hash": "4f669c130d43bb9f8bc05d6174ffc99ababb5d44"
+          }
+        },
+        {
+          "client_id": "759454344713-k7ac99rv8lqsvabe6i3pno49f5abu8bs.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.bodyfitclubtt",
+            "certificate_hash": "943e0b1a99d1d62ac10eee6674d5921851483d0b"
+          }
+        },
+        {
+          "client_id": "759454344713-l8mt7pbsrd9o7eu8siisqjtpbillvpid.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyCNVXcO8yl5JYVAoqQKMzTRpk5bqYyq4QQ"
@@ -20,7 +42,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "759454344713-l8mt7pbsrd9o7eu8siisqjtpbillvpid.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "759454344713-lui1878d78ul1qjuaoolj2fqq5kcgqqm.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.bodyfitclubtt"
+              }
+            }
+          ]
         }
       }
     }
