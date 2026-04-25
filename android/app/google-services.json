@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "759454344713",
+    "project_id": "bodyfitclubtt-9acd8",
+    "storage_bucket": "bodyfitclubtt-9acd8.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:759454344713:android:fed08a612d4c49e65bbad8",
+        "android_client_info": {
+          "package_name": "com.example.bodyfitclubtt"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCNVXcO8yl5JYVAoqQKMzTRpk5bqYyq4QQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
