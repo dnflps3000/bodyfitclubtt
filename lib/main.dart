@@ -3,6 +3,10 @@ import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/app_texts.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'features/auth/auth_service.dart';
+import 'features/auth/login_screen.dart';
+import 'features/auth/complete_profile_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -74,18 +78,64 @@ class _AppSplashScreenState extends State<AppSplashScreen> {
   }
 }
 
-/// Zatiaľ jednoduchá hlavná obrazovka.
-/// Neskôr sem pridáme login, profil a rezervácie.
+
+// Zatiaľ jednoduchá hlavná obrazovka.
+// Je verejná, takže rozvrh bude viditeľný aj bez prihlásenia.
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text(AppTexts.appName)),
-      body: const Center(
-        child: Text(AppTexts.firebaseWorks),
-      ),
+    final authService = AuthService();
+
+    return StreamBuilder<User?>(
+      stream: authService.authStateChanges,
+      builder: (context, snapshot) {
+        final user = snapshot.data;
+        final isLoggedIn = user != null;
+
+        final needsProfile =
+            isLoggedIn && (user.displayName == null || user.displayName!.trim().isEmpty);
+
+        if (needsProfile) {
+          return const CompleteProfileScreen();
+        }
+
+        return Scaffold(
+          appBar: AppBar(
+            title: const Text(AppTexts.appName),
+            actions: [
+              if (isLoggedIn)
+                IconButton(
+                  tooltip: AppTexts.logoutTooltip,
+                  icon: const Icon(Icons.logout),
+                  onPressed: () async {
+                    await authService.signOut();
+                  },
+                )
+              else
+                IconButton(
+                  tooltip: AppTexts.loginTooltip,
+                  icon: const Icon(Icons.account_circle_outlined),
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const LoginScreen(),
+                      ),
+                    );
+                  },
+                ),
+            ],
+          ),
+          body: Center(
+            child: Text(
+              isLoggedIn
+                  ? '${AppTexts.loggedInUser}: ${user.email ?? user.displayName ?? user.uid}'
+                  : AppTexts.firebaseWorks,
+            ),
+          ),
+        );
+      },
     );
   }
 }

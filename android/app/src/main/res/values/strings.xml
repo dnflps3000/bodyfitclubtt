@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">BodyFitClubTT</string>
+
+    <!-- App ID z Meta Developer Console -->
+    <string name="facebook_app_id">1683201392699797</string>
+
+    <!-- Client token z Meta Developer Console -->
+    <string name="facebook_client_token">9b94d4d5739ea81a5b03666da5df84ea</string>
+
+    <!-- fb + App ID -->
+    <string name="fb_login_protocol_scheme">fb1683201392699797</string>
+</resources>
