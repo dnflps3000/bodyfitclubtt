@@ -73,4 +73,32 @@ class AppTexts {
   static const String reserve = 'Rezervovať';
   static const String fullCapacity = 'Obsadené';
   static const String trainingsLoadError = 'Nepodarilo sa načítať rozvrh tréningov.';
+  // Správa rozvrhu
+  static const String addTrainingType = 'Pridať typ cvičenia';
+  static const String addTrainingSession = 'Pridať termín';
+  static const String trainingType = 'Typ cvičenia';
+  static const String selectTrainingType = 'Vyberte typ cvičenia';
+  static const String trainingName = 'Názov cvičenia';
+  static const String description = 'Popis';
+  static const String defaultDuration = 'Predvolené trvanie';
+  static const String defaultCapacity = 'Predvolená kapacita';
+  static const String date = 'Dátum';
+  static const String startTime = 'Začiatok';
+  static const String duration = 'Trvanie';
+  static const String capacity = 'Kapacita';
+  static const String trainingTypeCreated = 'Typ cvičenia bol vytvorený.';
+  static const String trainingSessionCreated = 'Termín tréningu bol vytvorený.';
+  static const String fillAllFields = 'Vyplňte všetky povinné údaje.';
+  static const String invalidCapacity = 'Kapacita musí byť väčšia ako 0.';
+  static const String invalidDuration = 'Trvanie musí byť väčšie ako 0.';
+  static const String trainingTypesLoadError = 'Nepodarilo sa načítať typy cvičení.';
+  static const String saveError = 'Uloženie sa nepodarilo.';
+  static const String trainingSessionOverlap = 'V tomto čase už je naplánovaný iný tréning.';
+  static const String deleteTrainingSession = 'Vymazať termín';
+  static const String deleteTrainingSessionTitle = 'Vymazať termín tréningu';
+  static const String deleteTrainingSessionQuestion = 'Naozaj chcete vymazať tento termín tréningu?';
+  static const String trainingSessionDeleted = 'Termín tréningu bol vymazaný.';
+  static const String deleteError = 'Vymazanie sa nepodarilo.';
+  static const String delete = 'Vymazať';
+  static const String cancel = 'Zrušiť';
 }
