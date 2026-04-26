@@ -84,6 +84,24 @@ class _LoginScreenState extends State<LoginScreen> {
     return AppTexts.unknownAuthError;
   }
 
+  Future<void> _showInfoDialog(String message) async {
+    if (!mounted) return;
+
+    await showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text(AppTexts.registerTitle),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text(AppTexts.ok),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _runAuthAction(
     Future<void> Function() action, {
     String? successMessage,
@@ -96,11 +114,11 @@ class _LoginScreenState extends State<LoginScreen> {
       if (!mounted) return;
 
       if (successMessage != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(successMessage)),
-        );
+        await _showInfoDialog(successMessage);
       }
 
+      if (!mounted) return;
+      
       Navigator.of(context).pop();
     } catch (error) {
       if (!mounted) return;
@@ -221,6 +239,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 // E-mail a heslo používame len pri klasickom účte.
                 TextField(
                   controller: _emailController,
+                  enabled: !_isLoading,
                   keyboardType: TextInputType.emailAddress,
                   textInputAction: TextInputAction.next,
                   decoration: const InputDecoration(
@@ -231,6 +250,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 12),
                 TextField(
                   controller: _passwordController,
+                  enabled: !_isLoading,
                   obscureText: true,
                   textInputAction: TextInputAction.done,
                   onSubmitted: (_) {

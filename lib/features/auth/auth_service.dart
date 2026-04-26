@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import '../../core/constants/app_roles.dart';
 
 // Trieda, ktorá rieši autentifikáciu.
 // UI iba zavolá metódy z tejto triedy, aby nebola login logika rozhádzaná v obrazovkách.
@@ -19,17 +20,18 @@ class AuthService {
     User user, {
     String? firstName,
     String? lastName,
+    String? photoURL,
   }) async {
     final userDoc = _firestore.collection('users').doc(user.uid);
     final snapshot = await userDoc.get();
 
     final providerIds = user.providerData.map((p) => p.providerId).toList();
 
-    final data = {
+    final Map<String, dynamic> data = {
       'uid': user.uid,
       'email': user.email,
       'displayName': user.displayName,
-      'photoURL': user.photoURL,
+      'photoURL': photoURL ?? user.photoURL,
       'providers': providerIds,
       'emailVerified': user.emailVerified,
       'updatedAt': FieldValue.serverTimestamp(),
@@ -46,8 +48,14 @@ class AuthService {
     }
 
     // createdAt nastavíme iba pri prvom vytvorení dokumentu.
+    final existingData = snapshot.data();
+    /*Rolu nastavíme iba pri novom používateľovi alebo pri starom profile,
+     ktorý ešte rolu vôbec nemá. */
     if (!snapshot.exists) {
       data['createdAt'] = FieldValue.serverTimestamp();
+      data['role'] = AppRoles.user;
+    } else if (existingData == null || !existingData.containsKey('role')) {
+      data['role'] = AppRoles.user;
     }
 
     await userDoc.set(data, SetOptions(merge: true));
@@ -142,12 +150,23 @@ class AuthService {
       );
     }
 
+    final userData = await FacebookAuth.instance.getUserData(
+      fields: 'name,email,picture.width(800).height(800)',
+    );
+
+    final facebookPhotoUrl =
+        userData['picture']?['data']?['url'] as String?;
+
     final credential =
         FacebookAuthProvider.credential(result.accessToken!.tokenString);
 
     final userCredential = await _auth.signInWithCredential(credential);
 
-    await _saveUserProfile(userCredential.user!);
+    await _saveUserProfile(
+      userCredential.user!,
+      photoURL: facebookPhotoUrl,
+    );
+
     return userCredential;
   }
 

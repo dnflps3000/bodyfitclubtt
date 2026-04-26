@@ -7,6 +7,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'features/auth/auth_service.dart';
 import 'features/auth/login_screen.dart';
 import 'features/auth/complete_profile_screen.dart';
+import 'features/main/main_navigation_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -101,38 +102,29 @@ class HomeScreen extends StatelessWidget {
           return const CompleteProfileScreen();
         }
 
+        if (isLoggedIn) {
+          return MainNavigationScreen(user: user);
+        }
+
         return Scaffold(
           appBar: AppBar(
             title: const Text(AppTexts.appName),
             actions: [
-              if (isLoggedIn)
-                IconButton(
-                  tooltip: AppTexts.logoutTooltip,
-                  icon: const Icon(Icons.logout),
-                  onPressed: () async {
-                    await authService.signOut();
-                  },
-                )
-              else
-                IconButton(
-                  tooltip: AppTexts.loginTooltip,
-                  icon: const Icon(Icons.account_circle_outlined),
-                  onPressed: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => const LoginScreen(),
-                      ),
-                    );
-                  },
-                ),
+              IconButton(
+                tooltip: AppTexts.login,
+                icon: const Icon(Icons.account_circle_outlined),
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const LoginScreen(),
+                    ),
+                  );
+                },
+              ),
             ],
           ),
-          body: Center(
-            child: Text(
-              isLoggedIn
-                  ? '${AppTexts.loggedInUser}: ${user.email ?? user.displayName ?? user.uid}'
-                  : AppTexts.firebaseWorks,
-            ),
+          body: const Center(
+            child: Text(AppTexts.firebaseWorks),
           ),
         );
       },
