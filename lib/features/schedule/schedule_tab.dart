@@ -7,11 +7,27 @@ import 'add_training_session_screen.dart';
 import 'add_training_type_screen.dart';
 import 'schedule_item.dart';
 import 'schedule_service.dart';
+import 'add_schedule_template_screen.dart';
 
 /* Zobrazuje obrazovku Rozvrh, teda zoznam tréningov, ich čas,
    trénera, voľné miesta, popis a tlačidlo rezervácie. */
-class ScheduleTab extends StatelessWidget {
+class ScheduleTab extends StatefulWidget {
   const ScheduleTab({super.key});
+
+  @override
+  State<ScheduleTab> createState() => _ScheduleTabState();
+}
+
+class _ScheduleTabState extends State<ScheduleTab> {
+  late DateTime _selectedDate;
+
+  @override
+  void initState() {
+    super.initState();
+
+    final now = DateTime.now();
+    _selectedDate = DateTime(now.year, now.month, now.day);
+  }
 
   Stream<String?> _watchCurrentUserRole() {
     final currentUser = FirebaseAuth.instance.currentUser;
@@ -38,6 +54,22 @@ class ScheduleTab extends StatelessWidget {
     return role == AppRoles.admin || role == AppRoles.trainer;
   }
 
+  bool _isSameDate(DateTime first, DateTime second) {
+    return first.year == second.year &&
+        first.month == second.month &&
+        first.day == second.day;
+  }
+
+  List<DateTime> _nextSevenDays() {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+
+    return List.generate(
+      14,
+      (index) => today.add(Duration(days: index)),
+    );
+  }
+
   String _formatDateTime(DateTime dateTime) {
     final day = dateTime.day.toString().padLeft(2, '0');
     final month = dateTime.month.toString().padLeft(2, '0');
@@ -48,6 +80,13 @@ class ScheduleTab extends StatelessWidget {
     return '$day.$month.$year $hour:$minute';
   }
 
+  String _formatDate(DateTime dateTime) {
+    final day = dateTime.day.toString().padLeft(2, '0');
+    final month = dateTime.month.toString().padLeft(2, '0');
+
+    return '$day.$month.';
+  }
+
   String _formatTime(DateTime dateTime) {
     final hour = dateTime.hour.toString().padLeft(2, '0');
     final minute = dateTime.minute.toString().padLeft(2, '0');
@@ -55,10 +94,35 @@ class ScheduleTab extends StatelessWidget {
     return '$hour:$minute';
   }
 
+  String _dayLabel(DateTime dateTime) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final tomorrow = today.add(const Duration(days: 1));
+
+    if (_isSameDate(dateTime, today)) {
+      return AppTexts.today;
+    }
+
+    if (_isSameDate(dateTime, tomorrow)) {
+      return AppTexts.tomorrow;
+    }
+
+    final weekdayLabel = AppTexts.shortWeekdays[dateTime.weekday - 1];
+    return '$weekdayLabel ${_formatDate(dateTime)}';
+  }
+
   Future<void> _openAddTrainingTypeScreen(BuildContext context) async {
     await Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => const AddTrainingTypeScreen(),
+      ),
+    );
+  }
+
+  Future<void> _openAddScheduleTemplateScreen(BuildContext context) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => const AddScheduleTemplateScreen(),
       ),
     );
   }
@@ -140,6 +204,13 @@ class ScheduleTab extends StatelessWidget {
               icon: const Icon(Icons.add),
               label: const Text(AppTexts.addTrainingType),
             ),
+          if (canAddTrainingType) const SizedBox(height: 8),
+          if (canAddTrainingType)
+            FilledButton.icon(
+              onPressed: () => _openAddScheduleTemplateScreen(context),
+              icon: const Icon(Icons.calendar_view_week),
+              label: const Text(AppTexts.addScheduleTemplate),
+            ),
           if (canAddTrainingType && canManageTrainingSessions)
             const SizedBox(height: 8),
           if (canManageTrainingSessions)
@@ -149,6 +220,34 @@ class ScheduleTab extends StatelessWidget {
               label: const Text(AppTexts.addTrainingSession),
             ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildDaySelector() {
+    final days = _nextSevenDays();
+
+    return SizedBox(
+      height: 56,
+      child: ListView.separated(
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+        scrollDirection: Axis.horizontal,
+        itemCount: days.length,
+        separatorBuilder: (context, index) => const SizedBox(width: 8),
+        itemBuilder: (context, index) {
+          final day = days[index];
+          final isSelected = _isSameDate(day, _selectedDate);
+
+          return ChoiceChip(
+            label: Text(_dayLabel(day)),
+            selected: isSelected,
+            onSelected: (_) {
+              setState(() {
+                _selectedDate = day;
+              });
+            },
+          );
+        },
       ),
     );
   }
@@ -173,19 +272,25 @@ class ScheduleTab extends StatelessWidget {
         }
 
         final items = snapshot.data ?? [];
+        final filteredItems = items.where((item) {
+          return _isSameDate(item.session.startTime, _selectedDate);
+        }).toList();
 
-        if (items.isEmpty) {
+        if (filteredItems.isEmpty) {
           return const Center(
-            child: Text(AppTexts.noTrainings),
+            child: Padding(
+              padding: EdgeInsets.all(16),
+              child: Text(AppTexts.noTrainingsForSelectedDay),
+            ),
           );
         }
 
         return ListView.separated(
           padding: const EdgeInsets.all(16),
-          itemCount: items.length,
+          itemCount: filteredItems.length,
           separatorBuilder: (context, index) => const SizedBox(height: 12),
           itemBuilder: (context, index) {
-            final item = items[index];
+            final item = filteredItems[index];
             final session = item.session;
             final trainingType = item.trainingType;
 
@@ -261,6 +366,7 @@ class ScheduleTab extends StatelessWidget {
         return Column(
           children: [
             _buildManagementButtons(context, role),
+            _buildDaySelector(),
             Expanded(
               child: _buildScheduleList(role),
             ),

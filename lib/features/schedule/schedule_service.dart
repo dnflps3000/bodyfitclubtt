@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+
 import 'schedule_item.dart';
+import 'schedule_template.dart';
 import 'training_session.dart';
 import 'training_type.dart';
 
@@ -78,6 +80,35 @@ class ScheduleService {
     });
   }
 
+  Stream<List<ScheduleTemplate>> watchScheduleTemplates() {
+    return _firestore
+        .collection('scheduleTemplates')
+        .where('isActive', isEqualTo: true)
+        .snapshots()
+        .map((snapshot) {
+      final scheduleTemplates =
+          snapshot.docs.map(ScheduleTemplate.fromFirestore).toList();
+
+      scheduleTemplates.sort((a, b) {
+        final weekdayCompare = a.weekday.compareTo(b.weekday);
+
+        if (weekdayCompare != 0) {
+          return weekdayCompare;
+        }
+
+        final hourCompare = a.startHour.compareTo(b.startHour);
+
+        if (hourCompare != 0) {
+          return hourCompare;
+        }
+
+        return a.startMinute.compareTo(b.startMinute);
+      });
+
+      return scheduleTemplates;
+    });
+  }
+
   Future<void> createTrainingType({
     required String name,
     required String description,
@@ -125,6 +156,95 @@ class ScheduleService {
     final trainingTypeRef =
         _firestore.collection('trainingTypes').doc(trainingType.id);
 
+    await _checkTrainingSessionOverlap(
+      startTime: startTime,
+      endTime: endTime,
+    );
+
+    await _firestore.collection('trainingSessions').add({
+      'trainingTypeId': trainingType.id,
+      'trainingTypeRef': trainingTypeRef,
+      'trainerId': currentUser.uid,
+      'trainerRef': currentUserRef,
+      'createdBy': currentUser.uid,
+      'createdByRef': currentUserRef,
+      'startTime': Timestamp.fromDate(startTime),
+      'endTime': Timestamp.fromDate(endTime),
+      'capacity': capacity,
+      'reservedCount': 0,
+      'status': 'scheduled',
+      'isActive': true,
+      'source': 'manual',
+      'templateId': null,
+      'templateRef': null,
+      'createdAt': FieldValue.serverTimestamp(),
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+  Future<void> createScheduleTemplate({
+    required TrainingType trainingType,
+    required User currentUser,
+    required int weekday,
+    required int startHour,
+    required int startMinute,
+    required int durationMinutes,
+    required int capacity,
+    DateTime? validFrom,
+    DateTime? validUntil,
+  }) async {
+    final currentUserRef = _firestore.collection('users').doc(currentUser.uid);
+    final trainingTypeRef =
+        _firestore.collection('trainingTypes').doc(trainingType.id);
+
+    final scheduleTemplateId = _createScheduleTemplateId(
+      trainingTypeId: trainingType.id,
+      weekday: weekday,
+      startHour: startHour,
+      startMinute: startMinute,
+    );
+
+    final existingScheduleTemplate = await _firestore
+        .collection('scheduleTemplates')
+        .doc(scheduleTemplateId)
+        .get();
+
+    if (existingScheduleTemplate.exists) {
+      throw Exception('schedule-template-already-exists');
+    }
+
+    await _firestore.collection('scheduleTemplates').doc(scheduleTemplateId).set({
+      'trainingTypeId': trainingType.id,
+      'trainingTypeRef': trainingTypeRef,
+      'trainerId': currentUser.uid,
+      'trainerRef': currentUserRef,
+      'weekday': weekday,
+      'startHour': startHour,
+      'startMinute': startMinute,
+      'durationMinutes': durationMinutes,
+      'capacity': capacity,
+      'isActive': true,
+      'validFrom': validFrom == null ? null : Timestamp.fromDate(validFrom),
+      'validUntil': validUntil == null ? null : Timestamp.fromDate(validUntil),
+      'createdBy': currentUser.uid,
+      'createdByRef': currentUserRef,
+      'createdAt': FieldValue.serverTimestamp(),
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+  Future<void> deleteTrainingSession(String sessionId) async {
+    await _firestore.collection('trainingSessions').doc(sessionId).update({
+      'isActive': false,
+      'status': 'cancelled',
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+  Future<void> _checkTrainingSessionOverlap({
+    required DateTime startTime,
+    required DateTime endTime,
+  }) async {
     final overlappingSessions = await _firestore
         .collection('trainingSessions')
         .where('startTime', isLessThan: Timestamp.fromDate(endTime))
@@ -147,31 +267,6 @@ class ScheduleService {
     if (hasOverlap) {
       throw Exception('training-session-overlap');
     }
-
-    await _firestore.collection('trainingSessions').add({
-      'trainingTypeId': trainingType.id,
-      'trainingTypeRef': trainingTypeRef,
-      'trainerId': currentUser.uid,
-      'trainerRef': currentUserRef,
-      'createdBy': currentUser.uid,
-      'createdByRef': currentUserRef,
-      'startTime': Timestamp.fromDate(startTime),
-      'endTime': Timestamp.fromDate(endTime),
-      'capacity': capacity,
-      'reservedCount': 0,
-      'status': 'scheduled',
-      'isActive': true,
-      'createdAt': FieldValue.serverTimestamp(),
-      'updatedAt': FieldValue.serverTimestamp(),
-    });
-  }
-
-  Future<void> deleteTrainingSession(String sessionId) async {
-    await _firestore.collection('trainingSessions').doc(sessionId).update({
-      'isActive': false,
-      'status': 'cancelled',
-      'updatedAt': FieldValue.serverTimestamp(),
-    });
   }
 
   String _createTrainingTypeId(String name) {
@@ -197,5 +292,17 @@ class ScheduleService {
         .replaceAll('ž', 'z')
         .replaceAll(RegExp(r'\s+'), '_')
         .replaceAll(RegExp(r'[^a-z0-9_]+'), '');
+  }
+
+  String _createScheduleTemplateId({
+    required String trainingTypeId,
+    required int weekday,
+    required int startHour,
+    required int startMinute,
+  }) {
+    final hour = startHour.toString().padLeft(2, '0');
+    final minute = startMinute.toString().padLeft(2, '0');
+
+    return '${trainingTypeId}_day${weekday}_$hour$minute';
   }
 }

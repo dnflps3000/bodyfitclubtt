@@ -101,4 +101,25 @@ class AppTexts {
   static const String deleteError = 'Vymazanie sa nepodarilo.';
   static const String delete = 'Vymazať';
   static const String cancel = 'Zrušiť';
+  static const String today = 'Dnes';
+  static const String tomorrow = 'Zajtra';
+  static const String noTrainingsForSelectedDay = 'V tento deň nie sú naplánované žiadne tréningy.';
+  static const List<String> shortWeekdays = ['Po', 'Ut', 'St', 'Št', 'Pi', 'So','Ne'];
+  // Šablóny rozvrhu
+  static const String addScheduleTemplate = 'Pridať šablónu rozvrhu';
+  static const String weekday = 'Deň v týždni';
+  static const String selectWeekday = 'Vyberte deň v týždni';
+  static const String scheduleTemplateCreated = 'Šablóna rozvrhu bola vytvorená.';
+  static const String scheduleTemplateAlreadyExists = 'Takáto šablóna rozvrhu už existuje.';
+  static const String scheduleTemplateLoadError = 'Nepodarilo sa načítať šablóny rozvrhu.';
+
+  static const List<String> weekdays = [
+    'Pondelok',
+    'Utorok',
+    'Streda',
+    'Štvrtok',
+    'Piatok',
+    'Sobota',
+    'Nedeľa',
+  ];
 }
