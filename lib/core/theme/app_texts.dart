@@ -65,4 +65,12 @@ class AppTexts {
   static const String roleTrainer = 'Tréner';
   static const String roleAdmin = 'Administrátor';
   static const String roleUnknown = 'Neznáma rola';
+  // Rozvrh tréningov
+  static const String noTrainings = 'Momentálne nie sú dostupné žiadne tréningy.';
+  static const String trainer = 'Tréner';
+  static const String freeSpots = 'Voľné miesta';
+  static const String minutes = 'min.';
+  static const String reserve = 'Rezervovať';
+  static const String fullCapacity = 'Obsadené';
+  static const String trainingsLoadError = 'Nepodarilo sa načítať rozvrh tréningov.';
 }
