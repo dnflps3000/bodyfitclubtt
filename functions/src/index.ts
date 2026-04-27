@@ -13,6 +13,7 @@ initializeApp();
  a vytvorí konkrétne trainingSessions na najbližších 14 dní.*/
 
 const db = getFirestore();
+const APP_TIME_ZONE = "Europe/Bratislava";
 
 type ScheduleTemplate = {
   trainingTypeId: string;
@@ -66,6 +67,60 @@ function formatDateId(date: Date): string {
   const day = date.getDate().toString().padStart(2, "0");
 
   return `${year}-${month}-${day}`;
+}
+
+/**
+ * Vráti časový posun zadanej časovej zóny voči UTC.
+ */
+function getTimeZoneOffsetMilliseconds(
+  date: Date,
+  timeZone: string,
+): number {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(date);
+
+  const values: Record<string, string> = {};
+
+  for (const part of parts) {
+    if (part.type !== "literal") {
+      values[part.type] = part.value;
+    }
+  }
+
+  const localAsUtc = Date.UTC(
+    Number(values.year),
+    Number(values.month) - 1,
+    Number(values.day),
+    Number(values.hour),
+    Number(values.minute),
+    Number(values.second),
+  );
+
+  return localAsUtc - date.getTime();
+}
+
+/**
+ * Vytvorí UTC Date z dátumu a času zadaného v lokálnej časovej zóne appky.
+ */
+function createDateInAppTimeZone(
+  year: number,
+  month: number,
+  day: number,
+  hour: number,
+  minute: number,
+): Date {
+  const utcGuess = new Date(Date.UTC(year, month, day, hour, minute));
+  const offset = getTimeZoneOffsetMilliseconds(utcGuess, APP_TIME_ZONE);
+
+  return new Date(utcGuess.getTime() - offset);
 }
 
 /**
@@ -160,7 +215,7 @@ export const generateTrainingSessions = onSchedule(
           continue;
         }
 
-        const startTime = new Date(
+        const startTime = createDateInAppTimeZone(
           currentDate.getFullYear(),
           currentDate.getMonth(),
           currentDate.getDate(),
