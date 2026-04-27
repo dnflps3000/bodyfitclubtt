@@ -6,6 +6,8 @@ import {
   Timestamp,
   getFirestore,
 } from "firebase-admin/firestore";
+import * as functions from "firebase-functions";
+import Stripe from "stripe";
 
 initializeApp();
 
@@ -13,6 +15,28 @@ initializeApp();
  a vytvorí konkrétne trainingSessions na najbližších 14 dní.*/
 
 const db = getFirestore();
+
+const stripe = new Stripe("sk_test_51TQtEE7i16mqcQZH5hO2HjNmIys0Nmuwjsfhw1zceWJj7O6dBtT4Vqc3mJ6q50TUfZf9nmg0mGzCcPuthwDzsfJV00vrhhQS5E", {
+  apiVersion: "2026-04-22.dahlia",
+});
+
+export const createPaymentIntent = functions.https.onRequest(
+  async (req, res) => {
+    try {
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: 999, // 9.99€
+        currency: "eur",
+      });
+
+      res.status(200).send({
+        clientSecret: paymentIntent.client_secret,
+      });
+    } catch (error) {
+      console.error(error);
+      res.status(500).send({error: "Payment failed"});
+    }
+  }
+);
 
 type ScheduleTemplate = {
   trainingTypeId: string;
