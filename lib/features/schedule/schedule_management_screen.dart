@@ -3,6 +3,7 @@ import '../../core/theme/app_texts.dart';
 import 'add_schedule_template_screen.dart';
 import 'add_training_session_screen.dart';
 import 'add_training_type_screen.dart';
+import '../memberships/assign_membership_screen.dart';
 
 /*Obrazovka pre admina, ktorá združuje správcovské akcie rozvrhu mimo 
   bežného používateľského zobrazenia.*/
@@ -29,6 +30,14 @@ class ScheduleManagementScreen extends StatelessWidget {
     await Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => const AddTrainingSessionScreen(),
+      ),
+    );
+  }
+
+  Future<void> _openAssignMembershipScreen(BuildContext context) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => const AssignMembershipScreen(),
       ),
     );
   }
@@ -79,6 +88,13 @@ class ScheduleManagementScreen extends StatelessWidget {
             icon: Icons.event_available,
             label: AppTexts.addTrainingSession,
             onPressed: () => _openAddTrainingSessionScreen(context),
+          ),
+          const SizedBox(height: 12),
+          _buildManagementButton(
+            context: context,
+            icon: Icons.card_membership,
+            label: AppTexts.assignMembership,
+            onPressed: () => _openAssignMembershipScreen(context),
           ),
         ],
       ),

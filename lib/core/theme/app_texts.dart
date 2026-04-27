@@ -142,4 +142,14 @@ class AppTexts {
   static const String cancelReservationQuestion = 'Naozaj chcete zrušiť túto rezerváciu?';
   static const String reservationCancelled = 'Rezervácia bola zrušená.';
   static const String reservationCancelError = 'Rezerváciu sa nepodarilo zrušiť.';
+// Permanentky
+  static const String assignMembership = 'Priradiť permanentku';
+  static const String selectUser = 'Vyberte používateľa';
+  static const String selectMembershipPlan = 'Vyberte typ permanentky';
+  static const String usersLoadError = 'Nepodarilo sa načítať používateľov.';
+  static const String membershipPlansLoadError = 'Nepodarilo sa načítať typy permanentiek.';
+  static const String membershipAssigned = 'Permanentka bola priradená.';
+  static const String membershipAssignError = 'Permanentku sa nepodarilo priradiť.';
+  static const String membershipPlan = 'Typ permanentky';
+  static const String client = 'Používateľ';
 }
