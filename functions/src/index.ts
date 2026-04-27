@@ -16,7 +16,7 @@ initializeApp();
 
 const db = getFirestore();
 
-const stripe = new Stripe("sk_test_51TQtEE7i16mqcQZH5hO2HjNmIys0Nmuwjsfhw1zceWJj7O6dBtT4Vqc3mJ6q50TUfZf9nmg0mGzCcPuthwDzsfJV00vrhhQS5E", {
+const stripe = new Stripe("sk_test_TVOJ_KLUC", {
   apiVersion: "2026-04-22.dahlia",
 });
 
