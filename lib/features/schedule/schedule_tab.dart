@@ -67,7 +67,33 @@ class _ScheduleTabState extends State<ScheduleTab> {
       return false;
     }
 
-    return item.session.trainerId != currentUserId;
+    if (item.session.trainerId == currentUserId) {
+      return false;
+    }
+
+    return item.session.startTime.isAfter(DateTime.now());
+  }
+
+  Stream<Set<String>> _watchMyReservedSessionIds() {
+    final currentUser = FirebaseAuth.instance.currentUser;
+
+    if (currentUser == null) {
+      return Stream.value({});
+    }
+
+    return FirebaseFirestore.instance
+        .collection('reservations')
+        .where('userId', isEqualTo: currentUser.uid)
+        .where('status', isEqualTo: 'active')
+        .snapshots()
+        .map((snapshot) {
+      return snapshot.docs.map((document) {
+        final data = document.data();
+        return data['trainingSessionId'] as String? ?? '';
+      }).where((sessionId) {
+        return sessionId.isNotEmpty;
+      }).toSet();
+    });
   }
 
   bool _isSameDate(DateTime first, DateTime second) {
@@ -225,7 +251,9 @@ class _ScheduleTabState extends State<ScheduleTab> {
               ? AppTexts.reservationTrainingFull
               : errorText.contains('training-session-not-available')
                   ? AppTexts.reservationTrainingNotAvailable
-                  : AppTexts.reservationError;
+                  : errorText.contains('training-session-already-started')
+                      ? AppTexts.reservationTrainingAlreadyStarted
+                      : AppTexts.reservationError;
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(message)),
@@ -363,77 +391,89 @@ class _ScheduleTabState extends State<ScheduleTab> {
           );
         }
 
-        return ListView.separated(
-          padding: const EdgeInsets.all(16),
-          itemCount: filteredItems.length,
-          separatorBuilder: (context, index) => const SizedBox(height: 12),
-          itemBuilder: (context, index) {
-            final item = filteredItems[index];
-            final session = item.session;
-            final trainingType = item.trainingType;
-            final canDeleteTrainingSession = _canDeleteTrainingSession(role, item);
-            final canReserveTrainingSession = _canReserveTrainingSession(item);
+        return StreamBuilder<Set<String>>(
+          stream: _watchMyReservedSessionIds(),
+          builder: (context, reservationSnapshot) {
+            final reservedSessionIds = reservationSnapshot.data ?? {};
 
-            return Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
+            return ListView.separated(
+              padding: const EdgeInsets.all(16),
+              itemCount: filteredItems.length,
+              separatorBuilder: (context, index) => const SizedBox(height: 12),
+              itemBuilder: (context, index) {
+                final item = filteredItems[index];
+                final session = item.session;
+                final trainingType = item.trainingType;
+                final canDeleteTrainingSession =
+                    _canDeleteTrainingSession(role, item);
+                final canReserveTrainingSession = _canReserveTrainingSession(item);
+                final isReserved = reservedSessionIds.contains(session.id);
+
+                return Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Expanded(
-                          child: Text(
-                            trainingType.name,
-                            style: Theme.of(context).textTheme.titleLarge,
-                          ),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                trainingType.name,
+                                style: Theme.of(context).textTheme.titleLarge,
+                              ),
+                            ),
+                            if (canDeleteTrainingSession)
+                              IconButton(
+                                tooltip: AppTexts.deleteTrainingSession,
+                                onPressed: () =>
+                                    _confirmDeleteTrainingSession(context, item),
+                                icon: const Icon(Icons.delete_outline),
+                              ),
+                          ],
                         ),
-                        if (canDeleteTrainingSession)
-                          IconButton(
-                            tooltip: AppTexts.deleteTrainingSession,
-                            onPressed: () =>
-                                _confirmDeleteTrainingSession(context, item),
-                            icon: const Icon(Icons.delete_outline),
+                        const SizedBox(height: 8),
+                        Text(
+                          '${_formatDateTime(session.startTime)} - '
+                          '${_formatTime(session.endTime)}',
+                        ),
+                        const SizedBox(height: 8),
+                        Text('${AppTexts.trainer}: ${item.trainerName}'),
+                        const SizedBox(height: 8),
+                        Text(
+                          '${AppTexts.freeSpots}: '
+                          '${session.freeSpots}/${session.capacity}',
+                        ),
+                        if (trainingType.description.isNotEmpty) ...[
+                          const SizedBox(height: 8),
+                          Text(trainingType.description),
+                        ],
+                        if (canReserveTrainingSession) ...[
+                          const SizedBox(height: 16),
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: FilledButton(
+                              onPressed: isReserved
+                                  ? null
+                                  : session.hasFreeSpots
+                                      ? () => _reserveTrainingSession(context, item)
+                                      : null,
+                              child: Text(
+                                isReserved
+                                    ? AppTexts.reserved
+                                    : session.hasFreeSpots
+                                        ? AppTexts.reserve
+                                        : AppTexts.fullCapacity,
+                              ),
+                            ),
                           ),
+                        ],
                       ],
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      '${_formatDateTime(session.startTime)} - '
-                      '${_formatTime(session.endTime)}',
-                    ),
-                    const SizedBox(height: 8),
-                    Text('${AppTexts.trainer}: ${item.trainerName}'),
-                    const SizedBox(height: 8),
-                    Text(
-                      '${AppTexts.freeSpots}: '
-                      '${session.freeSpots}/${session.capacity}',
-                    ),
-                    if (trainingType.description.isNotEmpty) ...[
-                      const SizedBox(height: 8),
-                      Text(trainingType.description),
-                    ],
-                    const SizedBox(height: 16),
-                    if (canReserveTrainingSession) ...[
-                      const SizedBox(height: 16),
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: FilledButton(
-                          onPressed: session.hasFreeSpots
-                              ? () => _reserveTrainingSession(context, item)
-                              : null,
-                          child: Text(
-                            session.hasFreeSpots
-                                ? AppTexts.reserve
-                                : AppTexts.fullCapacity,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
+                  ),
+                );
+              },
             );
           },
         );

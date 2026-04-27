@@ -2,6 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../../core/theme/app_texts.dart';
+import 'reservation_service.dart';
+
 /* Zobrazuje rezervácie aktuálne prihláseného používateľa.
    Načíta jeho aktívne rezervácie z kolekcie reservations a ku každej dohľadá
    príslušný tréningový termín, typ cvičenia a meno trénera. */
@@ -23,6 +25,59 @@ class ReservationsTab extends StatelessWidget {
     final minute = dateTime.minute.toString().padLeft(2, '0');
 
     return '$hour:$minute';
+  }
+
+  Future<void> _confirmCancelReservation(
+    BuildContext context,
+    _ReservationDetail reservation,
+  ) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text(AppTexts.cancelReservationTitle),
+          content: Text(
+            '${AppTexts.cancelReservationQuestion}\n\n'
+            '${reservation.trainingName}\n'
+            '${_formatDateTime(reservation.startTime)} - '
+            '${_formatTime(reservation.endTime)}',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: const Text(AppTexts.cancel),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: const Text(AppTexts.cancelReservation),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed != true) {
+      return;
+    }
+
+    try {
+      await ReservationService().cancelReservation(
+        reservationId: reservation.reservationId,
+        trainingSessionId: reservation.trainingSessionId,
+      );
+
+      if (!context.mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text(AppTexts.reservationCancelled)),
+      );
+    } catch (_) {
+      if (!context.mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text(AppTexts.reservationCancelError)),
+      );
+    }
   }
 
   Future<_ReservationDetail?> _loadReservationDetail(
@@ -64,7 +119,13 @@ class ReservationsTab extends StatelessWidget {
     final endTime =
         (sessionData['endTime'] as Timestamp?)?.toDate() ?? DateTime.now();
 
+    if (endTime.isBefore(DateTime.now())) {
+      return null;
+    }
+
     return _ReservationDetail(
+      reservationId: reservationDocument.id,
+      trainingSessionId: sessionId,
       trainingName: trainingTypeData?['name'] as String? ?? 'Tréning',
       trainerName: trainerData?['displayName'] as String? ?? 'Neznámy tréner',
       startTime: startTime,
@@ -174,6 +235,17 @@ class ReservationsTab extends StatelessWidget {
                         ),
                         const SizedBox(height: 8),
                         Text('${AppTexts.trainer}: ${reservation.trainerName}'),
+                        const SizedBox(height: 16),
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: OutlinedButton(
+                            onPressed: () => _confirmCancelReservation(
+                              context,
+                              reservation,
+                            ),
+                            child: const Text(AppTexts.cancelReservation),
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -189,12 +261,16 @@ class ReservationsTab extends StatelessWidget {
 
 class _ReservationDetail {
   const _ReservationDetail({
+    required this.reservationId,
+    required this.trainingSessionId,
     required this.trainingName,
     required this.trainerName,
     required this.startTime,
     required this.endTime,
   });
 
+  final String reservationId;
+  final String trainingSessionId;
   final String trainingName;
   final String trainerName;
   final DateTime startTime;

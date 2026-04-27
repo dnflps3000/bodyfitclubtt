@@ -107,6 +107,7 @@ class AppTexts {
   static const List<String> shortWeekdays = ['Po', 'Ut', 'St', 'Št', 'Pi', 'So','Ne'];
   static const String scheduleManagement = 'Správa rozvrhu';
   static const String scheduleManagementDescription = 'Správa typov cvičení, šablón rozvrhu a konkrétnych tréningových termínov.';
+  static const String trainingSessionInPast = 'Termín tréningu nemôže byť v minulosti.';
   // Šablóny rozvrhu
   static const String addScheduleTemplate = 'Pridať šablónu rozvrhu';
   static const String weekday = 'Deň v týždni';
@@ -131,6 +132,7 @@ class AppTexts {
   static const String reservationAlreadyExists = 'Na tento tréning už máte vytvorenú rezerváciu.';
   static const String reservationTrainingFull = 'Tento tréning je už obsadený.';
   static const String reservationTrainingNotAvailable = 'Tento tréning už nie je dostupný na rezerváciu.';
+  static const String reservationTrainingAlreadyStarted = 'Na tento tréning sa už nedá rezervovať.';
   static const String reservationError = 'Rezerváciu sa nepodarilo vytvoriť.';
   static const String myReservations = 'Moje rezervácie';
   static const String noReservations = 'Momentálne nemáte žiadne rezervácie.';

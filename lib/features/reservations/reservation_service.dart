@@ -78,10 +78,15 @@ class ReservationService {
       final status = sessionData['status'] as String? ?? '';
       final capacity = sessionData['capacity'] as int? ?? 0;
       final reservedCount = sessionData['reservedCount'] as int? ?? 0;
+      final startTime = (sessionData['startTime'] as Timestamp?)?.toDate();
       final trainerId = sessionData['trainerId'] as String? ?? '';
 
       if (trainerId == currentUser.uid) {
         throw Exception('trainer-cannot-reserve-own-session');
+      }
+
+      if (startTime == null || !startTime.isAfter(DateTime.now())) {
+        throw Exception('training-session-already-started');
       }
 
       if (!isActive || status != 'scheduled') {
@@ -118,6 +123,54 @@ class ReservationService {
 
       transaction.update(sessionRef, {
         'reservedCount': reservedCount + 1,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+    });
+  }
+
+  Future<void> cancelReservation({
+    required String reservationId,
+    required String trainingSessionId,
+  }) async {
+    final reservationRef =
+        _firestore.collection('reservations').doc(reservationId);
+
+    final sessionRef =
+        _firestore.collection('trainingSessions').doc(trainingSessionId);
+
+    await _firestore.runTransaction((transaction) async {
+      final reservationSnapshot = await transaction.get(reservationRef);
+      final sessionSnapshot = await transaction.get(sessionRef);
+
+      if (!reservationSnapshot.exists) {
+        throw Exception('reservation-not-found');
+      }
+
+      if (!sessionSnapshot.exists) {
+        throw Exception('training-session-not-found');
+      }
+
+      final reservationData = reservationSnapshot.data() ?? {};
+      final sessionData = sessionSnapshot.data() ?? {};
+
+      final reservationStatus =
+          reservationData['status'] as String? ?? 'active';
+
+      if (reservationStatus != 'active') {
+        throw Exception('reservation-not-active');
+      }
+
+      final reservedCount = sessionData['reservedCount'] as int? ?? 0;
+      final newReservedCount = reservedCount > 0 ? reservedCount - 1 : 0;
+
+      transaction.update(reservationRef, {
+        'status': 'cancelled',
+        'cancelledAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+
+      transaction.update(sessionRef, {
+        'reservedCount': newReservedCount,
         'updatedAt': FieldValue.serverTimestamp(),
       });
     });

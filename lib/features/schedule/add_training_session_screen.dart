@@ -157,6 +157,13 @@ class _AddTrainingSessionScreenState extends State<AddTrainingSessionScreen> {
       _selectedTime!.hour,
       _selectedTime!.minute,
     );
+    
+    if (!startTime.isAfter(DateTime.now())) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text(AppTexts.trainingSessionInPast)),
+      );
+      return;
+    }
 
     setState(() {
       _isSaving = true;
