@@ -4,10 +4,10 @@ import 'package:flutter/material.dart';
 import '../../core/constants/app_roles.dart';
 import '../../core/theme/app_texts.dart';
 import 'add_training_session_screen.dart';
-import 'add_training_type_screen.dart';
 import 'schedule_item.dart';
 import 'schedule_service.dart';
-import 'add_schedule_template_screen.dart';
+import 'schedule_management_screen.dart';
+import '../reservations/reservation_service.dart';
 
 /* Zobrazuje obrazovku Rozvrh, teda zoznam tréningov, ich čas,
    trénera, voľné miesta, popis a tlačidlo rezervácie. */
@@ -46,12 +46,54 @@ class _ScheduleTabState extends State<ScheduleTab> {
     });
   }
 
-  bool _canAddTrainingType(String? role) {
-    return role == AppRoles.admin;
+  bool _canDeleteTrainingSession(String? role, ScheduleItem item) {
+    final currentUserId = FirebaseAuth.instance.currentUser?.uid;
+
+    if (role == AppRoles.admin) {
+      return true;
+    }
+
+    if (role == AppRoles.trainer) {
+      return item.session.trainerId == currentUserId;
+    }
+
+    return false;
   }
 
-  bool _canManageTrainingSessions(String? role) {
-    return role == AppRoles.admin || role == AppRoles.trainer;
+  bool _canReserveTrainingSession(ScheduleItem item) {
+    final currentUserId = FirebaseAuth.instance.currentUser?.uid;
+
+    if (currentUserId == null) {
+      return false;
+    }
+
+    if (item.session.trainerId == currentUserId) {
+      return false;
+    }
+
+    return item.session.startTime.isAfter(DateTime.now());
+  }
+
+  Stream<Set<String>> _watchMyReservedSessionIds() {
+    final currentUser = FirebaseAuth.instance.currentUser;
+
+    if (currentUser == null) {
+      return Stream.value({});
+    }
+
+    return FirebaseFirestore.instance
+        .collection('reservations')
+        .where('userId', isEqualTo: currentUser.uid)
+        .where('status', isEqualTo: 'active')
+        .snapshots()
+        .map((snapshot) {
+      return snapshot.docs.map((document) {
+        final data = document.data();
+        return data['trainingSessionId'] as String? ?? '';
+      }).where((sessionId) {
+        return sessionId.isNotEmpty;
+      }).toSet();
+    });
   }
 
   bool _isSameDate(DateTime first, DateTime second) {
@@ -111,26 +153,18 @@ class _ScheduleTabState extends State<ScheduleTab> {
     return '$weekdayLabel ${_formatDate(dateTime)}';
   }
 
-  Future<void> _openAddTrainingTypeScreen(BuildContext context) async {
-    await Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => const AddTrainingTypeScreen(),
-      ),
-    );
-  }
-
-  Future<void> _openAddScheduleTemplateScreen(BuildContext context) async {
-    await Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => const AddScheduleTemplateScreen(),
-      ),
-    );
-  }
-
   Future<void> _openAddTrainingSessionScreen(BuildContext context) async {
     await Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => const AddTrainingSessionScreen(),
+      ),
+    );
+  }
+
+  Future<void> _openScheduleManagementScreen(BuildContext context) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => const ScheduleManagementScreen(),
       ),
     );
   }
@@ -185,12 +219,85 @@ class _ScheduleTabState extends State<ScheduleTab> {
     }
   }
 
-  Widget _buildManagementButtons(BuildContext context, String? role) {
-    final canAddTrainingType = _canAddTrainingType(role);
-    final canManageTrainingSessions = _canManageTrainingSessions(role);
+  Future<void> _reserveTrainingSession(
+    BuildContext context,
+    ScheduleItem item,
+  ) async {
+    final currentUser = FirebaseAuth.instance.currentUser;
 
-    if (!canAddTrainingType && !canManageTrainingSessions) {
+    if (currentUser == null) {
+      return;
+    }
+
+    try {
+      await ReservationService().reserveTrainingSession(
+        session: item.session,
+        currentUser: currentUser,
+      );
+
+      if (!context.mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text(AppTexts.reservationCreated)),
+      );
+    } catch (error) {
+      if (!context.mounted) return;
+
+      final errorText = error.toString();
+
+      final message = errorText.contains('reservation-already-exists')
+          ? AppTexts.reservationAlreadyExists
+          : errorText.contains('training-session-full')
+              ? AppTexts.reservationTrainingFull
+              : errorText.contains('training-session-not-available')
+                  ? AppTexts.reservationTrainingNotAvailable
+                  : errorText.contains('training-session-already-started')
+                      ? AppTexts.reservationTrainingAlreadyStarted
+                      : AppTexts.reservationError;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message)),
+      );
+    }
+  }
+
+  Widget _buildManagementButtons(BuildContext context, String? role) {
+    final isAdmin = role == AppRoles.admin;
+    final isTrainer = role == AppRoles.trainer;
+    final isLandscape =
+        MediaQuery.of(context).orientation == Orientation.landscape;
+
+    if (!isAdmin && !isTrainer) {
       return const SizedBox.shrink();
+    }
+
+    final buttons = <Widget>[
+      if (isAdmin)
+        FilledButton.icon(
+          onPressed: () => _openScheduleManagementScreen(context),
+          icon: const Icon(Icons.admin_panel_settings_outlined),
+          label: const Text(AppTexts.scheduleManagement),
+        ),
+      if (isTrainer)
+        FilledButton.icon(
+          onPressed: () => _openAddTrainingSessionScreen(context),
+          icon: const Icon(Icons.event_available),
+          label: const Text(AppTexts.addTrainingSession),
+        ),
+    ];
+
+    if (isLandscape) {
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+        child: Row(
+          children: [
+            for (var index = 0; index < buttons.length; index++) ...[
+              Expanded(child: buttons[index]),
+              if (index < buttons.length - 1) const SizedBox(width: 8),
+            ],
+          ],
+        ),
+      );
     }
 
     return Padding(
@@ -198,27 +305,10 @@ class _ScheduleTabState extends State<ScheduleTab> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          if (canAddTrainingType)
-            FilledButton.icon(
-              onPressed: () => _openAddTrainingTypeScreen(context),
-              icon: const Icon(Icons.add),
-              label: const Text(AppTexts.addTrainingType),
-            ),
-          if (canAddTrainingType) const SizedBox(height: 8),
-          if (canAddTrainingType)
-            FilledButton.icon(
-              onPressed: () => _openAddScheduleTemplateScreen(context),
-              icon: const Icon(Icons.calendar_view_week),
-              label: const Text(AppTexts.addScheduleTemplate),
-            ),
-          if (canAddTrainingType && canManageTrainingSessions)
-            const SizedBox(height: 8),
-          if (canManageTrainingSessions)
-            FilledButton.icon(
-              onPressed: () => _openAddTrainingSessionScreen(context),
-              icon: const Icon(Icons.event_available),
-              label: const Text(AppTexts.addTrainingSession),
-            ),
+          for (var index = 0; index < buttons.length; index++) ...[
+            buttons[index],
+            if (index < buttons.length - 1) const SizedBox(height: 8),
+          ],
         ],
       ),
     );
@@ -226,11 +316,18 @@ class _ScheduleTabState extends State<ScheduleTab> {
 
   Widget _buildDaySelector() {
     final days = _nextSevenDays();
+    final isLandscape =
+        MediaQuery.of(context).orientation == Orientation.landscape;
 
     return SizedBox(
-      height: 56,
+      height: isLandscape ? 48 : 56,
       child: ListView.separated(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+        padding: EdgeInsets.fromLTRB(
+          16,
+          isLandscape ? 6 : 12,
+          16,
+          4,
+        ),
         scrollDirection: Axis.horizontal,
         itemCount: days.length,
         separatorBuilder: (context, index) => const SizedBox(width: 8),
@@ -238,14 +335,24 @@ class _ScheduleTabState extends State<ScheduleTab> {
           final day = days[index];
           final isSelected = _isSameDate(day, _selectedDate);
 
-          return ChoiceChip(
-            label: Text(_dayLabel(day)),
-            selected: isSelected,
-            onSelected: (_) {
-              setState(() {
-                _selectedDate = day;
-              });
-            },
+          return SizedBox(
+            width: isLandscape ? 104 : 116,
+            child: ChoiceChip(
+              // showCheckmark: false,   ak chceme, aby sa nezobrazovala fajka pri výbere
+              label: SizedBox(
+                width: double.infinity,
+                child: Text(
+                  _dayLabel(day),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              selected: isSelected,
+              onSelected: (_) {
+                setState(() {
+                  _selectedDate = day;
+                });
+              },
+            ),
           );
         },
       ),
@@ -254,7 +361,6 @@ class _ScheduleTabState extends State<ScheduleTab> {
 
   Widget _buildScheduleList(String? role) {
     final scheduleService = ScheduleService();
-    final canManageTrainingSessions = _canManageTrainingSessions(role);
 
     return StreamBuilder<List<ScheduleItem>>(
       stream: scheduleService.watchScheduleItems(),
@@ -285,70 +391,89 @@ class _ScheduleTabState extends State<ScheduleTab> {
           );
         }
 
-        return ListView.separated(
-          padding: const EdgeInsets.all(16),
-          itemCount: filteredItems.length,
-          separatorBuilder: (context, index) => const SizedBox(height: 12),
-          itemBuilder: (context, index) {
-            final item = filteredItems[index];
-            final session = item.session;
-            final trainingType = item.trainingType;
+        return StreamBuilder<Set<String>>(
+          stream: _watchMyReservedSessionIds(),
+          builder: (context, reservationSnapshot) {
+            final reservedSessionIds = reservationSnapshot.data ?? {};
 
-            return Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
+            return ListView.separated(
+              padding: const EdgeInsets.all(16),
+              itemCount: filteredItems.length,
+              separatorBuilder: (context, index) => const SizedBox(height: 12),
+              itemBuilder: (context, index) {
+                final item = filteredItems[index];
+                final session = item.session;
+                final trainingType = item.trainingType;
+                final canDeleteTrainingSession =
+                    _canDeleteTrainingSession(role, item);
+                final canReserveTrainingSession = _canReserveTrainingSession(item);
+                final isReserved = reservedSessionIds.contains(session.id);
+
+                return Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Expanded(
-                          child: Text(
-                            trainingType.name,
-                            style: Theme.of(context).textTheme.titleLarge,
-                          ),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                trainingType.name,
+                                style: Theme.of(context).textTheme.titleLarge,
+                              ),
+                            ),
+                            if (canDeleteTrainingSession)
+                              IconButton(
+                                tooltip: AppTexts.deleteTrainingSession,
+                                onPressed: () =>
+                                    _confirmDeleteTrainingSession(context, item),
+                                icon: const Icon(Icons.delete_outline),
+                              ),
+                          ],
                         ),
-                        if (canManageTrainingSessions)
-                          IconButton(
-                            tooltip: AppTexts.deleteTrainingSession,
-                            onPressed: () =>
-                                _confirmDeleteTrainingSession(context, item),
-                            icon: const Icon(Icons.delete_outline),
+                        const SizedBox(height: 8),
+                        Text(
+                          '${_formatDateTime(session.startTime)} - '
+                          '${_formatTime(session.endTime)}',
+                        ),
+                        const SizedBox(height: 8),
+                        Text('${AppTexts.trainer}: ${item.trainerName}'),
+                        const SizedBox(height: 8),
+                        Text(
+                          '${AppTexts.freeSpots}: '
+                          '${session.freeSpots}/${session.capacity}',
+                        ),
+                        if (trainingType.description.isNotEmpty) ...[
+                          const SizedBox(height: 8),
+                          Text(trainingType.description),
+                        ],
+                        if (canReserveTrainingSession) ...[
+                          const SizedBox(height: 16),
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: FilledButton(
+                              onPressed: isReserved
+                                  ? null
+                                  : session.hasFreeSpots
+                                      ? () => _reserveTrainingSession(context, item)
+                                      : null,
+                              child: Text(
+                                isReserved
+                                    ? AppTexts.reserved
+                                    : session.hasFreeSpots
+                                        ? AppTexts.reserve
+                                        : AppTexts.fullCapacity,
+                              ),
+                            ),
                           ),
+                        ],
                       ],
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      '${_formatDateTime(session.startTime)} - '
-                      '${_formatTime(session.endTime)}',
-                    ),
-                    const SizedBox(height: 8),
-                    Text('${AppTexts.trainer}: ${item.trainerName}'),
-                    const SizedBox(height: 8),
-                    Text(
-                      '${AppTexts.freeSpots}: '
-                      '${session.freeSpots}/${session.capacity}',
-                    ),
-                    if (trainingType.description.isNotEmpty) ...[
-                      const SizedBox(height: 8),
-                      Text(trainingType.description),
-                    ],
-                    const SizedBox(height: 16),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: FilledButton(
-                        onPressed: session.hasFreeSpots ? () {} : null,
-                        child: Text(
-                          session.hasFreeSpots
-                              ? AppTexts.reserve
-                              : AppTexts.fullCapacity,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+                  ),
+                );
+              },
             );
           },
         );

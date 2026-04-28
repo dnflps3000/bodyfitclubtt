@@ -185,6 +185,7 @@ class ScheduleService {
   Future<void> createScheduleTemplate({
     required TrainingType trainingType,
     required User currentUser,
+    required String trainerId,
     required int weekday,
     required int startHour,
     required int startMinute,
@@ -194,6 +195,7 @@ class ScheduleService {
     DateTime? validUntil,
   }) async {
     final currentUserRef = _firestore.collection('users').doc(currentUser.uid);
+    final trainerRef = _firestore.collection('users').doc(trainerId);
     final trainingTypeRef =
         _firestore.collection('trainingTypes').doc(trainingType.id);
 
@@ -212,12 +214,18 @@ class ScheduleService {
     if (existingScheduleTemplate.exists) {
       throw Exception('schedule-template-already-exists');
     }
+    await _checkScheduleTemplateOverlap(
+      weekday: weekday,
+      startHour: startHour,
+      startMinute: startMinute,
+      durationMinutes: durationMinutes,
+    );
 
     await _firestore.collection('scheduleTemplates').doc(scheduleTemplateId).set({
       'trainingTypeId': trainingType.id,
       'trainingTypeRef': trainingTypeRef,
-      'trainerId': currentUser.uid,
-      'trainerRef': currentUserRef,
+      'trainerId': trainerId,
+      'trainerRef': trainerRef,
       'weekday': weekday,
       'startHour': startHour,
       'startMinute': startMinute,
@@ -231,6 +239,42 @@ class ScheduleService {
       'createdAt': FieldValue.serverTimestamp(),
       'updatedAt': FieldValue.serverTimestamp(),
     });
+  }
+
+  Future<void> _checkScheduleTemplateOverlap({
+    required int weekday,
+    required int startHour,
+    required int startMinute,
+    required int durationMinutes,
+  }) async {
+    final newStartMinutes = startHour * 60 + startMinute;
+    final newEndMinutes = newStartMinutes + durationMinutes;
+
+    final templatesSnapshot = await _firestore
+        .collection('scheduleTemplates')
+        .where('weekday', isEqualTo: weekday)
+        .where('isActive', isEqualTo: true)
+        .get();
+
+    final hasOverlap = templatesSnapshot.docs.any((document) {
+      final data = document.data();
+
+      final existingStartHour = data['startHour'] as int? ?? 0;
+      final existingStartMinute = data['startMinute'] as int? ?? 0;
+      final existingDurationMinutes = data['durationMinutes'] as int? ?? 0;
+
+      final existingStartMinutes =
+          existingStartHour * 60 + existingStartMinute;
+      final existingEndMinutes =
+          existingStartMinutes + existingDurationMinutes;
+
+      return existingStartMinutes < newEndMinutes &&
+          existingEndMinutes > newStartMinutes;
+    });
+
+    if (hasOverlap) {
+      throw Exception('schedule-template-overlap');
+    }
   }
 
   Future<void> deleteTrainingSession(String sessionId) async {

@@ -1,10 +1,13 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import '../../core/constants/app_roles.dart';
 import '../../core/theme/app_texts.dart';
 import 'schedule_service.dart';
 import 'training_type.dart';
-/*  Obrazovka/formulár pre admina na vytvorenie pravidelnej týždennej šablóny rozvrhu,
-  podľa ktorej sa neskôr budú automaticky generovať konkrétne termíny tréningov.*/
+
+/* Obrazovka/formulár pre admina na vytvorenie pravidelnej týždennej šablóny rozvrhu,
+   podľa ktorej sa neskôr budú automaticky generovať konkrétne termíny tréningov. */
 class AddScheduleTemplateScreen extends StatefulWidget {
   const AddScheduleTemplateScreen({super.key});
 
@@ -20,6 +23,7 @@ class _AddScheduleTemplateScreenState extends State<AddScheduleTemplateScreen> {
   final TextEditingController _capacityController = TextEditingController();
 
   String? _selectedTrainingTypeId;
+  String? _selectedTrainerId;
   int? _selectedWeekday;
   TimeOfDay? _selectedTime;
   bool _isSaving = false;
@@ -29,6 +33,30 @@ class _AddScheduleTemplateScreenState extends State<AddScheduleTemplateScreen> {
     _durationController.dispose();
     _capacityController.dispose();
     super.dispose();
+  }
+
+  Stream<List<_TrainerOption>> _watchTrainers() {
+    return FirebaseFirestore.instance
+        .collection('users')
+        .where('role', isEqualTo: AppRoles.trainer)
+        .snapshots()
+        .map((snapshot) {
+      final trainers = snapshot.docs.map((document) {
+        final data = document.data();
+
+        return _TrainerOption(
+          id: document.id,
+          name: data['displayName'] as String? ?? 'Neznámy tréner',
+          isActive: data['isActive'] as bool? ?? true,
+        );
+      }).where((trainer) {
+        return trainer.isActive;
+      }).toList();
+
+      trainers.sort((a, b) => a.name.compareTo(b.name));
+
+      return trainers;
+    });
   }
 
   TrainingType? _findSelectedTrainingType(List<TrainingType> trainingTypes) {
@@ -99,6 +127,7 @@ class _AddScheduleTemplateScreenState extends State<AddScheduleTemplateScreen> {
 
     if (currentUser == null ||
         selectedTrainingType == null ||
+        _selectedTrainerId == null ||
         _selectedWeekday == null ||
         _selectedTime == null ||
         durationMinutes == null ||
@@ -131,6 +160,7 @@ class _AddScheduleTemplateScreenState extends State<AddScheduleTemplateScreen> {
       await _scheduleService.createScheduleTemplate(
         trainingType: selectedTrainingType,
         currentUser: currentUser,
+        trainerId: _selectedTrainerId!,
         weekday: _selectedWeekday!,
         startHour: _selectedTime!.hour,
         startMinute: _selectedTime!.minute,
@@ -149,11 +179,13 @@ class _AddScheduleTemplateScreenState extends State<AddScheduleTemplateScreen> {
     } catch (error) {
       if (!mounted) return;
 
-      final message = error.toString().contains(
-                'schedule-template-already-exists',
-              )
+      final errorText = error.toString();
+
+      final message = errorText.contains('schedule-template-already-exists')
           ? AppTexts.scheduleTemplateAlreadyExists
-          : AppTexts.saveError;
+          : errorText.contains('schedule-template-overlap')
+              ? AppTexts.scheduleTemplateOverlap
+              : AppTexts.saveError;
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(message)),
@@ -165,6 +197,47 @@ class _AddScheduleTemplateScreenState extends State<AddScheduleTemplateScreen> {
         });
       }
     }
+  }
+
+  Widget _buildTrainerDropdown() {
+    return StreamBuilder<List<_TrainerOption>>(
+      stream: _watchTrainers(),
+      builder: (context, trainerSnapshot) {
+        if (trainerSnapshot.hasError) {
+          return const Text(AppTexts.trainersLoadError);
+        }
+
+        if (trainerSnapshot.connectionState == ConnectionState.waiting) {
+          return const Padding(
+            padding: EdgeInsets.symmetric(vertical: 12),
+            child: LinearProgressIndicator(),
+          );
+        }
+
+        final trainers = trainerSnapshot.data ?? [];
+
+        return DropdownButtonFormField<String>(
+          initialValue: _selectedTrainerId,
+          decoration: const InputDecoration(
+            labelText: AppTexts.trainer,
+          ),
+          items: trainers.map((trainer) {
+            return DropdownMenuItem<String>(
+              value: trainer.id,
+              child: Text(trainer.name),
+            );
+          }).toList(),
+          onChanged: _isSaving
+              ? null
+              : (trainerId) {
+                  setState(() {
+                    _selectedTrainerId = trainerId;
+                  });
+                },
+          hint: const Text(AppTexts.selectTrainer),
+        );
+      },
+    );
   }
 
   @override
@@ -217,6 +290,8 @@ class _AddScheduleTemplateScreenState extends State<AddScheduleTemplateScreen> {
                       },
                 hint: const Text(AppTexts.selectTrainingType),
               ),
+              const SizedBox(height: 12),
+              _buildTrainerDropdown(),
               const SizedBox(height: 12),
               DropdownButtonFormField<int>(
                 initialValue: _selectedWeekday,
@@ -284,4 +359,16 @@ class _AddScheduleTemplateScreenState extends State<AddScheduleTemplateScreen> {
       ),
     );
   }
+}
+
+class _TrainerOption {
+  const _TrainerOption({
+    required this.id,
+    required this.name,
+    required this.isActive,
+  });
+
+  final String id;
+  final String name;
+  final bool isActive;
 }

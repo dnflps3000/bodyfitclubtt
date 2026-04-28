@@ -105,6 +105,9 @@ class AppTexts {
   static const String tomorrow = 'Zajtra';
   static const String noTrainingsForSelectedDay = 'V tento deň nie sú naplánované žiadne tréningy.';
   static const List<String> shortWeekdays = ['Po', 'Ut', 'St', 'Št', 'Pi', 'So','Ne'];
+  static const String scheduleManagement = 'Správa rozvrhu';
+  static const String scheduleManagementDescription = 'Správa typov cvičení, šablón rozvrhu a konkrétnych tréningových termínov.';
+  static const String trainingSessionInPast = 'Termín tréningu nemôže byť v minulosti.';
   // Šablóny rozvrhu
   static const String addScheduleTemplate = 'Pridať šablónu rozvrhu';
   static const String weekday = 'Deň v týždni';
@@ -112,7 +115,6 @@ class AppTexts {
   static const String scheduleTemplateCreated = 'Šablóna rozvrhu bola vytvorená.';
   static const String scheduleTemplateAlreadyExists = 'Takáto šablóna rozvrhu už existuje.';
   static const String scheduleTemplateLoadError = 'Nepodarilo sa načítať šablóny rozvrhu.';
-
   static const List<String> weekdays = [
     'Pondelok',
     'Utorok',
@@ -122,4 +124,32 @@ class AppTexts {
     'Sobota',
     'Nedeľa',
   ];
+  static const String selectTrainer = 'Vyberte trénera';
+  static const String trainersLoadError = 'Nepodarilo sa načítať trénerov.';
+  static const String scheduleTemplateOverlap = 'V tomto čase už existuje iná šablóna rozvrhu.';
+  // Rezervácie
+  static const String reservationCreated = 'Rezervácia bola vytvorená.';
+  static const String reservationAlreadyExists = 'Na tento tréning už máte vytvorenú rezerváciu.';
+  static const String reservationTrainingFull = 'Tento tréning je už obsadený.';
+  static const String reservationTrainingNotAvailable = 'Tento tréning už nie je dostupný na rezerváciu.';
+  static const String reservationTrainingAlreadyStarted = 'Na tento tréning sa už nedá rezervovať.';
+  static const String reservationError = 'Rezerváciu sa nepodarilo vytvoriť.';
+  static const String myReservations = 'Moje rezervácie';
+  static const String noReservations = 'Momentálne nemáte žiadne rezervácie.';
+  static const String reserved = 'Rezervované';
+  static const String cancelReservation = 'Zrušiť rezerváciu';
+  static const String cancelReservationTitle = 'Zrušiť rezerváciu';
+  static const String cancelReservationQuestion = 'Naozaj chcete zrušiť túto rezerváciu?';
+  static const String reservationCancelled = 'Rezervácia bola zrušená.';
+  static const String reservationCancelError = 'Rezerváciu sa nepodarilo zrušiť.';
+// Permanentky
+  static const String assignMembership = 'Priradiť permanentku';
+  static const String selectUser = 'Vyberte používateľa';
+  static const String selectMembershipPlan = 'Vyberte typ permanentky';
+  static const String usersLoadError = 'Nepodarilo sa načítať používateľov.';
+  static const String membershipPlansLoadError = 'Nepodarilo sa načítať typy permanentiek.';
+  static const String membershipAssigned = 'Permanentka bola priradená.';
+  static const String membershipAssignError = 'Permanentku sa nepodarilo priradiť.';
+  static const String membershipPlan = 'Typ permanentky';
+  static const String client = 'Používateľ';
 }
