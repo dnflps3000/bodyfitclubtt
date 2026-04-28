@@ -13,8 +13,8 @@ class PaymentService {
         ),
       );
 
-      print("STATUS: ${response.statusCode}");
-      print("BODY: ${response.body}");
+      //print("STATUS: ${response.statusCode}");
+      //print("BODY: ${response.body}");
 
       if (response.statusCode != 200) {
         throw Exception("Backend error: ${response.body}");
@@ -28,7 +28,7 @@ class PaymentService {
       }
 
       // 🔥 INIT PAYMENT SHEET
-      print("INIT PAYMENT SHEET");
+      //print("INIT PAYMENT SHEET");
 
       await Stripe.instance.initPaymentSheet(
         paymentSheetParameters: SetupPaymentSheetParameters(
@@ -47,13 +47,13 @@ class PaymentService {
       );
 
       // 🔥 SHOW PAYMENT UI
-      print("PRESENT PAYMENT SHEET");
+      //print("PRESENT PAYMENT SHEET");
 
       await Stripe.instance.presentPaymentSheet();
 
-      print("PAYMENT SUCCESS");
+      //print("PAYMENT SUCCESS");
     } catch (e) {
-      print("PAYMENT ERROR: $e");
+      //print("PAYMENT ERROR: $e");
       rethrow;
     }
   }
