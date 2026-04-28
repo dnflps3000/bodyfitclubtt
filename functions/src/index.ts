@@ -6,6 +6,8 @@ import {
   Timestamp,
   getFirestore,
 } from "firebase-admin/firestore";
+import * as functions from "firebase-functions";
+import Stripe from "stripe";
 
 initializeApp();
 
@@ -14,6 +16,28 @@ initializeApp();
 
 const db = getFirestore();
 const APP_TIME_ZONE = "Europe/Bratislava";
+
+const stripe = new Stripe("sk_test_TVOJ_KLUC", {
+  apiVersion: "2026-04-22.dahlia",
+});
+
+export const createPaymentIntent = functions.https.onRequest(
+  async (req, res) => {
+    try {
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: 999, // 9.99€
+        currency: "eur",
+      });
+
+      res.status(200).send({
+        clientSecret: paymentIntent.client_secret,
+      });
+    } catch (error) {
+      console.error(error);
+      res.status(500).send({error: "Payment failed"});
+    }
+  }
+);
 
 type ScheduleTemplate = {
   trainingTypeId: string;
