@@ -32,10 +32,45 @@ function getStripe() {
 export const createPaymentIntent = functions.https.onRequest(
   async (req, res) => {
     try {
+      const planId = req.body?.planId as string | undefined;
+
+      if (!planId) {
+        res.status(400).send({error: "Missing planId"});
+        return;
+      }
+
+      const planSnapshot = await db
+        .collection("membershipPlans")
+        .doc(planId)
+        .get();
+
+      if (!planSnapshot.exists) {
+        res.status(404).send({error: "Membership plan not found"});
+        return;
+      }
+
+      const plan = planSnapshot.data();
+
+      if (!plan || plan.isActive !== true) {
+        res.status(400).send({error: "Membership plan is not active"});
+        return;
+      }
+
+      const price = Number(plan.price);
+      const currency = String(plan.currency ?? "EUR").toLowerCase();
+
+      if (!Number.isFinite(price) || price <= 0) {
+        res.status(400).send({error: "Invalid membership plan price"});
+        return;
+      }
+
       const stripe = getStripe();
       const paymentIntent = await stripe.paymentIntents.create({
-        amount: 999, // 9.99€
-        currency: "eur",
+        amount: Math.round(price * 100),
+        currency,
+        metadata: {
+          planId,
+        },
       });
 
       res.status(200).send({

@@ -12,6 +12,7 @@ class MembershipPlan {
     required this.entriesPerDay,
     required this.validityDays,
     required this.isActive,
+    required this.purchaseCategory,
   });
 
   final String id;
@@ -23,7 +24,7 @@ class MembershipPlan {
   final int? entriesPerDay;
   final int validityDays;
   final bool isActive;
-
+  final String purchaseCategory;
   bool get isEntryBased => entriesTotal != null;
   bool get isDailyLimitBased => entriesPerDay != null;
 
@@ -42,6 +43,7 @@ class MembershipPlan {
       entriesPerDay: data['entriesPerDay'] as int?,
       validityDays: data['validityDays'] as int? ?? 0,
       isActive: data['isActive'] as bool? ?? false,
+      purchaseCategory: data['purchaseCategory'] as String? ?? '',
     );
   }
 }

@@ -152,4 +152,18 @@ class AppTexts {
   static const String membershipAssignError = 'Permanentku sa nepodarilo priradiť.';
   static const String membershipPlan = 'Typ permanentky';
   static const String client = 'Používateľ';
+  static const String buyMembership = 'Kúpiť permanentku';
+  static const String buySingleEntry = 'Kúpiť jednorázový vstup';
+  static const String chooseMembership = 'Vyberte permanentku';
+  static const String payment = 'Platba';
+  static const String pay = 'Zaplatiť';
+  static const String paymentSuccessful = 'Platba úspešná.';
+  static const String paymentFailed = 'Platba zlyhala.';
+  static const String activeMembership = 'Aktívna permanentka';
+  static const String noActiveMembership = 'Nemáte aktívnu permanentku.';
+  static const String validUntil = 'Platná do';
+  static const String membershipLoadError = 'Permanentku sa nepodarilo načítať.';
+  static const String noAvailableEntries = 'Nemáte dostupný vstup na rezerváciu.';
+  static const String noUpcomingTraining = 'Zatiaľ nemáte rezervované žiadne cvičenie.';
+  static const String newsPlaceholder = 'Tu sa budú zobrazovať novinky a správy od trénerov.';
 }

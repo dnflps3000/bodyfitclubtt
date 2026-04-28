@@ -71,8 +71,8 @@ class MembershipService {
     required String userId,
     required User currentUser,
   }) async {
-    final now = DateTime.now();
-    final validUntil = now.add(Duration(days: plan.validityDays));
+    final now = _startOfToday();
+    final validUntil = _validUntilForPlan(plan);
 
     final userRef = _firestore.collection('users').doc(userId);
     final planRef = _firestore.collection('membershipPlans').doc(plan.id);
@@ -86,6 +86,7 @@ class MembershipService {
       'planName': plan.name,
       'entriesTotal': plan.entriesTotal,
       'entriesRemaining': plan.entriesTotal,
+      'entriesReserved': plan.entriesTotal == null ? null : 0,
       'entriesPerDay': plan.entriesPerDay,
       'validFrom': Timestamp.fromDate(now),
       'validUntil': Timestamp.fromDate(validUntil),
@@ -98,5 +99,57 @@ class MembershipService {
       'createdAt': FieldValue.serverTimestamp(),
       'updatedAt': FieldValue.serverTimestamp(),
     });
+  }
+
+  Future<void> createMembershipAfterPayment({
+    required MembershipPlan plan,
+    required User currentUser,
+  }) async {
+    final now = _startOfToday();
+    final validUntil = _validUntilForPlan(plan);
+
+    final userRef = _firestore.collection('users').doc(currentUser.uid);
+    final planRef = _firestore.collection('membershipPlans').doc(plan.id);
+
+    await _firestore.collection('memberships').add({
+      'userId': currentUser.uid,
+      'userRef': userRef,
+      'planId': plan.id,
+      'planRef': planRef,
+      'planName': plan.name,
+      'entriesTotal': plan.entriesTotal,
+      'entriesRemaining': plan.entriesTotal,
+      'entriesReserved': plan.entriesTotal == null ? null : 0,
+      'entriesPerDay': plan.entriesPerDay,
+      'validFrom': Timestamp.fromDate(now),
+      'validUntil': Timestamp.fromDate(validUntil),
+      'status': 'active',
+      'paymentStatus': 'paid',
+      'price': plan.price,
+      'currency': plan.currency,
+      'createdBy': currentUser.uid,
+      'createdByRef': userRef,
+      'createdAt': FieldValue.serverTimestamp(),
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+  DateTime _startOfToday() {
+    final now = DateTime.now();
+    return DateTime(now.year, now.month, now.day);
+  }
+
+  DateTime _validUntilForPlan(MembershipPlan plan) {
+    final start = _startOfToday();
+    final lastValidDay = start.add(Duration(days: plan.validityDays - 1));
+
+    return DateTime(
+      lastValidDay.year,
+      lastValidDay.month,
+      lastValidDay.day,
+      23,
+      59,
+      59,
+    );
   }
 }

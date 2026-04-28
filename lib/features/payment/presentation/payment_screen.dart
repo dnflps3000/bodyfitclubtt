@@ -1,47 +1,193 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_texts.dart';
+import '../../memberships/membership_plan.dart';
+import '../../memberships/membership_service.dart';
 import '../data/payment_service.dart';
 
-// 🔥 PRIDAJ IMPORTY
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+class PaymentScreen extends StatefulWidget {
+  const PaymentScreen({
+    super.key,
+    this.purchaseCategory,
+    this.preselectedPlanId,
+  });
 
-class PaymentScreen extends StatelessWidget {
-  const PaymentScreen({super.key});
+  final String? purchaseCategory;
+  final String? preselectedPlanId;
+
+  @override
+  State<PaymentScreen> createState() => _PaymentScreenState();
+}
+
+class _PaymentScreenState extends State<PaymentScreen> {
+  final MembershipService _membershipService = MembershipService();
+  final PaymentService _paymentService = PaymentService();
+
+  MembershipPlan? _selectedPlan;
+  bool _isPaying = false;
+
+  String _formatPrice(MembershipPlan plan) {
+    return '${plan.price.toStringAsFixed(2)} ${plan.currency}';
+  }
+
+  Future<void> _payForSelectedPlan() async {
+    final selectedPlan = _selectedPlan;
+    final currentUser = FirebaseAuth.instance.currentUser;
+
+    if (selectedPlan == null || currentUser == null) {
+      return;
+    }
+
+    setState(() {
+      _isPaying = true;
+    });
+
+    try {
+      await _paymentService.makePayment(plan: selectedPlan);
+
+      await _membershipService.createMembershipAfterPayment(
+        plan: selectedPlan,
+        currentUser: currentUser,
+      );
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text(AppTexts.paymentSuccessful)),
+      );
+
+      Navigator.pop(context);
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text(AppTexts.paymentFailed)),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isPaying = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Platba")),
-      body: Center(
-        child: ElevatedButton(
-          onPressed: () async {
-            try {
-              await PaymentService().makePayment();
+      appBar: AppBar(
+        title: const Text(AppTexts.payment),
+      ),
 
-              // 🔥 ULOŽENIE DO FIREBASE
-              await FirebaseFirestore.instance
-                  .collection('users')
-                  .doc(FirebaseAuth.instance.currentUser!.uid)
-                  .set({
-                'membership': 'active',
-                'remainingEntries': 10,
-                'lastPayment': FieldValue.serverTimestamp(),
-              }, SetOptions(merge: true));
+      // Obsah obrazovky - iba zoznam permanentiek/vstupov.
+      body: StreamBuilder<List<MembershipPlan>>(
+        stream: _membershipService.watchActiveMembershipPlans(),
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return const Center(
+              child: Text(AppTexts.membershipPlansLoadError),
+            );
+          }
 
-              if (!context.mounted) return;
+          if (!snapshot.hasData) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
 
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text("Platba úspešná")),
-              );
-            } catch (e) {
-              if (!context.mounted) return;
+          final allPlans = snapshot.data!;
 
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text("Platba zlyhala")),
-              );
-            }
-          },
-          child: const Text("Zaplatiť 9.99€"),
+          final plans = widget.purchaseCategory == null
+              ? allPlans
+              : allPlans
+                  .where(
+                    (plan) => plan.purchaseCategory == widget.purchaseCategory,
+                  )
+                  .toList();
+
+          if (plans.isEmpty) {
+            return const Center(
+              child: Text(AppTexts.membershipPlansLoadError),
+            );
+          }
+
+          final initialSelectedPlan = widget.preselectedPlanId == null
+              ? plans.first
+              : plans.firstWhere(
+                  (plan) => plan.id == widget.preselectedPlanId,
+                  orElse: () => plans.first,
+                );
+
+          if (_selectedPlan == null ||
+              !plans.any((plan) => plan.id == _selectedPlan!.id)) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (!mounted) return;
+
+              setState(() {
+                _selectedPlan = initialSelectedPlan;
+              });
+            });
+          }
+
+          final displayedSelectedPlan = _selectedPlan ?? initialSelectedPlan;
+
+          return ListView(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+            children: [
+              Text(
+                AppTexts.chooseMembership,
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              const SizedBox(height: 12),
+
+              for (final plan in plans)
+                Card(
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(12),
+                    onTap: _isPaying
+                        ? null
+                        : () {
+                            setState(() {
+                              _selectedPlan = plan;
+                            });
+                          },
+                    child: ListTile(
+                      leading: Icon(
+                        displayedSelectedPlan.id == plan.id
+                            ? Icons.radio_button_checked
+                            : Icons.radio_button_unchecked,
+                      ),
+                      title: Text(plan.name),
+                      subtitle: Text(plan.description),
+                      trailing: Text(
+                        _formatPrice(plan),
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          );
+        },
+      ),
+
+      // Tlačidlo je mimo ListView a SafeArea ho drží nad systémovou lištou.
+      bottomNavigationBar: SafeArea(
+        minimum: const EdgeInsets.all(16),
+        child: FilledButton(
+          onPressed:
+              _selectedPlan == null || _isPaying ? null : _payForSelectedPlan,
+          child: _isPaying
+              ? const SizedBox(
+                  height: 20,
+                  width: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : Text(
+                  _selectedPlan == null
+                      ? AppTexts.pay
+                      : '${AppTexts.pay} ${_formatPrice(_selectedPlan!)}',
+                ),
         ),
       ),
     );

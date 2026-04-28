@@ -2,15 +2,24 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:flutter/material.dart';
+import '../../memberships/membership_plan.dart';
 
 class PaymentService {
-  Future<void> makePayment() async {
+  Future<void> makePayment({
+    required MembershipPlan plan,
+  }) async {
     try {
-      // 🔥 volanie backendu
+      // volanie backendu
       final response = await http.post(
         Uri.parse(
           "https://us-central1-bodyfitclubtt-9acd8.cloudfunctions.net/createPaymentIntent",
         ),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          'planId': plan.id,
+        }),
       );
 
       //print("STATUS: ${response.statusCode}");
@@ -27,7 +36,6 @@ class PaymentService {
         throw Exception("Client secret is null");
       }
 
-      // 🔥 INIT PAYMENT SHEET
       //print("INIT PAYMENT SHEET");
 
       await Stripe.instance.initPaymentSheet(
@@ -35,7 +43,6 @@ class PaymentService {
           paymentIntentClientSecret: clientSecret,
           merchantDisplayName: 'BodyFitClub',
 
-          // 🔥 ANDROID FIX
           style: ThemeMode.system,
 
           googlePay: const PaymentSheetGooglePay(
@@ -46,7 +53,6 @@ class PaymentService {
         ),
       );
 
-      // 🔥 SHOW PAYMENT UI
       //print("PRESENT PAYMENT SHEET");
 
       await Stripe.instance.presentPaymentSheet();
