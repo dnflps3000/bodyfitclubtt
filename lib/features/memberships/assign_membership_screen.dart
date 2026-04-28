@@ -121,6 +121,7 @@ class _AssignMembershipScreenState extends State<AssignMembershipScreen> {
 
         return DropdownButtonFormField<String>(
           initialValue: _selectedUserId,
+          isExpanded: true,
           decoration: const InputDecoration(
             labelText: AppTexts.client,
           ),
@@ -129,7 +130,10 @@ class _AssignMembershipScreenState extends State<AssignMembershipScreen> {
 
             return DropdownMenuItem<String>(
               value: user.id,
-              child: Text('${user.name}$subtitle'),
+              child: Text(
+                '${user.name}$subtitle',
+                overflow: TextOverflow.ellipsis,
+              ),
             );
           }).toList(),
           onChanged: _isSaving
@@ -148,13 +152,17 @@ class _AssignMembershipScreenState extends State<AssignMembershipScreen> {
   Widget _buildPlanDropdown(List<MembershipPlan> plans) {
     return DropdownButtonFormField<String>(
       initialValue: _selectedPlanId,
+      isExpanded: true,
       decoration: const InputDecoration(
         labelText: AppTexts.membershipPlan,
       ),
       items: plans.map((plan) {
         return DropdownMenuItem<String>(
           value: plan.id,
-          child: Text('${plan.name} – ${plan.price} ${plan.currency}'),
+          child: Text(
+            '${plan.name} – ${plan.price} ${plan.currency}',
+            overflow: TextOverflow.ellipsis,
+          ),
         );
       }).toList(),
       onChanged: _isSaving
