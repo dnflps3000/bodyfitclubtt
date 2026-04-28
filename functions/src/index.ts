@@ -17,13 +17,22 @@ initializeApp();
 const db = getFirestore();
 const APP_TIME_ZONE = "Europe/Bratislava";
 
-const stripe = new Stripe("sk_test_TVOJ_KLUC", {
-  apiVersion: "2026-04-22.dahlia",
-});
+function getStripe() {
+  const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
+
+  if (!stripeSecretKey) {
+    throw new Error("Missing STRIPE_SECRET_KEY environment variable.");
+  }
+
+  return new Stripe(stripeSecretKey, {
+    apiVersion: "2026-04-22.dahlia",
+  });
+}
 
 export const createPaymentIntent = functions.https.onRequest(
   async (req, res) => {
     try {
+      const stripe = getStripe();
       const paymentIntent = await stripe.paymentIntents.create({
         amount: 999, // 9.99€
         currency: "eur",
