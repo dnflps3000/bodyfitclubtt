@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_texts.dart';
+import '../../../core/widgets/day_card_selector.dart';
 import '../data/reservation_service.dart';
 import 'attendance_qr_scanner_screen.dart';
 
@@ -39,26 +40,6 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     return first.year == second.year &&
         first.month == second.month &&
         first.day == second.day;
-  }
-
-  String _formatDate(DateTime dateTime) {
-    final day = dateTime.day.toString().padLeft(2, '0');
-    final month = dateTime.month.toString().padLeft(2, '0');
-    final year = dateTime.year.toString();
-
-    return '$day.$month.$year';
-  }
-
-  void _previousDay() {
-    setState(() {
-      _selectedDate = _selectedDate.subtract(const Duration(days: 1));
-    });
-  }
-
-  void _nextDay() {
-    setState(() {
-      _selectedDate = _selectedDate.add(const Duration(days: 1));
-    });
   }
 
   Future<_AttendanceReservation?> _loadAttendanceReservation(
@@ -273,27 +254,37 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   }
 
   Widget _buildDateFilter() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-      child: Row(
-        children: [
-          IconButton(
-            onPressed: _previousDay,
-            icon: const Icon(Icons.chevron_left),
-          ),
-          Expanded(
-            child: Center(
-              child: Text(
-                _formatDate(_selectedDate),
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-            ),
-          ),
-          IconButton(
-            onPressed: _nextDay,
-            icon: const Icon(Icons.chevron_right),
-          ),
-        ],
+    final days = _nextSevenDays();
+
+    return DayCardSelector(
+      key: const PageStorageKey('attendance-day-selector'),
+      days: days,
+      selectedDate: _selectedDate,
+      onDateSelected: (date) {
+        setState(() {
+          _selectedDate = date;
+        });
+      },
+    );
+  }
+
+  List<DateTime> _nextSevenDays() {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+
+    return List.generate(7, (index) {
+      return today.add(Duration(days: index));
+    });
+  }
+
+  Widget _buildEmptyAttendanceState() {
+    return const Center(
+      child: Padding(
+        padding: EdgeInsets.all(24),
+        child: Text(
+          AppTexts.noActiveReservationsForAttendance,
+          textAlign: TextAlign.center,
+        ),
       ),
     );
   }
@@ -317,80 +308,64 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          _buildDateFilter(),
-          Expanded(
-            child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-              stream: reservationsStream,
-              builder: (context, snapshot) {
-                if (snapshot.hasError) {
-                  return const Center(
-                    child: Text(AppTexts.attendanceLoadError),
-                  );
-                }
+      body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+        stream: reservationsStream,
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return const Center(child: Text(AppTexts.attendanceLoadError));
+          }
 
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-                final reservationDocuments = snapshot.data?.docs ?? [];
+          final reservationDocuments = snapshot.data?.docs ?? [];
 
-                if (reservationDocuments.isEmpty) {
-                  return const Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(24),
-                      child: Text(
-                        AppTexts.noActiveReservationsForAttendance,
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  );
-                }
-
-                return FutureBuilder<List<_AttendanceReservation>>(
-                  future: _loadAttendanceReservations(reservationDocuments),
-                  builder: (context, detailSnapshot) {
-                    if (detailSnapshot.connectionState ==
-                        ConnectionState.waiting) {
-                      return const Center(child: CircularProgressIndicator());
-                    }
-
-                    if (detailSnapshot.hasError) {
-                      return const Center(
-                        child: Text(AppTexts.attendanceLoadError),
-                      );
-                    }
-
-                    final reservations = detailSnapshot.data ?? [];
-
-                    if (reservations.isEmpty) {
-                      return const Center(
-                        child: Padding(
-                          padding: EdgeInsets.all(24),
-                          child: Text(
-                            AppTexts.noActiveReservationsForAttendance,
-                            textAlign: TextAlign.center,
-                          ),
+          return Column(
+            children: [
+              _buildDateFilter(),
+              Expanded(
+                child: reservationDocuments.isEmpty
+                    ? _buildEmptyAttendanceState()
+                    : FutureBuilder<List<_AttendanceReservation>>(
+                        future: _loadAttendanceReservations(
+                          reservationDocuments,
                         ),
-                      );
-                    }
+                        builder: (context, detailSnapshot) {
+                          if (detailSnapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return const Center(
+                              child: CircularProgressIndicator(),
+                            );
+                          }
 
-                    return ListView.separated(
-                      padding: const EdgeInsets.all(16),
-                      itemCount: reservations.length,
-                      separatorBuilder: (context, index) =>
-                          const SizedBox(height: 12),
-                      itemBuilder: (context, index) {
-                        return _buildReservationCard(reservations[index]);
-                      },
-                    );
-                  },
-                );
-              },
-            ),
-          ),
-        ],
+                          if (detailSnapshot.hasError) {
+                            return const Center(
+                              child: Text(AppTexts.attendanceLoadError),
+                            );
+                          }
+
+                          final reservations = detailSnapshot.data ?? [];
+
+                          if (reservations.isEmpty) {
+                            return _buildEmptyAttendanceState();
+                          }
+
+                          return ListView.separated(
+                            padding: const EdgeInsets.all(16),
+                            itemCount: reservations.length,
+                            separatorBuilder: (context, index) =>
+                                const SizedBox(height: 12),
+                            itemBuilder: (context, index) {
+                              return _buildReservationCard(reservations[index]);
+                            },
+                          );
+                        },
+                      ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }

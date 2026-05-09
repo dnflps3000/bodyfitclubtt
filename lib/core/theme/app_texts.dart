@@ -121,12 +121,6 @@ class AppTexts {
   static const String saveError = 'Uloženie sa nepodarilo.';
   static const String trainingSessionOverlap =
       'V tomto čase už je naplánovaný iný tréning.';
-  static const String deleteTrainingSession = 'Vymazať termín';
-  static const String deleteTrainingSessionTitle = 'Vymazať termín tréningu';
-  static const String deleteTrainingSessionQuestion =
-      'Naozaj chcete vymazať tento termín tréningu?';
-  static const String trainingSessionDeleted = 'Termín tréningu bol vymazaný.';
-  static const String deleteError = 'Vymazanie sa nepodarilo.';
   static const String delete = 'Vymazať';
   static const String cancel = 'Zrušiť';
   static const String today = 'Dnes';
@@ -148,6 +142,18 @@ class AppTexts {
   static const String trainingSessionInPast =
       'Termín tréningu nemôže byť v minulosti.';
   static const String selectDate = 'Vyberte dátum';
+  static const String cancelTrainingSession = 'Zrušiť termín';
+  static const String cancelTrainingSessionTitle = 'Zrušiť termín tréningu';
+  static const String cancelTrainingSessionQuestion =
+      'Naozaj chcete zrušiť tento termín tréningu? Aktívne rezervácie budú zrušené a alokované vstupy sa používateľom uvoľnia. Ak už bol vstup použitý, bude používateľovi vrátený.';
+  static const String cancelTrainingSessionConfirm = 'Zrušiť termín';
+  static const String trainingSessionCancelled = 'Termín tréningu bol zrušený.';
+  static const String cancelTrainingSessionError =
+      'Termín tréningu sa nepodarilo zrušiť.';
+  static const String trainerCanCancelOnlyOwnSession =
+      'Tréner môže zrušiť iba vlastný termín.';
+  static const String trainerCannotCancelStartedSession =
+      'Tréner nemôže zrušiť termín, ktorý už začal alebo prebehol.';
   // Šablóny rozvrhu
   static const String addScheduleTemplate = 'Pridať šablónu rozvrhu';
   static const String weekday = 'Deň v týždni';
@@ -253,4 +259,28 @@ class AppTexts {
       'QR kód bol naskenovaný. Môžete skenovať ďalšieho používateľa.';
   static const String trainerQrScanTooEarly =
       'QR kód je možné naskenovať najskôr 30 minút pred začiatkom cvičenia.';
+
+  static String trainingCount(int count) {
+    if (count == 1) {
+      return '1 cvičenie';
+    }
+
+    if (count >= 2 && count <= 4) {
+      return '$count cvičenia';
+    }
+
+    return '$count cvičení';
+  }
+
+  static String reservationCount(int count) {
+    if (count == 1) {
+      return '1 rezervácia';
+    }
+
+    if (count >= 2 && count <= 4) {
+      return '$count rezervácie';
+    }
+
+    return '$count rezervácií';
+  }
 }

@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-
+import '../../../core/constants/app_roles.dart';
 import '../domain/schedule_item.dart';
 import '../domain/schedule_template.dart';
 import '../domain/training_session.dart';
@@ -286,8 +286,17 @@ class ScheduleService {
     }
   }
 
-  Future<void> deleteTrainingSession(String sessionId) async {
+  Future<void> cancelTrainingSessionWithReservations({
+    required String sessionId,
+    required User currentUser,
+    required String? role,
+  }) async {
     final sessionRef = _firestore.collection('trainingSessions').doc(sessionId);
+
+    final reservationsSnapshot = await _firestore
+        .collection('reservations')
+        .where('trainingSessionId', isEqualTo: sessionId)
+        .get();
 
     await _firestore.runTransaction((transaction) async {
       final sessionSnapshot = await transaction.get(sessionRef);
@@ -297,15 +306,155 @@ class ScheduleService {
       }
 
       final sessionData = sessionSnapshot.data() ?? {};
-      final reservedCount = sessionData['reservedCount'] as int? ?? 0;
+      final sessionTrainerId = sessionData['trainerId'] as String? ?? '';
+      final sessionStatus = sessionData['status'] as String? ?? '';
+      final isActive = sessionData['isActive'] as bool? ?? false;
+      final startTime = (sessionData['startTime'] as Timestamp?)?.toDate();
 
-      if (reservedCount > 0) {
-        throw Exception('training-session-has-reservations');
+      if (startTime == null) {
+        throw Exception('training-session-invalid-start-time');
+      }
+
+      if (!isActive || sessionStatus != 'scheduled') {
+        throw Exception('training-session-not-available');
+      }
+
+      final isAdmin = role == AppRoles.admin;
+      final isTrainer = role == AppRoles.trainer;
+
+      if (!isAdmin && !isTrainer) {
+        throw Exception('permission-denied');
+      }
+
+      if (isTrainer && sessionTrainerId != currentUser.uid) {
+        throw Exception('trainer-not-owner-of-session');
+      }
+
+      if (isTrainer && !startTime.isAfter(DateTime.now())) {
+        throw Exception('trainer-cannot-cancel-started-session');
+      }
+
+      final reservationSnapshots = <DocumentSnapshot<Map<String, dynamic>>>[];
+
+      for (final reservationDocument in reservationsSnapshot.docs) {
+        final reservationSnapshot = await transaction.get(
+          reservationDocument.reference,
+        );
+
+        if (reservationSnapshot.exists) {
+          reservationSnapshots.add(reservationSnapshot);
+        }
+      }
+
+      final membershipAdjustments = <String, _MembershipCancelAdjustment>{};
+
+      for (final reservationSnapshot in reservationSnapshots) {
+        final reservationData = reservationSnapshot.data() ?? {};
+        final reservationStatus = reservationData['status'] as String? ?? '';
+        final entryStatus = reservationData['entryStatus'] as String? ?? '';
+
+        if (reservationStatus == 'cancelled') {
+          continue;
+        }
+
+        final membershipRef =
+            reservationData['membershipRef']
+                as DocumentReference<Map<String, dynamic>>?;
+
+        if (membershipRef == null) {
+          continue;
+        }
+
+        final existingAdjustment =
+            membershipAdjustments[membershipRef.path] ??
+            _MembershipCancelAdjustment(membershipRef: membershipRef);
+
+        if (entryStatus == 'reserved') {
+          membershipAdjustments[membershipRef.path] = existingAdjustment
+              .copyWith(
+                reservedToRelease: existingAdjustment.reservedToRelease + 1,
+              );
+        } else if (entryStatus == 'used') {
+          membershipAdjustments[membershipRef.path] = existingAdjustment
+              .copyWith(usedToRefund: existingAdjustment.usedToRefund + 1);
+        }
+      }
+
+      final membershipSnapshots =
+          <String, DocumentSnapshot<Map<String, dynamic>>>{};
+
+      for (final adjustment in membershipAdjustments.values) {
+        final membershipSnapshot = await transaction.get(
+          adjustment.membershipRef,
+        );
+
+        membershipSnapshots[adjustment.membershipRef.path] = membershipSnapshot;
+      }
+
+      for (final reservationSnapshot in reservationSnapshots) {
+        final reservationData = reservationSnapshot.data() ?? {};
+        final reservationStatus = reservationData['status'] as String? ?? '';
+        final entryStatus = reservationData['entryStatus'] as String? ?? '';
+
+        if (reservationStatus == 'cancelled') {
+          continue;
+        }
+
+        final newEntryStatus = entryStatus == 'used' ? 'refunded' : 'released';
+
+        transaction.update(reservationSnapshot.reference, {
+          'status': 'cancelled',
+          'entryStatus': newEntryStatus,
+          'cancelledAt': FieldValue.serverTimestamp(),
+          'cancelledBy': currentUser.uid,
+          'cancelledReason': 'training-session-cancelled',
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
+      }
+
+      for (final adjustment in membershipAdjustments.values) {
+        final membershipSnapshot =
+            membershipSnapshots[adjustment.membershipRef.path];
+
+        if (membershipSnapshot == null || !membershipSnapshot.exists) {
+          continue;
+        }
+
+        final membershipData = membershipSnapshot.data() ?? {};
+        final entriesTotal = membershipData['entriesTotal'] as int?;
+        final entriesReserved = membershipData['entriesReserved'] as int? ?? 0;
+        final entriesRemaining =
+            membershipData['entriesRemaining'] as int? ?? 0;
+
+        final updates = <String, dynamic>{
+          'updatedAt': FieldValue.serverTimestamp(),
+        };
+
+        if (entriesTotal != null) {
+          final newEntriesReserved =
+              entriesReserved - adjustment.reservedToRelease;
+
+          final newEntriesRemaining =
+              entriesRemaining + adjustment.usedToRefund;
+
+          updates['entriesReserved'] = newEntriesReserved > 0
+              ? newEntriesReserved
+              : 0;
+
+          updates['entriesRemaining'] = newEntriesRemaining > entriesTotal
+              ? entriesTotal
+              : newEntriesRemaining;
+        }
+
+        transaction.update(adjustment.membershipRef, updates);
       }
 
       transaction.update(sessionRef, {
         'isActive': false,
         'status': 'cancelled',
+        'reservedCount': 0,
+        'cancelledAt': FieldValue.serverTimestamp(),
+        'cancelledBy': currentUser.uid,
         'updatedAt': FieldValue.serverTimestamp(),
       });
     });
@@ -374,5 +523,28 @@ class ScheduleService {
     final minute = startMinute.toString().padLeft(2, '0');
 
     return '${trainingTypeId}_day${weekday}_$hour$minute';
+  }
+}
+
+class _MembershipCancelAdjustment {
+  const _MembershipCancelAdjustment({
+    required this.membershipRef,
+    this.reservedToRelease = 0,
+    this.usedToRefund = 0,
+  });
+
+  final DocumentReference<Map<String, dynamic>> membershipRef;
+  final int reservedToRelease;
+  final int usedToRefund;
+
+  _MembershipCancelAdjustment copyWith({
+    int? reservedToRelease,
+    int? usedToRefund,
+  }) {
+    return _MembershipCancelAdjustment(
+      membershipRef: membershipRef,
+      reservedToRelease: reservedToRelease ?? this.reservedToRelease,
+      usedToRefund: usedToRefund ?? this.usedToRefund,
+    );
   }
 }

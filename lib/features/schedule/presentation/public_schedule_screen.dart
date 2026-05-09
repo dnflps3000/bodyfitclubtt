@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_texts.dart';
+import '../../../core/widgets/day_card_selector.dart';
 import '../data/schedule_service.dart';
 import '../domain/schedule_item.dart';
 
@@ -25,47 +26,53 @@ class _PublicScheduleScreenState extends State<PublicScheduleScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text(AppTexts.schedule)),
-      body: Column(
-        children: [
-          _buildDaySelector(),
-          Expanded(
-            child: StreamBuilder<List<ScheduleItem>>(
-              stream: ScheduleService().watchScheduleItems(),
-              builder: (context, snapshot) {
-                if (snapshot.hasError) {
-                  return const Center(child: Text(AppTexts.trainingsLoadError));
-                }
+      body: StreamBuilder<List<ScheduleItem>>(
+        stream: ScheduleService().watchScheduleItems(),
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return const Center(child: Text(AppTexts.trainingsLoadError));
+          }
 
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-                final items =
-                    (snapshot.data ?? []).where((item) {
-                      return _isSameDate(item.session.startTime, _selectedDate);
-                    }).toList()..sort((a, b) {
-                      return a.session.startTime.compareTo(b.session.startTime);
-                    });
+          final allItems = snapshot.data ?? [];
 
-                if (items.isEmpty) {
-                  return const Center(
-                    child: Text(AppTexts.noTrainingsForSelectedDay),
-                  );
-                }
+          final items =
+              allItems.where((item) {
+                return _isSameDate(item.session.startTime, _selectedDate);
+              }).toList()..sort((a, b) {
+                return a.session.startTime.compareTo(b.session.startTime);
+              });
 
-                return ListView.separated(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: items.length,
-                  separatorBuilder: (context, index) =>
-                      const SizedBox(height: 12),
-                  itemBuilder: (context, index) {
-                    return _buildScheduleCard(items[index]);
-                  },
-                );
-              },
-            ),
-          ),
-        ],
+          return Column(
+            children: [
+              _buildDaySelector(),
+              Expanded(
+                child: items.isEmpty
+                    ? const Center(
+                        child: Padding(
+                          padding: EdgeInsets.all(24),
+                          child: Text(
+                            AppTexts.noTrainingsForSelectedDay,
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      )
+                    : ListView.separated(
+                        padding: const EdgeInsets.all(16),
+                        itemCount: items.length,
+                        separatorBuilder: (context, index) =>
+                            const SizedBox(height: 12),
+                        itemBuilder: (context, index) {
+                          return _buildScheduleCard(items[index]);
+                        },
+                      ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -73,28 +80,15 @@ class _PublicScheduleScreenState extends State<PublicScheduleScreen> {
   Widget _buildDaySelector() {
     final days = _nextSevenDays();
 
-    return SizedBox(
-      height: 78,
-      child: ListView.separated(
-        padding: const EdgeInsets.all(12),
-        scrollDirection: Axis.horizontal,
-        itemCount: days.length,
-        separatorBuilder: (context, index) => const SizedBox(width: 8),
-        itemBuilder: (context, index) {
-          final day = days[index];
-          final isSelected = _isSameDate(day, _selectedDate);
-
-          return ChoiceChip(
-            selected: isSelected,
-            label: Text(_formatDayLabel(day)),
-            onSelected: (_) {
-              setState(() {
-                _selectedDate = day;
-              });
-            },
-          );
-        },
-      ),
+    return DayCardSelector(
+      key: const PageStorageKey('public-schedule-day-selector'),
+      days: days,
+      selectedDate: _selectedDate,
+      onDateSelected: (date) {
+        setState(() {
+          _selectedDate = date;
+        });
+      },
     );
   }
 
@@ -119,27 +113,6 @@ class _PublicScheduleScreenState extends State<PublicScheduleScreen> {
     return List.generate(7, (index) {
       return today.add(Duration(days: index));
     });
-  }
-
-  String _formatDayLabel(DateTime dateTime) {
-    final now = DateTime.now();
-
-    if (_isSameDate(dateTime, now)) {
-      return AppTexts.today;
-    }
-
-    final tomorrow = DateTime(now.year, now.month, now.day + 1);
-
-    if (_isSameDate(dateTime, tomorrow)) {
-      return AppTexts.tomorrow;
-    }
-
-    final weekdayIndex = dateTime.weekday - 1;
-    final weekday = AppTexts.shortWeekdays[weekdayIndex];
-    final day = dateTime.day.toString().padLeft(2, '0');
-    final month = dateTime.month.toString().padLeft(2, '0');
-
-    return '$weekday $day.$month.';
   }
 
   String _formatTimeRange(DateTime startTime, DateTime endTime) {

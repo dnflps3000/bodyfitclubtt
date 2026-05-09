@@ -3,12 +3,13 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_roles.dart';
 import '../../../core/theme/app_texts.dart';
-import 'add_training_session_screen.dart';
-import '../domain/schedule_item.dart';
+import '../../../core/widgets/day_card_selector.dart';
 import '../data/schedule_service.dart';
-import 'schedule_management_screen.dart';
+import '../domain/schedule_item.dart';
 import '../../reservations/data/reservation_service.dart';
 import '../../reservations/presentation/attendance_screen.dart';
+import 'add_training_session_screen.dart';
+import 'schedule_management_screen.dart';
 
 /* Zobrazuje obrazovku Rozvrh, teda zoznam tréningov, ich čas,
    trénera, voľné miesta, popis a tlačidlo rezervácie. */
@@ -45,38 +46,6 @@ class _ScheduleTabState extends State<ScheduleTab> {
           final data = snapshot.data();
           return data?['role'] as String?;
         });
-  }
-
-  bool _canDeleteTrainingSession(String? role, ScheduleItem item) {
-    final currentUserId = FirebaseAuth.instance.currentUser?.uid;
-
-    if (role == AppRoles.admin) {
-      return true;
-    }
-
-    if (role == AppRoles.trainer) {
-      return item.session.trainerId == currentUserId;
-    }
-
-    return false;
-  }
-
-  bool _canReserveTrainingSession(String? role, ScheduleItem item) {
-    final currentUserId = FirebaseAuth.instance.currentUser?.uid;
-
-    if (currentUserId == null) {
-      return false;
-    }
-
-    if (role != AppRoles.user) {
-      return false;
-    }
-
-    if (item.session.trainerId == currentUserId) {
-      return false;
-    }
-
-    return item.session.startTime.isAfter(DateTime.now());
   }
 
   Stream<Set<String>> _watchMyReservedSessionIds() {
@@ -132,35 +101,11 @@ class _ScheduleTabState extends State<ScheduleTab> {
     return '$day.$month.$year $hour:$minute';
   }
 
-  String _formatDate(DateTime dateTime) {
-    final day = dateTime.day.toString().padLeft(2, '0');
-    final month = dateTime.month.toString().padLeft(2, '0');
-
-    return '$day.$month.';
-  }
-
   String _formatTime(DateTime dateTime) {
     final hour = dateTime.hour.toString().padLeft(2, '0');
     final minute = dateTime.minute.toString().padLeft(2, '0');
 
     return '$hour:$minute';
-  }
-
-  String _dayLabel(DateTime dateTime) {
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final tomorrow = today.add(const Duration(days: 1));
-
-    if (_isSameDate(dateTime, today)) {
-      return AppTexts.today;
-    }
-
-    if (_isSameDate(dateTime, tomorrow)) {
-      return AppTexts.tomorrow;
-    }
-
-    final weekdayLabel = AppTexts.shortWeekdays[dateTime.weekday - 1];
-    return '$weekdayLabel ${_formatDate(dateTime)}';
   }
 
   Future<void> _openAddTrainingSessionScreen(BuildContext context) async {
@@ -189,17 +134,18 @@ class _ScheduleTabState extends State<ScheduleTab> {
     );
   }
 
-  Future<void> _confirmDeleteTrainingSession(
+  Future<void> _confirmCancelTrainingSession(
     BuildContext context,
     ScheduleItem item,
+    String? role,
   ) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          title: const Text(AppTexts.deleteTrainingSessionTitle),
+          title: const Text(AppTexts.cancelTrainingSessionTitle),
           content: Text(
-            '${AppTexts.deleteTrainingSessionQuestion}\n\n'
+            '${AppTexts.cancelTrainingSessionQuestion}\n\n'
             '${item.trainingType.name}\n'
             '${_formatDateTime(item.session.startTime)} - '
             '${_formatTime(item.session.endTime)}',
@@ -211,7 +157,7 @@ class _ScheduleTabState extends State<ScheduleTab> {
             ),
             FilledButton(
               onPressed: () => Navigator.of(dialogContext).pop(true),
-              child: const Text(AppTexts.delete),
+              child: const Text(AppTexts.cancelTrainingSessionConfirm),
             ),
           ],
         );
@@ -223,19 +169,37 @@ class _ScheduleTabState extends State<ScheduleTab> {
     }
 
     try {
-      await ScheduleService().deleteTrainingSession(item.session.id);
+      final currentUser = FirebaseAuth.instance.currentUser;
+
+      if (currentUser == null) {
+        return;
+      }
+
+      await ScheduleService().cancelTrainingSessionWithReservations(
+        sessionId: item.session.id,
+        currentUser: currentUser,
+        role: role,
+      );
 
       if (!context.mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text(AppTexts.trainingSessionDeleted)),
+        const SnackBar(content: Text(AppTexts.trainingSessionCancelled)),
       );
-    } catch (_) {
+    } catch (error) {
       if (!context.mounted) return;
+
+      final errorText = error.toString();
+
+      final message = errorText.contains('trainer-not-owner-of-session')
+          ? AppTexts.trainerCanCancelOnlyOwnSession
+          : errorText.contains('trainer-cannot-cancel-started-session')
+          ? AppTexts.trainerCannotCancelStartedSession
+          : AppTexts.cancelTrainingSessionError;
 
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text(AppTexts.deleteError)));
+      ).showSnackBar(SnackBar(content: Text(message)));
     }
   }
 
@@ -344,159 +308,60 @@ class _ScheduleTabState extends State<ScheduleTab> {
 
   Widget _buildDaySelector() {
     final days = _nextFourteenDays();
-    final isLandscape =
-        MediaQuery.of(context).orientation == Orientation.landscape;
 
-    return SizedBox(
-      height: isLandscape ? 48 : 56,
-      child: ListView.separated(
-        padding: EdgeInsets.fromLTRB(16, isLandscape ? 6 : 12, 16, 4),
-        scrollDirection: Axis.horizontal,
-        itemCount: days.length,
-        separatorBuilder: (context, index) => const SizedBox(width: 8),
-        itemBuilder: (context, index) {
-          final day = days[index];
-          final isSelected = _isSameDate(day, _selectedDate);
-
-          return SizedBox(
-            width: isLandscape ? 104 : 116,
-            child: ChoiceChip(
-              // showCheckmark: false,   ak chceme, aby sa nezobrazovala fajka pri výbere
-              label: SizedBox(
-                width: double.infinity,
-                child: Text(_dayLabel(day), textAlign: TextAlign.center),
-              ),
-              selected: isSelected,
-              onSelected: (_) {
-                setState(() {
-                  _selectedDate = day;
-                });
-              },
-            ),
-          );
-        },
-      ),
+    return DayCardSelector(
+      key: const PageStorageKey('schedule-day-selector'),
+      days: days,
+      selectedDate: _selectedDate,
+      onDateSelected: (date) {
+        setState(() {
+          _selectedDate = date;
+        });
+      },
     );
   }
 
-  Widget _buildScheduleList(String? role) {
+  @override
+  Widget build(BuildContext context) {
     final scheduleService = ScheduleService();
 
-    return StreamBuilder<List<ScheduleItem>>(
-      stream: scheduleService.watchScheduleItems(),
-      builder: (context, snapshot) {
-        if (snapshot.hasError) {
-          return const Center(child: Text(AppTexts.trainingsLoadError));
-        }
+    return StreamBuilder<String?>(
+      stream: _watchCurrentUserRole(),
+      builder: (context, roleSnapshot) {
+        final role = roleSnapshot.data;
 
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
+        return StreamBuilder<List<ScheduleItem>>(
+          stream: scheduleService.watchScheduleItems(),
+          builder: (context, scheduleSnapshot) {
+            if (scheduleSnapshot.hasError) {
+              return const Center(child: Text(AppTexts.trainingsLoadError));
+            }
 
-        final items = snapshot.data ?? [];
-        final filteredItems = items.where((item) {
-          return _isSameDate(item.session.startTime, _selectedDate);
-        }).toList();
+            if (scheduleSnapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            }
 
-        if (filteredItems.isEmpty) {
-          return const Center(
-            child: Padding(
-              padding: EdgeInsets.all(16),
-              child: Text(AppTexts.noTrainingsForSelectedDay),
-            ),
-          );
-        }
+            final items = scheduleSnapshot.data ?? [];
 
-        return StreamBuilder<Set<String>>(
-          stream: _watchMyReservedSessionIds(),
-          builder: (context, reservationSnapshot) {
-            final reservedSessionIds = reservationSnapshot.data ?? {};
+            final filteredItems =
+                items.where((item) {
+                  return _isSameDate(item.session.startTime, _selectedDate);
+                }).toList()..sort((a, b) {
+                  return a.session.startTime.compareTo(b.session.startTime);
+                });
 
-            return ListView.separated(
-              padding: const EdgeInsets.all(16),
-              itemCount: filteredItems.length,
-              separatorBuilder: (context, index) => const SizedBox(height: 12),
-              itemBuilder: (context, index) {
-                final item = filteredItems[index];
-                final session = item.session;
-                final trainingType = item.trainingType;
-                final canDeleteTrainingSession = _canDeleteTrainingSession(
-                  role,
-                  item,
-                );
-                final canReserveTrainingSession = _canReserveTrainingSession(
-                  role,
-                  item,
-                );
-                final isReserved = reservedSessionIds.contains(session.id);
-
-                return Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(
-                              child: Text(
-                                trainingType.name,
-                                style: Theme.of(context).textTheme.titleLarge,
-                              ),
-                            ),
-                            if (canDeleteTrainingSession)
-                              IconButton(
-                                tooltip: AppTexts.deleteTrainingSession,
-                                onPressed: () => _confirmDeleteTrainingSession(
-                                  context,
-                                  item,
-                                ),
-                                icon: const Icon(Icons.delete_outline),
-                              ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          '${_formatDateTime(session.startTime)} - '
-                          '${_formatTime(session.endTime)}',
-                        ),
-                        const SizedBox(height: 8),
-                        Text('${AppTexts.trainer}: ${item.trainerName}'),
-                        const SizedBox(height: 8),
-                        Text(
-                          '${AppTexts.freeSpots}: '
-                          '${session.freeSpots}/${session.capacity}',
-                        ),
-                        if (trainingType.description.isNotEmpty) ...[
-                          const SizedBox(height: 8),
-                          Text(trainingType.description),
-                        ],
-                        if (canReserveTrainingSession) ...[
-                          const SizedBox(height: 16),
-                          Align(
-                            alignment: Alignment.centerRight,
-                            child: FilledButton(
-                              onPressed: isReserved
-                                  ? null
-                                  : session.hasFreeSpots
-                                  ? () => _reserveTrainingSession(context, item)
-                                  : null,
-                              child: Text(
-                                isReserved
-                                    ? AppTexts.reserved
-                                    : session.hasFreeSpots
-                                    ? AppTexts.reserve
-                                    : AppTexts.fullCapacity,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
+            return Column(
+              children: [
+                _buildManagementButtons(context, role),
+                _buildDaySelector(),
+                Expanded(
+                  child: _buildScheduleListFromItems(
+                    context: context,
+                    role: role,
+                    items: filteredItems,
                   ),
-                );
-              },
+                ),
+              ],
             );
           },
         );
@@ -504,19 +369,121 @@ class _ScheduleTabState extends State<ScheduleTab> {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return StreamBuilder<String?>(
-      stream: _watchCurrentUserRole(),
-      builder: (context, roleSnapshot) {
-        final role = roleSnapshot.data;
+  Widget _buildScheduleListFromItems({
+    required BuildContext context,
+    required String? role,
+    required List<ScheduleItem> items,
+  }) {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    final isAdmin = role == AppRoles.admin;
+    final isTrainer = role == AppRoles.trainer;
+    final canReserveTrainingSession =
+        role == AppRoles.user || role == null || role.isEmpty;
 
-        return Column(
-          children: [
-            _buildManagementButtons(context, role),
-            _buildDaySelector(),
-            Expanded(child: _buildScheduleList(role)),
-          ],
+    if (items.isEmpty) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(24),
+          child: Text(
+            AppTexts.noTrainingsForSelectedDay,
+            textAlign: TextAlign.center,
+          ),
+        ),
+      );
+    }
+
+    return StreamBuilder<Set<String>>(
+      stream: _watchMyReservedSessionIds(),
+      builder: (context, reservationSnapshot) {
+        final reservedSessionIds = reservationSnapshot.data ?? <String>{};
+
+        return ListView.separated(
+          padding: const EdgeInsets.all(16),
+          itemCount: items.length,
+          separatorBuilder: (context, index) => const SizedBox(height: 12),
+          itemBuilder: (context, index) {
+            final item = items[index];
+            final session = item.session;
+            final trainingType = item.trainingType;
+            final isReserved = reservedSessionIds.contains(session.id);
+            final sessionHasNotStarted = session.startTime.isAfter(
+              DateTime.now(),
+            );
+            final canCancelTrainingSession =
+                isAdmin ||
+                (isTrainer &&
+                    session.trainerId == currentUser?.uid &&
+                    sessionHasNotStarted);
+
+            return Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            trainingType.name,
+                            style: Theme.of(context).textTheme.titleLarge,
+                          ),
+                        ),
+                        if (canCancelTrainingSession)
+                          IconButton(
+                            tooltip: AppTexts.cancelTrainingSession,
+                            icon: const Icon(Icons.event_busy_outlined),
+                            onPressed: () => _confirmCancelTrainingSession(
+                              context,
+                              item,
+                              role,
+                            ),
+                          )
+                        else if (canReserveTrainingSession)
+                          FilledButton(
+                            style: FilledButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                              ),
+                              minimumSize: const Size(0, 40),
+                            ),
+                            onPressed: isReserved
+                                ? null
+                                : session.hasFreeSpots
+                                ? () => _reserveTrainingSession(context, item)
+                                : null,
+                            child: Text(
+                              isReserved
+                                  ? AppTexts.reserved
+                                  : session.hasFreeSpots
+                                  ? AppTexts.reserve
+                                  : AppTexts.fullCapacity,
+                            ),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      '${_formatDateTime(session.startTime)} - '
+                      '${_formatTime(session.endTime)}',
+                    ),
+                    const SizedBox(height: 8),
+                    Text('${AppTexts.trainer}: ${item.trainerName}'),
+                    const SizedBox(height: 8),
+                    Text(
+                      '${AppTexts.freeSpots}: '
+                      '${session.freeSpots}/${session.capacity}',
+                    ),
+                    if (trainingType.description.isNotEmpty) ...[
+                      const SizedBox(height: 8),
+                      Text(trainingType.description),
+                    ],
+                  ],
+                ),
+              ),
+            );
+          },
         );
       },
     );

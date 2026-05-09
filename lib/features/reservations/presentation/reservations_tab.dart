@@ -235,9 +235,24 @@ class ReservationsTab extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          reservation.trainingName,
-                          style: Theme.of(context).textTheme.titleLarge,
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                reservation.trainingName,
+                                style: Theme.of(context).textTheme.titleLarge,
+                              ),
+                            ),
+                            IconButton(
+                              tooltip: AppTexts.cancelReservation,
+                              icon: const Icon(Icons.delete_outline),
+                              onPressed: () => _confirmCancelReservation(
+                                context,
+                                reservation,
+                              ),
+                            ),
+                          ],
                         ),
                         const SizedBox(height: 8),
                         Text(
@@ -246,33 +261,20 @@ class ReservationsTab extends StatelessWidget {
                         ),
                         const SizedBox(height: 8),
                         Text('${AppTexts.trainer}: ${reservation.trainerName}'),
-                        const SizedBox(height: 16),
-                        Row(
-                          children: [
-                            if (canShowQrCode) ...[
-                              Expanded(
-                                child: OutlinedButton.icon(
-                                  onPressed: () => _openReservationQrScreen(
-                                    context,
-                                    reservation,
-                                  ),
-                                  icon: const Icon(Icons.qr_code),
-                                  label: const Text(AppTexts.showQrCode),
-                                ),
+                        if (canShowQrCode) ...[
+                          const SizedBox(height: 16),
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: OutlinedButton.icon(
+                              onPressed: () => _openReservationQrScreen(
+                                context,
+                                reservation,
                               ),
-                              const SizedBox(width: 12),
-                            ],
-                            Expanded(
-                              child: OutlinedButton(
-                                onPressed: () => _confirmCancelReservation(
-                                  context,
-                                  reservation,
-                                ),
-                                child: const Text(AppTexts.cancelReservation),
-                              ),
+                              icon: const Icon(Icons.qr_code),
+                              label: const Text(AppTexts.showQrCode),
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ],
                     ),
                   ),
