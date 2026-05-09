@@ -19,6 +19,7 @@ class ReservationService {
     return '$year-$month-$day';
   }
 
+  // ignore: unused_element
   bool _isTrainerQrScanAllowed({
     required DateTime sessionStartTime,
     required DateTime now,
