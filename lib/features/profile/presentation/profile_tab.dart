@@ -1,15 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import '../../core/theme/app_texts.dart';
-import '../auth/auth_service.dart';
-import '../../core/constants/app_roles.dart';
+import '../../../core/theme/app_texts.dart';
+import '../../auth/data/auth_service.dart';
+import '../../../core/constants/app_roles.dart';
 
 class ProfileTab extends StatelessWidget {
-  const ProfileTab({
-    super.key,
-    required this.user,
-  });
+  const ProfileTab({super.key, required this.user});
 
   final User user;
 
@@ -28,8 +25,9 @@ class ProfileTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final userDoc =
-        FirebaseFirestore.instance.collection('users').doc(user.uid);
+    final userDoc = FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid);
 
     return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
       stream: userDoc.snapshots(),

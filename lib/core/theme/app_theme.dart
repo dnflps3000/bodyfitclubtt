@@ -9,6 +9,7 @@ class AppTheme {
         ? AppColors.backgroundDark
         : AppColors.splashBackground;
   }
+
   static ThemeData lightTheme = ThemeData(
     colorScheme: ColorScheme.fromSeed(
       seedColor: AppColors.primary,
@@ -37,4 +38,3 @@ class AppTheme {
     ),
   );
 }
-

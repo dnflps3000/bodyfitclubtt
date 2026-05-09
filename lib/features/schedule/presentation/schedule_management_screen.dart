@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import '../../core/theme/app_texts.dart';
+import '../../../core/theme/app_texts.dart';
 import 'add_schedule_template_screen.dart';
 import 'add_training_session_screen.dart';
 import 'add_training_type_screen.dart';
-import '../memberships/assign_membership_screen.dart';
+import '../../memberships/presentation/assign_membership_screen.dart';
+import '../../reservations/presentation/attendance_screen.dart';
 
 /*Obrazovka pre admina, ktorá združuje správcovské akcie rozvrhu mimo 
   bežného používateľského zobrazenia.*/
@@ -11,35 +12,33 @@ class ScheduleManagementScreen extends StatelessWidget {
   const ScheduleManagementScreen({super.key});
 
   Future<void> _openAddTrainingTypeScreen(BuildContext context) async {
-    await Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => const AddTrainingTypeScreen(),
-      ),
-    );
+    await Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const AddTrainingTypeScreen()));
   }
 
   Future<void> _openAddScheduleTemplateScreen(BuildContext context) async {
     await Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => const AddScheduleTemplateScreen(),
-      ),
+      MaterialPageRoute(builder: (_) => const AddScheduleTemplateScreen()),
     );
   }
 
   Future<void> _openAddTrainingSessionScreen(BuildContext context) async {
-    await Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => const AddTrainingSessionScreen(),
-      ),
-    );
+    await Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const AddTrainingSessionScreen()));
   }
 
   Future<void> _openAssignMembershipScreen(BuildContext context) async {
-    await Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => const AssignMembershipScreen(),
-      ),
-    );
+    await Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const AssignMembershipScreen()));
+  }
+
+  Future<void> _openAttendanceScreen(BuildContext context) async {
+    await Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const AttendanceScreen()));
   }
 
   Widget _buildManagementButton({
@@ -58,9 +57,7 @@ class ScheduleManagementScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(AppTexts.scheduleManagement),
-      ),
+      appBar: AppBar(title: const Text(AppTexts.scheduleManagement)),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -95,6 +92,13 @@ class ScheduleManagementScreen extends StatelessWidget {
             icon: Icons.card_membership,
             label: AppTexts.assignMembership,
             onPressed: () => _openAssignMembershipScreen(context),
+          ),
+          const SizedBox(height: 12),
+          _buildManagementButton(
+            context: context,
+            icon: Icons.fact_check,
+            label: AppTexts.attendance,
+            onPressed: () => _openAttendanceScreen(context),
           ),
         ],
       ),

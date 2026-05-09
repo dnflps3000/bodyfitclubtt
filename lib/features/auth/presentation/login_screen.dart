@@ -1,8 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../core/theme/app_texts.dart';
-import 'auth_service.dart';
+import '../../../core/theme/app_texts.dart';
+import '../data/auth_service.dart';
 
 // Režim obrazovky – používateľ sa buď prihlasuje,
 // alebo vytvára nový účet cez e-mail a heslo.
@@ -118,14 +118,14 @@ class _LoginScreenState extends State<LoginScreen> {
       }
 
       if (!mounted) return;
-      
+
       Navigator.of(context).pop();
     } catch (error) {
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(_authErrorMessage(error))),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(_authErrorMessage(error))));
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
@@ -156,15 +156,9 @@ class _LoginScreenState extends State<LoginScreen> {
     }
 
     if (_mode == AuthMode.login) {
-      await _authService.loginWithEmail(
-        email: email,
-        password: password,
-      );
+      await _authService.loginWithEmail(email: email, password: password);
     } else {
-      await _authService.registerWithEmail(
-        email: email,
-        password: password,
-      );
+      await _authService.registerWithEmail(email: email, password: password);
     }
 
     await _saveLastUsedEmail(email);
@@ -183,9 +177,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          isLoginMode ? AppTexts.loginTitle : AppTexts.registerTitle,
-        ),
+        title: Text(isLoginMode ? AppTexts.loginTitle : AppTexts.registerTitle),
       ),
       body: Center(
         child: SingleChildScrollView(
@@ -201,12 +193,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   onPressed: _isLoading
                       ? null
                       : () => _runAuthAction(() async {
-                            await _authService.signInWithGoogle();
-                          }),
-                  icon: Image.asset(
-                    'assets/auth/google.png',
-                    height: 22,
-                  ),
+                          await _authService.signInWithGoogle();
+                        }),
+                  icon: Image.asset('assets/auth/google.png', height: 22),
                   label: const Text(AppTexts.continueWithGoogle),
                 ),
                 const SizedBox(height: 12),
@@ -214,12 +203,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   onPressed: _isLoading
                       ? null
                       : () => _runAuthAction(() async {
-                            await _authService.signInWithFacebook();
-                          }),
-                  icon: Image.asset(
-                    'assets/auth/facebook.png',
-                    height: 22,
-                  ),
+                          await _authService.signInWithFacebook();
+                        }),
+                  icon: Image.asset('assets/auth/facebook.png', height: 22),
                   label: const Text(AppTexts.continueWithFacebook),
                 ),
 
@@ -257,8 +243,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     if (!_isLoading) {
                       _runAuthAction(
                         _submitEmailAuth,
-                        successMessage:
-                            isLoginMode ? null : AppTexts.verificationEmailSent,
+                        successMessage: isLoginMode
+                            ? null
+                            : AppTexts.verificationEmailSent,
                       );
                     }
                   },
@@ -273,13 +260,12 @@ class _LoginScreenState extends State<LoginScreen> {
                   onPressed: _isLoading
                       ? null
                       : () => _runAuthAction(
-                            _submitEmailAuth,
-                            successMessage:
-                                isLoginMode ? null : AppTexts.verificationEmailSent,
-                          ),
-                  child: Text(
-                    isLoginMode ? AppTexts.login : AppTexts.register,
-                  ),
+                          _submitEmailAuth,
+                          successMessage: isLoginMode
+                              ? null
+                              : AppTexts.verificationEmailSent,
+                        ),
+                  child: Text(isLoginMode ? AppTexts.login : AppTexts.register),
                 ),
                 const SizedBox(height: 8),
 

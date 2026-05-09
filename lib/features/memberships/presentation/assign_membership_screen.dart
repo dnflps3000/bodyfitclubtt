@@ -1,10 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import '../../core/constants/app_roles.dart';
-import '../../core/theme/app_texts.dart';
-import 'membership_plan.dart';
-import 'membership_service.dart';
+import '../../../core/constants/app_roles.dart';
+import '../../../core/theme/app_texts.dart';
+import '../domain/membership_plan.dart';
+import '../data/membership_service.dart';
 
 /* Obrazovka pre admina na ručné priradenie permanentky konkrétnemu používateľovi. */
 class AssignMembershipScreen extends StatefulWidget {
@@ -27,23 +27,26 @@ class _AssignMembershipScreenState extends State<AssignMembershipScreen> {
         .where('role', isEqualTo: AppRoles.user)
         .snapshots()
         .map((snapshot) {
-      final users = snapshot.docs.map((document) {
-        final data = document.data();
+          final users = snapshot.docs
+              .map((document) {
+                final data = document.data();
 
-        return _UserOption(
-          id: document.id,
-          name: data['displayName'] as String? ?? 'Neznámy používateľ',
-          email: data['email'] as String?,
-          isActive: data['isActive'] as bool? ?? true,
-        );
-      }).where((user) {
-        return user.isActive;
-      }).toList();
+                return _UserOption(
+                  id: document.id,
+                  name: data['displayName'] as String? ?? 'Neznámy používateľ',
+                  email: data['email'] as String?,
+                  isActive: data['isActive'] as bool? ?? true,
+                );
+              })
+              .where((user) {
+                return user.isActive;
+              })
+              .toList();
 
-      users.sort((a, b) => a.name.compareTo(b.name));
+          users.sort((a, b) => a.name.compareTo(b.name));
 
-      return users;
-    });
+          return users;
+        });
   }
 
   MembershipPlan? _findSelectedPlan(List<MembershipPlan> plans) {
@@ -63,9 +66,9 @@ class _AssignMembershipScreenState extends State<AssignMembershipScreen> {
     if (currentUser == null ||
         _selectedUserId == null ||
         selectedPlan == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text(AppTexts.fillAllFields)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text(AppTexts.fillAllFields)));
       return;
     }
 
@@ -122,9 +125,7 @@ class _AssignMembershipScreenState extends State<AssignMembershipScreen> {
         return DropdownButtonFormField<String>(
           initialValue: _selectedUserId,
           isExpanded: true,
-          decoration: const InputDecoration(
-            labelText: AppTexts.client,
-          ),
+          decoration: const InputDecoration(labelText: AppTexts.client),
           items: users.map((user) {
             final subtitle = user.email == null ? '' : ' (${user.email})';
 
@@ -153,9 +154,7 @@ class _AssignMembershipScreenState extends State<AssignMembershipScreen> {
     return DropdownButtonFormField<String>(
       initialValue: _selectedPlanId,
       isExpanded: true,
-      decoration: const InputDecoration(
-        labelText: AppTexts.membershipPlan,
-      ),
+      decoration: const InputDecoration(labelText: AppTexts.membershipPlan),
       items: plans.map((plan) {
         return DropdownMenuItem<String>(
           value: plan.id,
@@ -179,30 +178,22 @@ class _AssignMembershipScreenState extends State<AssignMembershipScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(AppTexts.assignMembership),
-      ),
+      appBar: AppBar(title: const Text(AppTexts.assignMembership)),
       body: StreamBuilder<List<MembershipPlan>>(
         stream: _membershipService.watchActiveMembershipPlans(),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
-            return const Center(
-              child: Text(AppTexts.membershipPlansLoadError),
-            );
+            return const Center(child: Text(AppTexts.membershipPlansLoadError));
           }
 
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
+            return const Center(child: CircularProgressIndicator());
           }
 
           final plans = snapshot.data ?? [];
 
           if (plans.isEmpty) {
-            return const Center(
-              child: Text(AppTexts.membershipPlansLoadError),
-            );
+            return const Center(child: Text(AppTexts.membershipPlansLoadError));
           }
 
           return ListView(

@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../core/theme/app_texts.dart';
+import '../../../core/theme/app_texts.dart';
 
 class CompleteProfileScreen extends StatefulWidget {
   const CompleteProfileScreen({super.key});
 
   @override
-  State<CompleteProfileScreen> createState() =>
-      _CompleteProfileScreenState();
+  State<CompleteProfileScreen> createState() => _CompleteProfileScreenState();
 }
 
 class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
@@ -35,10 +34,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
     await user.updateDisplayName(displayName);
 
     // uloženie do Firestore
-    await FirebaseFirestore.instance
-        .collection('users')
-        .doc(user.uid)
-        .set({
+    await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
       'firstName': firstName,
       'lastName': lastName,
       'displayName': displayName,
@@ -78,12 +74,12 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
             ElevatedButton(
               onPressed: _loading ? null : _saveProfile,
               child: _loading
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Text(AppTexts.save),
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Text(AppTexts.save),
             ),
           ],
         ),

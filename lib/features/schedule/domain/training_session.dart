@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+
 /*Reprezentuje konkrétny termín v rozvrhu z kolekcie trainingSessions, 
   teda dátum, čas, trénera, kapacitu a stav tréningu*/
 class TrainingSession {

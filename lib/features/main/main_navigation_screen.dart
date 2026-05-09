@@ -1,16 +1,13 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../../core/theme/app_texts.dart';
-import '../home/home_tab.dart';
-import '../profile/profile_tab.dart';
-import '../reservations/reservations_tab.dart';
-import '../schedule/schedule_tab.dart';
+import '../home/presentation/home_tab.dart';
+import '../profile/presentation/profile_tab.dart';
+import '../reservations/presentation/reservations_tab.dart';
+import '../schedule/presentation/schedule_tab.dart';
 
 class MainNavigationScreen extends StatefulWidget {
-  const MainNavigationScreen({
-    super.key,
-    required this.user,
-  });
+  const MainNavigationScreen({super.key, required this.user});
 
   final User user;
 
@@ -22,7 +19,13 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   int _selectedIndex = 0;
 
   late final List<Widget> _tabs = [
-    const HomeTab(),
+    HomeTab(
+      onOpenSchedule: () {
+        setState(() {
+          _selectedIndex = 1;
+        });
+      },
+    ),
     const ScheduleTab(),
     const ReservationsTab(),
     ProfileTab(user: widget.user),
@@ -38,9 +41,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(_titles[_selectedIndex]),
-      ),
+      appBar: AppBar(title: Text(_titles[_selectedIndex])),
       body: _tabs[_selectedIndex],
       bottomNavigationBar: NavigationBar(
         selectedIndex: _selectedIndex,

@@ -1,13 +1,14 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import '../../core/constants/app_roles.dart';
-import '../../core/theme/app_texts.dart';
+import '../../../core/constants/app_roles.dart';
+import '../../../core/theme/app_texts.dart';
 import 'add_training_session_screen.dart';
-import 'schedule_item.dart';
-import 'schedule_service.dart';
+import '../domain/schedule_item.dart';
+import '../data/schedule_service.dart';
 import 'schedule_management_screen.dart';
-import '../reservations/reservation_service.dart';
+import '../../reservations/data/reservation_service.dart';
+import '../../reservations/presentation/attendance_screen.dart';
 
 /* Zobrazuje obrazovku Rozvrh, teda zoznam tréningov, ich čas,
    trénera, voľné miesta, popis a tlačidlo rezervácie. */
@@ -41,9 +42,9 @@ class _ScheduleTabState extends State<ScheduleTab> {
         .doc(currentUser.uid)
         .snapshots()
         .map((snapshot) {
-      final data = snapshot.data();
-      return data?['role'] as String?;
-    });
+          final data = snapshot.data();
+          return data?['role'] as String?;
+        });
   }
 
   bool _canDeleteTrainingSession(String? role, ScheduleItem item) {
@@ -60,10 +61,14 @@ class _ScheduleTabState extends State<ScheduleTab> {
     return false;
   }
 
-  bool _canReserveTrainingSession(ScheduleItem item) {
+  bool _canReserveTrainingSession(String? role, ScheduleItem item) {
     final currentUserId = FirebaseAuth.instance.currentUser?.uid;
 
     if (currentUserId == null) {
+      return false;
+    }
+
+    if (role != AppRoles.user) {
       return false;
     }
 
@@ -84,16 +89,24 @@ class _ScheduleTabState extends State<ScheduleTab> {
     return FirebaseFirestore.instance
         .collection('reservations')
         .where('userId', isEqualTo: currentUser.uid)
-        .where('status', isEqualTo: 'active')
         .snapshots()
         .map((snapshot) {
-      return snapshot.docs.map((document) {
-        final data = document.data();
-        return data['trainingSessionId'] as String? ?? '';
-      }).where((sessionId) {
-        return sessionId.isNotEmpty;
-      }).toSet();
-    });
+          return snapshot.docs
+              .where((document) {
+                final data = document.data();
+                final status = data['status'] as String? ?? '';
+
+                return status != 'cancelled';
+              })
+              .map((document) {
+                final data = document.data();
+                return data['trainingSessionId'] as String? ?? '';
+              })
+              .where((sessionId) {
+                return sessionId.isNotEmpty;
+              })
+              .toSet();
+        });
   }
 
   bool _isSameDate(DateTime first, DateTime second) {
@@ -102,14 +115,11 @@ class _ScheduleTabState extends State<ScheduleTab> {
         first.day == second.day;
   }
 
-  List<DateTime> _nextSevenDays() {
+  List<DateTime> _nextFourteenDays() {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
 
-    return List.generate(
-      14,
-      (index) => today.add(Duration(days: index)),
-    );
+    return List.generate(14, (index) => today.add(Duration(days: index)));
   }
 
   String _formatDateTime(DateTime dateTime) {
@@ -154,17 +164,27 @@ class _ScheduleTabState extends State<ScheduleTab> {
   }
 
   Future<void> _openAddTrainingSessionScreen(BuildContext context) async {
-    await Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => const AddTrainingSessionScreen(),
-      ),
-    );
+    await Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const AddTrainingSessionScreen()));
   }
 
   Future<void> _openScheduleManagementScreen(BuildContext context) async {
+    await Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const ScheduleManagementScreen()));
+  }
+
+  Future<void> _openTrainerAttendanceScreen(BuildContext context) async {
+    final currentUser = FirebaseAuth.instance.currentUser;
+
+    if (currentUser == null) {
+      return;
+    }
+
     await Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => const ScheduleManagementScreen(),
+        builder: (_) => AttendanceScreen(trainerId: currentUser.uid),
       ),
     );
   }
@@ -213,9 +233,9 @@ class _ScheduleTabState extends State<ScheduleTab> {
     } catch (_) {
       if (!context.mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text(AppTexts.deleteError)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text(AppTexts.deleteError)));
     }
   }
 
@@ -248,16 +268,18 @@ class _ScheduleTabState extends State<ScheduleTab> {
       final message = errorText.contains('reservation-already-exists')
           ? AppTexts.reservationAlreadyExists
           : errorText.contains('training-session-full')
-              ? AppTexts.reservationTrainingFull
-              : errorText.contains('training-session-not-available')
-                  ? AppTexts.reservationTrainingNotAvailable
-                  : errorText.contains('training-session-already-started')
-                      ? AppTexts.reservationTrainingAlreadyStarted
-                      : AppTexts.reservationError;
+          ? AppTexts.reservationTrainingFull
+          : errorText.contains('training-session-not-available')
+          ? AppTexts.reservationTrainingNotAvailable
+          : errorText.contains('training-session-already-started')
+          ? AppTexts.reservationTrainingAlreadyStarted
+          : errorText.contains('no-available-membership-entry')
+          ? AppTexts.noAvailableEntries
+          : AppTexts.reservationError;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(message)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(message)));
     }
   }
 
@@ -283,6 +305,12 @@ class _ScheduleTabState extends State<ScheduleTab> {
           onPressed: () => _openAddTrainingSessionScreen(context),
           icon: const Icon(Icons.event_available),
           label: const Text(AppTexts.addTrainingSession),
+        ),
+      if (isTrainer)
+        FilledButton.icon(
+          onPressed: () => _openTrainerAttendanceScreen(context),
+          icon: const Icon(Icons.fact_check),
+          label: const Text(AppTexts.attendance),
         ),
     ];
 
@@ -315,19 +343,14 @@ class _ScheduleTabState extends State<ScheduleTab> {
   }
 
   Widget _buildDaySelector() {
-    final days = _nextSevenDays();
+    final days = _nextFourteenDays();
     final isLandscape =
         MediaQuery.of(context).orientation == Orientation.landscape;
 
     return SizedBox(
       height: isLandscape ? 48 : 56,
       child: ListView.separated(
-        padding: EdgeInsets.fromLTRB(
-          16,
-          isLandscape ? 6 : 12,
-          16,
-          4,
-        ),
+        padding: EdgeInsets.fromLTRB(16, isLandscape ? 6 : 12, 16, 4),
         scrollDirection: Axis.horizontal,
         itemCount: days.length,
         separatorBuilder: (context, index) => const SizedBox(width: 8),
@@ -341,10 +364,7 @@ class _ScheduleTabState extends State<ScheduleTab> {
               // showCheckmark: false,   ak chceme, aby sa nezobrazovala fajka pri výbere
               label: SizedBox(
                 width: double.infinity,
-                child: Text(
-                  _dayLabel(day),
-                  textAlign: TextAlign.center,
-                ),
+                child: Text(_dayLabel(day), textAlign: TextAlign.center),
               ),
               selected: isSelected,
               onSelected: (_) {
@@ -366,15 +386,11 @@ class _ScheduleTabState extends State<ScheduleTab> {
       stream: scheduleService.watchScheduleItems(),
       builder: (context, snapshot) {
         if (snapshot.hasError) {
-          return const Center(
-            child: Text(AppTexts.trainingsLoadError),
-          );
+          return const Center(child: Text(AppTexts.trainingsLoadError));
         }
 
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
+          return const Center(child: CircularProgressIndicator());
         }
 
         final items = snapshot.data ?? [];
@@ -404,9 +420,14 @@ class _ScheduleTabState extends State<ScheduleTab> {
                 final item = filteredItems[index];
                 final session = item.session;
                 final trainingType = item.trainingType;
-                final canDeleteTrainingSession =
-                    _canDeleteTrainingSession(role, item);
-                final canReserveTrainingSession = _canReserveTrainingSession(item);
+                final canDeleteTrainingSession = _canDeleteTrainingSession(
+                  role,
+                  item,
+                );
+                final canReserveTrainingSession = _canReserveTrainingSession(
+                  role,
+                  item,
+                );
                 final isReserved = reservedSessionIds.contains(session.id);
 
                 return Card(
@@ -427,8 +448,10 @@ class _ScheduleTabState extends State<ScheduleTab> {
                             if (canDeleteTrainingSession)
                               IconButton(
                                 tooltip: AppTexts.deleteTrainingSession,
-                                onPressed: () =>
-                                    _confirmDeleteTrainingSession(context, item),
+                                onPressed: () => _confirmDeleteTrainingSession(
+                                  context,
+                                  item,
+                                ),
                                 icon: const Icon(Icons.delete_outline),
                               ),
                           ],
@@ -457,14 +480,14 @@ class _ScheduleTabState extends State<ScheduleTab> {
                               onPressed: isReserved
                                   ? null
                                   : session.hasFreeSpots
-                                      ? () => _reserveTrainingSession(context, item)
-                                      : null,
+                                  ? () => _reserveTrainingSession(context, item)
+                                  : null,
                               child: Text(
                                 isReserved
                                     ? AppTexts.reserved
                                     : session.hasFreeSpots
-                                        ? AppTexts.reserve
-                                        : AppTexts.fullCapacity,
+                                    ? AppTexts.reserve
+                                    : AppTexts.fullCapacity,
                               ),
                             ),
                           ),
@@ -492,9 +515,7 @@ class _ScheduleTabState extends State<ScheduleTab> {
           children: [
             _buildManagementButtons(context, role),
             _buildDaySelector(),
-            Expanded(
-              child: _buildScheduleList(role),
-            ),
+            Expanded(child: _buildScheduleList(role)),
           ],
         );
       },

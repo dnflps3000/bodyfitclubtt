@@ -1,22 +1,24 @@
-import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_stripe/flutter_stripe.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'firebase_options.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/app_texts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'features/auth/auth_service.dart';
-import 'features/auth/login_screen.dart';
-import 'features/auth/complete_profile_screen.dart';
+import 'features/auth/data/auth_service.dart';
+import 'features/auth/presentation/login_screen.dart';
+import 'features/auth/presentation/complete_profile_screen.dart';
+import 'features/home/presentation/public_home_screen.dart';
 import 'features/main/main_navigation_screen.dart';
-import 'package:flutter_stripe/flutter_stripe.dart';
+import 'features/schedule/presentation/public_schedule_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-  Stripe.publishableKey = "pk_test_51TQtEE7i16mqcQZHN7bUfWOdwwmhreO884LAle2a2g3elrJcEONKIKtUvJdBcwAGg7oT9IP8tiRG58CfltSaQL6w00RUBrINmE";
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  Stripe.publishableKey =
+      "pk_test_51TQtEE7i16mqcQZHN7bUfWOdwwmhreO884LAle2a2g3elrJcEONKIKtUvJdBcwAGg7oT9IP8tiRG58CfltSaQL6w00RUBrINmE";
   runApp(const MyApp());
 }
 
@@ -30,6 +32,13 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false, // Skryje debug banner
       title: AppTexts.appName,
+      locale: const Locale('sk', 'SK'),
+      supportedLocales: const [Locale('sk', 'SK')],
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.system,
@@ -56,9 +65,9 @@ class _AppSplashScreenState extends State<AppSplashScreen> {
     Future.delayed(const Duration(seconds: 2), () {
       if (!mounted) return;
 
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const HomeScreen()),
-      );
+      Navigator.of(
+        context,
+      ).pushReplacement(MaterialPageRoute(builder: (_) => const HomeScreen()));
     });
   }
 
@@ -66,9 +75,7 @@ class _AppSplashScreenState extends State<AppSplashScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       // Farbu pozadia berieme z globálneho theme, nie natvrdo z kódu.
-      backgroundColor: AppTheme.splashBackground(
-        Theme.of(context).brightness,
-      ),
+      backgroundColor: AppTheme.splashBackground(Theme.of(context).brightness),
       body: Center(
         child: Image.asset(
           'assets/splash.png',
@@ -79,7 +86,6 @@ class _AppSplashScreenState extends State<AppSplashScreen> {
     );
   }
 }
-
 
 // Zatiaľ jednoduchá hlavná obrazovka.
 // Je verejná, takže rozvrh bude viditeľný aj bez prihlásenia.
@@ -97,7 +103,8 @@ class HomeScreen extends StatelessWidget {
         final isLoggedIn = user != null;
 
         final needsProfile =
-            isLoggedIn && (user.displayName == null || user.displayName!.trim().isEmpty);
+            isLoggedIn &&
+            (user.displayName == null || user.displayName!.trim().isEmpty);
 
         if (needsProfile) {
           return const CompleteProfileScreen();
@@ -116,16 +123,18 @@ class HomeScreen extends StatelessWidget {
                 icon: const Icon(Icons.account_circle_outlined),
                 onPressed: () {
                   Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => const LoginScreen(),
-                    ),
+                    MaterialPageRoute(builder: (_) => const LoginScreen()),
                   );
                 },
               ),
             ],
           ),
-          body: const Center(
-            child: Text(AppTexts.firebaseWorks),
+          body: PublicHomeScreen(
+            onOpenSchedule: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const PublicScheduleScreen()),
+              );
+            },
           ),
         );
       },

@@ -1,10 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import '../../core/constants/app_roles.dart';
-import '../../core/theme/app_texts.dart';
-import 'schedule_service.dart';
-import 'training_type.dart';
+import '../../../core/constants/app_roles.dart';
+import '../../../core/theme/app_texts.dart';
+import '../data/schedule_service.dart';
+import '../domain/training_type.dart';
 
 /* Obrazovka/formulár pre admina na vytvorenie pravidelnej týždennej šablóny rozvrhu,
    podľa ktorej sa neskôr budú automaticky generovať konkrétne termíny tréningov. */
@@ -41,22 +41,25 @@ class _AddScheduleTemplateScreenState extends State<AddScheduleTemplateScreen> {
         .where('role', isEqualTo: AppRoles.trainer)
         .snapshots()
         .map((snapshot) {
-      final trainers = snapshot.docs.map((document) {
-        final data = document.data();
+          final trainers = snapshot.docs
+              .map((document) {
+                final data = document.data();
 
-        return _TrainerOption(
-          id: document.id,
-          name: data['displayName'] as String? ?? 'Neznámy tréner',
-          isActive: data['isActive'] as bool? ?? true,
-        );
-      }).where((trainer) {
-        return trainer.isActive;
-      }).toList();
+                return _TrainerOption(
+                  id: document.id,
+                  name: data['displayName'] as String? ?? 'Neznámy tréner',
+                  isActive: data['isActive'] as bool? ?? true,
+                );
+              })
+              .where((trainer) {
+                return trainer.isActive;
+              })
+              .toList();
 
-      trainers.sort((a, b) => a.name.compareTo(b.name));
+          trainers.sort((a, b) => a.name.compareTo(b.name));
 
-      return trainers;
-    });
+          return trainers;
+        });
   }
 
   TrainingType? _findSelectedTrainingType(List<TrainingType> trainingTypes) {
@@ -81,21 +84,17 @@ class _AddScheduleTemplateScreenState extends State<AddScheduleTemplateScreen> {
 
     setState(() {
       _selectedTrainingTypeId = trainingTypeId;
-      _durationController.text =
-          selectedTrainingType.defaultDurationMinutes.toString();
-      _capacityController.text =
-          selectedTrainingType.defaultCapacity.toString();
+      _durationController.text = selectedTrainingType.defaultDurationMinutes
+          .toString();
+      _capacityController.text = selectedTrainingType.defaultCapacity
+          .toString();
     });
   }
 
   Future<void> _pickTime() async {
     final now = TimeOfDay.now();
 
-    final initialTime = _selectedTime ??
-        TimeOfDay(
-          hour: now.hour,
-          minute: 0,
-        );
+    final initialTime = _selectedTime ?? TimeOfDay(hour: now.hour, minute: 0);
 
     final pickedTime = await showTimePicker(
       context: context,
@@ -132,23 +131,23 @@ class _AddScheduleTemplateScreenState extends State<AddScheduleTemplateScreen> {
         _selectedTime == null ||
         durationMinutes == null ||
         capacity == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text(AppTexts.fillAllFields)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text(AppTexts.fillAllFields)));
       return;
     }
 
     if (durationMinutes <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text(AppTexts.invalidDuration)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text(AppTexts.invalidDuration)));
       return;
     }
 
     if (capacity <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text(AppTexts.invalidCapacity)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text(AppTexts.invalidCapacity)));
       return;
     }
 
@@ -184,12 +183,12 @@ class _AddScheduleTemplateScreenState extends State<AddScheduleTemplateScreen> {
       final message = errorText.contains('schedule-template-already-exists')
           ? AppTexts.scheduleTemplateAlreadyExists
           : errorText.contains('schedule-template-overlap')
-              ? AppTexts.scheduleTemplateOverlap
-              : AppTexts.saveError;
+          ? AppTexts.scheduleTemplateOverlap
+          : AppTexts.saveError;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(message)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(message)));
     } finally {
       if (mounted) {
         setState(() {
@@ -218,9 +217,7 @@ class _AddScheduleTemplateScreenState extends State<AddScheduleTemplateScreen> {
 
         return DropdownButtonFormField<String>(
           initialValue: _selectedTrainerId,
-          decoration: const InputDecoration(
-            labelText: AppTexts.trainer,
-          ),
+          decoration: const InputDecoration(labelText: AppTexts.trainer),
           items: trainers.map((trainer) {
             return DropdownMenuItem<String>(
               value: trainer.id,
@@ -243,30 +240,22 @@ class _AddScheduleTemplateScreenState extends State<AddScheduleTemplateScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(AppTexts.addScheduleTemplate),
-      ),
+      appBar: AppBar(title: const Text(AppTexts.addScheduleTemplate)),
       body: StreamBuilder<List<TrainingType>>(
         stream: _scheduleService.watchTrainingTypes(),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
-            return const Center(
-              child: Text(AppTexts.trainingTypesLoadError),
-            );
+            return const Center(child: Text(AppTexts.trainingTypesLoadError));
           }
 
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
+            return const Center(child: CircularProgressIndicator());
           }
 
           final trainingTypes = snapshot.data ?? [];
 
           if (trainingTypes.isEmpty) {
-            return const Center(
-              child: Text(AppTexts.noTrainings),
-            );
+            return const Center(child: Text(AppTexts.noTrainings));
           }
 
           return ListView(
@@ -295,9 +284,7 @@ class _AddScheduleTemplateScreenState extends State<AddScheduleTemplateScreen> {
               const SizedBox(height: 12),
               DropdownButtonFormField<int>(
                 initialValue: _selectedWeekday,
-                decoration: const InputDecoration(
-                  labelText: AppTexts.weekday,
-                ),
+                decoration: const InputDecoration(labelText: AppTexts.weekday),
                 items: List.generate(7, (index) {
                   final weekday = index + 1;
 
@@ -336,9 +323,7 @@ class _AddScheduleTemplateScreenState extends State<AddScheduleTemplateScreen> {
                 controller: _capacityController,
                 enabled: !_isSaving,
                 keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  labelText: AppTexts.capacity,
-                ),
+                decoration: const InputDecoration(labelText: AppTexts.capacity),
               ),
               const SizedBox(height: 24),
               FilledButton(

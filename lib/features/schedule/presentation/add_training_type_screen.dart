@@ -1,7 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import '../../core/theme/app_texts.dart';
-import 'schedule_service.dart';
+import '../../../core/theme/app_texts.dart';
+import '../data/schedule_service.dart';
+
 /* Obrazovka/formulár pre admina na vytvorenie nového typu cvičenia, napríklad
    TRX, Joga alebo Tabata, spolu s popisom, predvoleným trvaním a kapacitou.*/
 class AddTrainingTypeScreen extends StatefulWidget {
@@ -35,8 +36,9 @@ class _AddTrainingTypeScreenState extends State<AddTrainingTypeScreen> {
 
     final name = _nameController.text.trim();
     final description = _descriptionController.text.trim();
-    final defaultDurationMinutes =
-        int.tryParse(_durationController.text.trim());
+    final defaultDurationMinutes = int.tryParse(
+      _durationController.text.trim(),
+    );
     final defaultCapacity = int.tryParse(_capacityController.text.trim());
 
     if (currentUser == null ||
@@ -44,23 +46,23 @@ class _AddTrainingTypeScreenState extends State<AddTrainingTypeScreen> {
         description.isEmpty ||
         defaultDurationMinutes == null ||
         defaultCapacity == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text(AppTexts.fillAllFields)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text(AppTexts.fillAllFields)));
       return;
     }
 
     if (defaultDurationMinutes <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text(AppTexts.invalidDuration)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text(AppTexts.invalidDuration)));
       return;
     }
 
     if (defaultCapacity <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text(AppTexts.invalidCapacity)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text(AppTexts.invalidCapacity)));
       return;
     }
 
@@ -87,9 +89,9 @@ class _AddTrainingTypeScreenState extends State<AddTrainingTypeScreen> {
     } catch (_) {
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text(AppTexts.saveError)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text(AppTexts.saveError)));
     } finally {
       if (mounted) {
         setState(() {
@@ -102,27 +104,21 @@ class _AddTrainingTypeScreenState extends State<AddTrainingTypeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(AppTexts.addTrainingType),
-      ),
+      appBar: AppBar(title: const Text(AppTexts.addTrainingType)),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
           TextField(
             controller: _nameController,
             enabled: !_isSaving,
-            decoration: const InputDecoration(
-              labelText: AppTexts.trainingName,
-            ),
+            decoration: const InputDecoration(labelText: AppTexts.trainingName),
           ),
           const SizedBox(height: 12),
           TextField(
             controller: _descriptionController,
             enabled: !_isSaving,
             maxLines: 3,
-            decoration: const InputDecoration(
-              labelText: AppTexts.description,
-            ),
+            decoration: const InputDecoration(labelText: AppTexts.description),
           ),
           const SizedBox(height: 12),
           TextField(

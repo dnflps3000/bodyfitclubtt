@@ -1,8 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import '../../core/theme/app_texts.dart';
-import 'reservation_service.dart';
+import '../../../core/theme/app_texts.dart';
+import '../data/reservation_service.dart';
+import 'reservation_qr_screen.dart';
 
 /* Zobrazuje rezervácie aktuálne prihláseného používateľa.
    Načíta jeho aktívne rezervácie z kolekcie reservations a ku každej dohľadá
@@ -80,6 +81,23 @@ class ReservationsTab extends StatelessWidget {
     }
   }
 
+  Future<void> _openReservationQrScreen(
+    BuildContext context,
+    _ReservationDetail reservation,
+  ) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => ReservationQrScreen(
+          reservationId: reservation.reservationId,
+          trainingSessionId: reservation.trainingSessionId,
+          trainingName: reservation.trainingName,
+          startTime: reservation.startTime,
+          endTime: reservation.endTime,
+        ),
+      ),
+    );
+  }
+
   Future<_ReservationDetail?> _loadReservationDetail(
     QueryDocumentSnapshot<Map<String, dynamic>> reservationDocument,
   ) async {
@@ -92,8 +110,10 @@ class ReservationsTab extends StatelessWidget {
 
     final firestore = FirebaseFirestore.instance;
 
-    final sessionDocument =
-        await firestore.collection('trainingSessions').doc(sessionId).get();
+    final sessionDocument = await firestore
+        .collection('trainingSessions')
+        .doc(sessionId)
+        .get();
 
     final sessionData = sessionDocument.data();
 
@@ -104,11 +124,15 @@ class ReservationsTab extends StatelessWidget {
     final trainingTypeId = sessionData['trainingTypeId'] as String? ?? '';
     final trainerId = sessionData['trainerId'] as String? ?? '';
 
-    final trainingTypeDocument =
-        await firestore.collection('trainingTypes').doc(trainingTypeId).get();
+    final trainingTypeDocument = await firestore
+        .collection('trainingTypes')
+        .doc(trainingTypeId)
+        .get();
 
-    final trainerDocument =
-        await firestore.collection('users').doc(trainerId).get();
+    final trainerDocument = await firestore
+        .collection('users')
+        .doc(trainerId)
+        .get();
 
     final trainingTypeData = trainingTypeDocument.data();
     final trainerData = trainerDocument.data();
@@ -156,9 +180,7 @@ class ReservationsTab extends StatelessWidget {
     final currentUser = FirebaseAuth.instance.currentUser;
 
     if (currentUser == null) {
-      return const Center(
-        child: Text(AppTexts.noReservations),
-      );
+      return const Center(child: Text(AppTexts.noReservations));
     }
 
     return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
@@ -169,46 +191,34 @@ class ReservationsTab extends StatelessWidget {
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.hasError) {
-          return const Center(
-            child: Text(AppTexts.reservationError),
-          );
+          return const Center(child: Text(AppTexts.reservationError));
         }
 
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
+          return const Center(child: CircularProgressIndicator());
         }
 
         final reservationDocuments = snapshot.data?.docs ?? [];
 
         if (reservationDocuments.isEmpty) {
-          return const Center(
-            child: Text(AppTexts.noReservations),
-          );
+          return const Center(child: Text(AppTexts.noReservations));
         }
 
         return FutureBuilder<List<_ReservationDetail>>(
           future: _loadReservationDetails(reservationDocuments),
           builder: (context, detailSnapshot) {
             if (detailSnapshot.connectionState == ConnectionState.waiting) {
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
+              return const Center(child: CircularProgressIndicator());
             }
 
             if (detailSnapshot.hasError) {
-              return const Center(
-                child: Text(AppTexts.reservationError),
-              );
+              return const Center(child: Text(AppTexts.reservationError));
             }
 
             final reservations = detailSnapshot.data ?? [];
 
             if (reservations.isEmpty) {
-              return const Center(
-                child: Text(AppTexts.noReservations),
-              );
+              return const Center(child: Text(AppTexts.noReservations));
             }
 
             return ListView.separated(
@@ -217,6 +227,7 @@ class ReservationsTab extends StatelessWidget {
               separatorBuilder: (context, index) => const SizedBox(height: 12),
               itemBuilder: (context, index) {
                 final reservation = reservations[index];
+                final canShowQrCode = _canShowQrCode(reservation, reservations);
 
                 return Card(
                   child: Padding(
@@ -236,15 +247,31 @@ class ReservationsTab extends StatelessWidget {
                         const SizedBox(height: 8),
                         Text('${AppTexts.trainer}: ${reservation.trainerName}'),
                         const SizedBox(height: 16),
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: OutlinedButton(
-                            onPressed: () => _confirmCancelReservation(
-                              context,
-                              reservation,
+                        Row(
+                          children: [
+                            if (canShowQrCode) ...[
+                              Expanded(
+                                child: OutlinedButton.icon(
+                                  onPressed: () => _openReservationQrScreen(
+                                    context,
+                                    reservation,
+                                  ),
+                                  icon: const Icon(Icons.qr_code),
+                                  label: const Text(AppTexts.showQrCode),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                            ],
+                            Expanded(
+                              child: OutlinedButton(
+                                onPressed: () => _confirmCancelReservation(
+                                  context,
+                                  reservation,
+                                ),
+                                child: const Text(AppTexts.cancelReservation),
+                              ),
                             ),
-                            child: const Text(AppTexts.cancelReservation),
-                          ),
+                          ],
                         ),
                       ],
                     ),
@@ -256,6 +283,31 @@ class ReservationsTab extends StatelessWidget {
         );
       },
     );
+  }
+
+  bool _isSameDate(DateTime first, DateTime second) {
+    return first.year == second.year &&
+        first.month == second.month &&
+        first.day == second.day;
+  }
+
+  bool _canShowQrCode(
+    _ReservationDetail reservation,
+    List<_ReservationDetail> reservations,
+  ) {
+    final now = DateTime.now();
+
+    final todayReservations = reservations.where((item) {
+      return _isSameDate(item.startTime, now) && item.endTime.isAfter(now);
+    }).toList();
+
+    todayReservations.sort((a, b) => a.startTime.compareTo(b.startTime));
+
+    if (todayReservations.isEmpty) {
+      return false;
+    }
+
+    return todayReservations.first.reservationId == reservation.reservationId;
   }
 }
 

@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+
 /*  Reprezentuje pravidelnú týždennú šablónu rozvrhu z kolekcie scheduleTemplates,
  z ktorej sa neskôr budú automaticky generovať konkrétne tréningové termíny.*/
 class ScheduleTemplate {

@@ -6,6 +6,23 @@ class AppTexts {
   // Home obrazovka
   static const String logoutTooltip = 'Odhlásiť';
   static const String loggedInUser = 'Prihlásený používateľ';
+  static const String loading = 'Načítavam...';
+  static const String todayReservations = 'Dnešné rezervácie';
+  static const String noTodayReservations =
+      'Dnes nemáte rezervované žiadne cvičenie.';
+  static const String nearestTraining = 'Najbližšie cvičenie';
+  static const String nearestTrainings = 'Najbližšie cvičenia';
+  static const String noNearestTraining =
+      'Nie je naplánované žiadne najbližšie cvičenie.';
+  static const String todaysTrainings = 'Dnešné cvičenia';
+  static const String noTodaysTrainings =
+      'Dnes nie sú naplánované žiadne cvičenia.';
+  static const String myMemberships = 'Moje permanentky';
+  static const String activeMembershipsCount = 'Aktívne permanentky';
+  static const String availableEntriesSummary = 'Dostupné vstupy';
+  static const String reservedEntriesSummary = 'Alokované vstupy';
+  static const String dailyMembershipsSummary = 'Denné permanentky';
+  static const String tapToShowQrCode = 'Kliknutím zobrazíte QR kód.';
   // Hlavná navigácia
   static const String home = 'Domov';
   static const String schedule = 'Rozvrh';
@@ -14,7 +31,7 @@ class AppTexts {
   // Placeholder obrazovky
   static const String membershipStatus = 'Stav permanentky';
   static const String remainingEntries = 'Zostávajúce vstupy';
-  static const String upcomingTraining = 'Najbližšie cvičenie';
+  static const String upcomingTraining = 'Najbližšie dnešné cvičenie';
   static const String news = 'Novinky';
   static const String schedulePlaceholder = 'Tu bude rozvrh tréningov.';
   static const String reservationsPlaceholder = 'Tu budú rezervácie.';
@@ -43,22 +60,28 @@ class AppTexts {
   static const String invalidEmailFormat = 'Zadaj platný e-mail.';
   static const String passwordTooShort = 'Heslo musí mať aspoň 6 znakov.';
   // Firebase Auth chyby
-  static const String wrongEmailOrPassword = 'Zadaný e-mail alebo heslo nie je správne.';
-  static const String userAlreadyExists = 'Používateľ s týmto e-mailom už existuje.';
+  static const String wrongEmailOrPassword =
+      'Zadaný e-mail alebo heslo nie je správne.';
+  static const String userAlreadyExists =
+      'Používateľ s týmto e-mailom už existuje.';
   static const String weakPassword = 'Zadané heslo je príliš slabé.';
-  static const String tooManyRequests = 'Príliš veľa pokusov. Skúste to neskôr.';
+  static const String tooManyRequests =
+      'Príliš veľa pokusov. Skúste to neskôr.';
   static const String networkError = 'Skontrolujte internetové pripojenie.';
   static const String signInCancelled = 'Prihlásenie bolo zrušené.';
-  static const String facebookLoginFailed = 'Prihlásenie cez Facebook sa nepodarilo.';
-  static const String unknownAuthError = 'Nastala neznáma chyba pri prihlásení.';
+  static const String facebookLoginFailed =
+      'Prihlásenie cez Facebook sa nepodarilo.';
+  static const String unknownAuthError =
+      'Nastala neznáma chyba pri prihlásení.';
   // Overenie e-mailu
   static const String verificationEmailSent =
-    'Registrácia prebehla úspešne. Poslali sme vám overovací e-mail. '
-    'Ak ho nevidíte v doručenej pošte, skontrolujte aj priečinok Spam.';
-  static const String emailNotVerified = 'Najskôr potvrďte registráciu kliknutím na odkaz v e-maile.';
+      'Registrácia prebehla úspešne. Poslali sme vám overovací e-mail. '
+      'Ak ho nevidíte v doručenej pošte, skontrolujte aj priečinok Spam.';
+  static const String emailNotVerified =
+      'Najskôr potvrďte registráciu kliknutím na odkaz v e-maile.';
   static const String verificationEmailSentAgain =
-    'Overovací e-mail sme vám poslali opäť. '
-    'Ak ho nevidíte v doručenej pošte, skontrolujte aj priečinok Spam.';
+      'Overovací e-mail sme vám poslali opäť. '
+      'Ak ho nevidíte v doručenej pošte, skontrolujte aj priečinok Spam.';
   static const String ok = 'OK';
   // Zobrazované názvy rolí
   static const String roleUser = 'Používateľ';
@@ -66,13 +89,15 @@ class AppTexts {
   static const String roleAdmin = 'Administrátor';
   static const String roleUnknown = 'Neznáma rola';
   // Rozvrh tréningov
-  static const String noTrainings = 'Momentálne nie sú dostupné žiadne tréningy.';
+  static const String noTrainings =
+      'Momentálne nie sú dostupné žiadne tréningy.';
   static const String trainer = 'Tréner';
   static const String freeSpots = 'Voľné miesta';
   static const String minutes = 'min.';
   static const String reserve = 'Rezervovať';
   static const String fullCapacity = 'Obsadené';
-  static const String trainingsLoadError = 'Nepodarilo sa načítať rozvrh tréningov.';
+  static const String trainingsLoadError =
+      'Nepodarilo sa načítať rozvrh tréningov.';
   // Správa rozvrhu
   static const String addTrainingType = 'Pridať typ cvičenia';
   static const String addTrainingSession = 'Pridať termín';
@@ -91,30 +116,48 @@ class AppTexts {
   static const String fillAllFields = 'Vyplňte všetky povinné údaje.';
   static const String invalidCapacity = 'Kapacita musí byť väčšia ako 0.';
   static const String invalidDuration = 'Trvanie musí byť väčšie ako 0.';
-  static const String trainingTypesLoadError = 'Nepodarilo sa načítať typy cvičení.';
+  static const String trainingTypesLoadError =
+      'Nepodarilo sa načítať typy cvičení.';
   static const String saveError = 'Uloženie sa nepodarilo.';
-  static const String trainingSessionOverlap = 'V tomto čase už je naplánovaný iný tréning.';
+  static const String trainingSessionOverlap =
+      'V tomto čase už je naplánovaný iný tréning.';
   static const String deleteTrainingSession = 'Vymazať termín';
   static const String deleteTrainingSessionTitle = 'Vymazať termín tréningu';
-  static const String deleteTrainingSessionQuestion = 'Naozaj chcete vymazať tento termín tréningu?';
+  static const String deleteTrainingSessionQuestion =
+      'Naozaj chcete vymazať tento termín tréningu?';
   static const String trainingSessionDeleted = 'Termín tréningu bol vymazaný.';
   static const String deleteError = 'Vymazanie sa nepodarilo.';
   static const String delete = 'Vymazať';
   static const String cancel = 'Zrušiť';
   static const String today = 'Dnes';
   static const String tomorrow = 'Zajtra';
-  static const String noTrainingsForSelectedDay = 'V tento deň nie sú naplánované žiadne tréningy.';
-  static const List<String> shortWeekdays = ['Po', 'Ut', 'St', 'Št', 'Pi', 'So','Ne'];
+  static const String noTrainingsForSelectedDay =
+      'V tento deň nie sú naplánované žiadne tréningy.';
+  static const List<String> shortWeekdays = [
+    'Po',
+    'Ut',
+    'St',
+    'Št',
+    'Pi',
+    'So',
+    'Ne',
+  ];
   static const String scheduleManagement = 'Správa rozvrhu';
-  static const String scheduleManagementDescription = 'Správa typov cvičení, šablón rozvrhu a konkrétnych tréningových termínov.';
-  static const String trainingSessionInPast = 'Termín tréningu nemôže byť v minulosti.';
+  static const String scheduleManagementDescription =
+      'Správa typov cvičení, šablón rozvrhu a konkrétnych tréningových termínov.';
+  static const String trainingSessionInPast =
+      'Termín tréningu nemôže byť v minulosti.';
+  static const String selectDate = 'Vyberte dátum';
   // Šablóny rozvrhu
   static const String addScheduleTemplate = 'Pridať šablónu rozvrhu';
   static const String weekday = 'Deň v týždni';
   static const String selectWeekday = 'Vyberte deň v týždni';
-  static const String scheduleTemplateCreated = 'Šablóna rozvrhu bola vytvorená.';
-  static const String scheduleTemplateAlreadyExists = 'Takáto šablóna rozvrhu už existuje.';
-  static const String scheduleTemplateLoadError = 'Nepodarilo sa načítať šablóny rozvrhu.';
+  static const String scheduleTemplateCreated =
+      'Šablóna rozvrhu bola vytvorená.';
+  static const String scheduleTemplateAlreadyExists =
+      'Takáto šablóna rozvrhu už existuje.';
+  static const String scheduleTemplateLoadError =
+      'Nepodarilo sa načítať šablóny rozvrhu.';
   static const List<String> weekdays = [
     'Pondelok',
     'Utorok',
@@ -126,30 +169,40 @@ class AppTexts {
   ];
   static const String selectTrainer = 'Vyberte trénera';
   static const String trainersLoadError = 'Nepodarilo sa načítať trénerov.';
-  static const String scheduleTemplateOverlap = 'V tomto čase už existuje iná šablóna rozvrhu.';
+  static const String scheduleTemplateOverlap =
+      'V tomto čase už existuje iná šablóna rozvrhu.';
   // Rezervácie
   static const String reservationCreated = 'Rezervácia bola vytvorená.';
-  static const String reservationAlreadyExists = 'Na tento tréning už máte vytvorenú rezerváciu.';
+  static const String reservationAlreadyExists =
+      'Na tento tréning už máte vytvorenú rezerváciu.';
   static const String reservationTrainingFull = 'Tento tréning je už obsadený.';
-  static const String reservationTrainingNotAvailable = 'Tento tréning už nie je dostupný na rezerváciu.';
-  static const String reservationTrainingAlreadyStarted = 'Na tento tréning sa už nedá rezervovať.';
+  static const String reservationTrainingNotAvailable =
+      'Tento tréning už nie je dostupný na rezerváciu.';
+  static const String reservationTrainingAlreadyStarted =
+      'Na tento tréning sa už nedá rezervovať.';
   static const String reservationError = 'Rezerváciu sa nepodarilo vytvoriť.';
   static const String myReservations = 'Moje rezervácie';
   static const String noReservations = 'Momentálne nemáte žiadne rezervácie.';
   static const String reserved = 'Rezervované';
   static const String cancelReservation = 'Zrušiť rezerváciu';
   static const String cancelReservationTitle = 'Zrušiť rezerváciu';
-  static const String cancelReservationQuestion = 'Naozaj chcete zrušiť túto rezerváciu?';
+  static const String cancelReservationQuestion =
+      'Naozaj chcete zrušiť túto rezerváciu?';
   static const String reservationCancelled = 'Rezervácia bola zrušená.';
-  static const String reservationCancelError = 'Rezerváciu sa nepodarilo zrušiť.';
-// Permanentky
+  static const String reservationCancelError =
+      'Rezerváciu sa nepodarilo zrušiť.';
+  static const String trainingSessionHasReservations =
+      'Termín má rezervácie, preto ho nie je možné vymazať.';
+  // Permanentky
   static const String assignMembership = 'Priradiť permanentku';
   static const String selectUser = 'Vyberte používateľa';
   static const String selectMembershipPlan = 'Vyberte typ permanentky';
   static const String usersLoadError = 'Nepodarilo sa načítať používateľov.';
-  static const String membershipPlansLoadError = 'Nepodarilo sa načítať typy permanentiek.';
+  static const String membershipPlansLoadError =
+      'Nepodarilo sa načítať typy permanentiek.';
   static const String membershipAssigned = 'Permanentka bola priradená.';
-  static const String membershipAssignError = 'Permanentku sa nepodarilo priradiť.';
+  static const String membershipAssignError =
+      'Permanentku sa nepodarilo priradiť.';
   static const String membershipPlan = 'Typ permanentky';
   static const String client = 'Používateľ';
   static const String buyMembership = 'Kúpiť permanentku';
@@ -162,8 +215,42 @@ class AppTexts {
   static const String activeMembership = 'Aktívna permanentka';
   static const String noActiveMembership = 'Nemáte aktívnu permanentku.';
   static const String validUntil = 'Platná do';
-  static const String membershipLoadError = 'Permanentku sa nepodarilo načítať.';
-  static const String noAvailableEntries = 'Nemáte dostupný vstup na rezerváciu.';
-  static const String noUpcomingTraining = 'Zatiaľ nemáte rezervované žiadne cvičenie.';
-  static const String newsPlaceholder = 'Tu sa budú zobrazovať novinky a správy od trénerov.';
+  static const String membershipLoadError =
+      'Permanentku sa nepodarilo načítať.';
+  static const String noAvailableEntries =
+      'Nemáte dostupný vstup na rezerváciu.';
+  static const String noUpcomingTraining =
+      'Dnes nemáte rezervované žiadne cvičenie.';
+  static const String newsPlaceholder =
+      'Tu sa budú zobrazovať novinky a správy od trénerov.';
+  // Dochádzka
+  static const String attendance = 'Dochádzka';
+  static const String attendanceLoadError = 'Nepodarilo sa načítať dochádzku.';
+  static const String noActiveReservationsForAttendance =
+      'Momentálne nie sú žiadne aktívne rezervácie na označenie dochádzky.';
+  static const String attended = 'Prišiel';
+  static const String noShow = 'Neprišiel';
+  static const String markAttendedTitle = 'Označiť účasť';
+  static const String markNoShowTitle = 'Označiť neúčasť';
+  static const String markAttendedQuestion =
+      'Naozaj chcete označiť používateľa ako prítomného?';
+  static const String markNoShowQuestion =
+      'Naozaj chcete označiť používateľa ako neprítomného?';
+  static const String attendanceMarked = 'Dochádzka bola uložená.';
+  static const String attendanceMarkError = 'Dochádzku sa nepodarilo uložiť.';
+  // QR dochádzka
+  static const String reservationQrCode = 'QR kód rezervácie';
+  static const String showQrCode = 'QR kód';
+  static const String showQrToTrainer =
+      'Ukážte tento QR kód trénerovi pri príchode na tréning.';
+  static const String scanQrCode = 'Skenovať QR kód';
+  static const String scanQrCodes = 'Skenovať QR kódy';
+  static const String scanQrCodeHint =
+      'Namierte kameru na QR kód rezervácie používateľa.';
+  static const String invalidQrCode = 'Neplatný QR kód rezervácie.';
+  static const String qrCodeScanned = 'QR kód bol naskenovaný.';
+  static const String qrScanSuccessful =
+      'QR kód bol naskenovaný. Môžete skenovať ďalšieho používateľa.';
+  static const String trainerQrScanTooEarly =
+      'QR kód je možné naskenovať najskôr 30 minút pred začiatkom cvičenia.';
 }

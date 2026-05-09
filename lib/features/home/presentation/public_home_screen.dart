@@ -1,0 +1,154 @@
+import 'package:flutter/material.dart';
+import '../../../core/theme/app_texts.dart';
+import '../../schedule/data/schedule_service.dart';
+import '../../schedule/domain/schedule_item.dart';
+
+class PublicHomeScreen extends StatelessWidget {
+  const PublicHomeScreen({super.key, required this.onOpenSchedule});
+
+  final VoidCallback onOpenSchedule;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        _buildNearestTrainingsCard(context),
+        const SizedBox(height: 12),
+        _buildNewsCard(),
+      ],
+    );
+  }
+
+  Widget _buildNearestTrainingsCard(BuildContext context) {
+    return StreamBuilder<List<ScheduleItem>>(
+      stream: ScheduleService().watchScheduleItems(),
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return Card(
+            child: ListTile(
+              leading: const Icon(Icons.calendar_month_outlined),
+              title: const Text(AppTexts.nearestTrainings),
+              subtitle: const Text(AppTexts.trainingsLoadError),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: onOpenSchedule,
+            ),
+          );
+        }
+
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Card(
+            child: ListTile(
+              leading: Icon(Icons.calendar_month_outlined),
+              title: Text(AppTexts.nearestTrainings),
+              subtitle: Text(AppTexts.loading),
+            ),
+          );
+        }
+
+        final now = DateTime.now();
+
+        final nearestItems =
+            (snapshot.data ?? []).where((item) {
+              return item.session.endTime.isAfter(now);
+            }).toList()..sort((a, b) {
+              return a.session.startTime.compareTo(b.session.startTime);
+            });
+
+        final visibleItems = nearestItems.take(3).toList();
+
+        if (visibleItems.isEmpty) {
+          return Card(
+            child: ListTile(
+              leading: const Icon(Icons.calendar_month_outlined),
+              title: const Text(AppTexts.nearestTrainings),
+              subtitle: const Text(AppTexts.noNearestTraining),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: onOpenSchedule,
+            ),
+          );
+        }
+
+        return Card(
+          child: InkWell(
+            borderRadius: BorderRadius.circular(12),
+            onTap: onOpenSchedule,
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Icon(Icons.calendar_month_outlined),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          AppTexts.nearestTrainings,
+                          style: Theme.of(context).textTheme.titleLarge,
+                        ),
+                        const SizedBox(height: 8),
+                        for (final item in visibleItems)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 4),
+                            child: Text(
+                              '${item.trainingType.name} - '
+                              '${_formatPublicTrainingTime(item.session.startTime)}',
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                  const Icon(Icons.chevron_right),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildNewsCard() {
+    return const Card(
+      child: ListTile(
+        leading: Icon(Icons.campaign_outlined),
+        title: Text(AppTexts.news),
+        subtitle: Text(AppTexts.newsPlaceholder),
+      ),
+    );
+  }
+
+  String _formatPublicTrainingTime(DateTime dateTime) {
+    final now = DateTime.now();
+
+    if (_isSameDate(dateTime, now)) {
+      return 'dnes ${_formatTime(dateTime)}';
+    }
+
+    final tomorrow = DateTime(now.year, now.month, now.day + 1);
+
+    if (_isSameDate(dateTime, tomorrow)) {
+      return 'zajtra ${_formatTime(dateTime)}';
+    }
+
+    final day = dateTime.day.toString().padLeft(2, '0');
+    final month = dateTime.month.toString().padLeft(2, '0');
+
+    return '$day.$month. ${_formatTime(dateTime)}';
+  }
+
+  String _formatTime(DateTime dateTime) {
+    final hour = dateTime.hour.toString().padLeft(2, '0');
+    final minute = dateTime.minute.toString().padLeft(2, '0');
+
+    return '$hour:$minute';
+  }
+
+  bool _isSameDate(DateTime first, DateTime second) {
+    return first.year == second.year &&
+        first.month == second.month &&
+        first.day == second.day;
+  }
+}

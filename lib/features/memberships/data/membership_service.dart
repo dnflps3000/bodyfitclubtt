@@ -1,13 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'membership.dart';
-import 'membership_plan.dart';
+import '../domain/membership.dart';
+import '../domain/membership_plan.dart';
 
 /* Obsahuje načítanie plánov permanentiek a aktívnych permanentiek používateľa. */
 class MembershipService {
-  MembershipService({
-    FirebaseFirestore? firestore,
-  }) : _firestore = firestore ?? FirebaseFirestore.instance;
+  MembershipService({FirebaseFirestore? firestore})
+    : _firestore = firestore ?? FirebaseFirestore.instance;
 
   final FirebaseFirestore _firestore;
 
@@ -17,12 +16,14 @@ class MembershipService {
         .where('isActive', isEqualTo: true)
         .snapshots()
         .map((snapshot) {
-      final plans = snapshot.docs.map(MembershipPlan.fromFirestore).toList();
+          final plans = snapshot.docs
+              .map(MembershipPlan.fromFirestore)
+              .toList();
 
-      plans.sort((a, b) => a.price.compareTo(b.price));
+          plans.sort((a, b) => a.price.compareTo(b.price));
 
-      return plans;
-    });
+          return plans;
+        });
   }
 
   Stream<List<Membership>> watchMyActiveMemberships() {
@@ -38,32 +39,33 @@ class MembershipService {
         .where('status', isEqualTo: 'active')
         .snapshots()
         .map((snapshot) {
-      final memberships =
-          snapshot.docs.map(Membership.fromFirestore).where((membership) {
-        return membership.isValidNow && membership.hasRemainingEntries;
-      }).toList();
+          final memberships = snapshot.docs.map(Membership.fromFirestore).where(
+            (membership) {
+              return membership.isValidNow && membership.hasRemainingEntries;
+            },
+          ).toList();
 
-      memberships.sort((a, b) {
-        final firstValidUntil = a.validUntil;
-        final secondValidUntil = b.validUntil;
+          memberships.sort((a, b) {
+            final firstValidUntil = a.validUntil;
+            final secondValidUntil = b.validUntil;
 
-        if (firstValidUntil == null && secondValidUntil == null) {
-          return 0;
-        }
+            if (firstValidUntil == null && secondValidUntil == null) {
+              return 0;
+            }
 
-        if (firstValidUntil == null) {
-          return 1;
-        }
+            if (firstValidUntil == null) {
+              return 1;
+            }
 
-        if (secondValidUntil == null) {
-          return -1;
-        }
+            if (secondValidUntil == null) {
+              return -1;
+            }
 
-        return firstValidUntil.compareTo(secondValidUntil);
-      });
+            return firstValidUntil.compareTo(secondValidUntil);
+          });
 
-      return memberships;
-    });
+          return memberships;
+        });
   }
 
   Future<void> assignMembershipToUser({

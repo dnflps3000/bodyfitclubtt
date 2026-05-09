@@ -1,17 +1,16 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-import 'schedule_item.dart';
-import 'schedule_template.dart';
-import 'training_session.dart';
-import 'training_type.dart';
+import '../domain/schedule_item.dart';
+import '../domain/schedule_template.dart';
+import '../domain/training_session.dart';
+import '../domain/training_type.dart';
 
 /* Načítava dáta z Firestore z kolekcií trainingSessions, trainingTypes a users
    a skladá ich do zoznamu položiek rozvrhu. */
 class ScheduleService {
-  ScheduleService({
-    FirebaseFirestore? firestore,
-  }) : _firestore = firestore ?? FirebaseFirestore.instance;
+  ScheduleService({FirebaseFirestore? firestore})
+    : _firestore = firestore ?? FirebaseFirestore.instance;
 
   final FirebaseFirestore _firestore;
 
@@ -21,49 +20,51 @@ class ScheduleService {
         .orderBy('startTime')
         .snapshots()
         .asyncMap((sessionsSnapshot) async {
-      final typesSnapshot = await _firestore.collection('trainingTypes').get();
-      final usersSnapshot = await _firestore.collection('users').get();
+          final typesSnapshot = await _firestore
+              .collection('trainingTypes')
+              .get();
+          final usersSnapshot = await _firestore.collection('users').get();
 
-      final trainingTypesById = {
-        for (final document in typesSnapshot.docs)
-          document.id: TrainingType.fromFirestore(document),
-      };
+          final trainingTypesById = {
+            for (final document in typesSnapshot.docs)
+              document.id: TrainingType.fromFirestore(document),
+          };
 
-      final usersById = {
-        for (final document in usersSnapshot.docs)
-          document.id: document.data(),
-      };
+          final usersById = {
+            for (final document in usersSnapshot.docs)
+              document.id: document.data(),
+          };
 
-      final items = <ScheduleItem>[];
+          final items = <ScheduleItem>[];
 
-      for (final document in sessionsSnapshot.docs) {
-        final session = TrainingSession.fromFirestore(document);
+          for (final document in sessionsSnapshot.docs) {
+            final session = TrainingSession.fromFirestore(document);
 
-        if (!session.isActive || !session.isScheduled) {
-          continue;
-        }
+            if (!session.isActive || !session.isScheduled) {
+              continue;
+            }
 
-        final trainingType = trainingTypesById[session.trainingTypeId];
-        final trainerData = usersById[session.trainerId];
+            final trainingType = trainingTypesById[session.trainingTypeId];
+            final trainerData = usersById[session.trainerId];
 
-        if (trainingType == null || !trainingType.isActive) {
-          continue;
-        }
+            if (trainingType == null || !trainingType.isActive) {
+              continue;
+            }
 
-        final trainerName =
-            trainerData?['displayName'] as String? ?? 'Neznámy tréner';
+            final trainerName =
+                trainerData?['displayName'] as String? ?? 'Neznámy tréner';
 
-        items.add(
-          ScheduleItem(
-            session: session,
-            trainingType: trainingType,
-            trainerName: trainerName,
-          ),
-        );
-      }
+            items.add(
+              ScheduleItem(
+                session: session,
+                trainingType: trainingType,
+                trainerName: trainerName,
+              ),
+            );
+          }
 
-      return items;
-    });
+          return items;
+        });
   }
 
   Stream<List<TrainingType>> watchTrainingTypes() {
@@ -72,12 +73,13 @@ class ScheduleService {
         .where('isActive', isEqualTo: true)
         .snapshots()
         .map((snapshot) {
-      final trainingTypes =
-          snapshot.docs.map(TrainingType.fromFirestore).toList();
+          final trainingTypes = snapshot.docs
+              .map(TrainingType.fromFirestore)
+              .toList();
 
-      trainingTypes.sort((a, b) => a.name.compareTo(b.name));
-      return trainingTypes;
-    });
+          trainingTypes.sort((a, b) => a.name.compareTo(b.name));
+          return trainingTypes;
+        });
   }
 
   Stream<List<ScheduleTemplate>> watchScheduleTemplates() {
@@ -86,27 +88,28 @@ class ScheduleService {
         .where('isActive', isEqualTo: true)
         .snapshots()
         .map((snapshot) {
-      final scheduleTemplates =
-          snapshot.docs.map(ScheduleTemplate.fromFirestore).toList();
+          final scheduleTemplates = snapshot.docs
+              .map(ScheduleTemplate.fromFirestore)
+              .toList();
 
-      scheduleTemplates.sort((a, b) {
-        final weekdayCompare = a.weekday.compareTo(b.weekday);
+          scheduleTemplates.sort((a, b) {
+            final weekdayCompare = a.weekday.compareTo(b.weekday);
 
-        if (weekdayCompare != 0) {
-          return weekdayCompare;
-        }
+            if (weekdayCompare != 0) {
+              return weekdayCompare;
+            }
 
-        final hourCompare = a.startHour.compareTo(b.startHour);
+            final hourCompare = a.startHour.compareTo(b.startHour);
 
-        if (hourCompare != 0) {
-          return hourCompare;
-        }
+            if (hourCompare != 0) {
+              return hourCompare;
+            }
 
-        return a.startMinute.compareTo(b.startMinute);
-      });
+            return a.startMinute.compareTo(b.startMinute);
+          });
 
-      return scheduleTemplates;
-    });
+          return scheduleTemplates;
+        });
   }
 
   Future<void> createTrainingType({
@@ -123,8 +126,10 @@ class ScheduleService {
       throw Exception('invalid-training-type-name');
     }
 
-    final existingTrainingType =
-        await _firestore.collection('trainingTypes').doc(trainingTypeId).get();
+    final existingTrainingType = await _firestore
+        .collection('trainingTypes')
+        .doc(trainingTypeId)
+        .get();
 
     if (existingTrainingType.exists) {
       throw Exception('training-type-already-exists');
@@ -146,6 +151,7 @@ class ScheduleService {
   Future<void> createTrainingSession({
     required TrainingType trainingType,
     required User currentUser,
+    required String trainerId,
     required DateTime startTime,
     required int durationMinutes,
     required int capacity,
@@ -153,19 +159,18 @@ class ScheduleService {
     final endTime = startTime.add(Duration(minutes: durationMinutes));
 
     final currentUserRef = _firestore.collection('users').doc(currentUser.uid);
-    final trainingTypeRef =
-        _firestore.collection('trainingTypes').doc(trainingType.id);
+    final trainingTypeRef = _firestore
+        .collection('trainingTypes')
+        .doc(trainingType.id);
+    final trainerRef = _firestore.collection('users').doc(trainerId);
 
-    await _checkTrainingSessionOverlap(
-      startTime: startTime,
-      endTime: endTime,
-    );
+    await _checkTrainingSessionOverlap(startTime: startTime, endTime: endTime);
 
     await _firestore.collection('trainingSessions').add({
       'trainingTypeId': trainingType.id,
       'trainingTypeRef': trainingTypeRef,
-      'trainerId': currentUser.uid,
-      'trainerRef': currentUserRef,
+      'trainerId': trainerId,
+      'trainerRef': trainerRef,
       'createdBy': currentUser.uid,
       'createdByRef': currentUserRef,
       'startTime': Timestamp.fromDate(startTime),
@@ -196,8 +201,9 @@ class ScheduleService {
   }) async {
     final currentUserRef = _firestore.collection('users').doc(currentUser.uid);
     final trainerRef = _firestore.collection('users').doc(trainerId);
-    final trainingTypeRef =
-        _firestore.collection('trainingTypes').doc(trainingType.id);
+    final trainingTypeRef = _firestore
+        .collection('trainingTypes')
+        .doc(trainingType.id);
 
     final scheduleTemplateId = _createScheduleTemplateId(
       trainingTypeId: trainingType.id,
@@ -221,24 +227,29 @@ class ScheduleService {
       durationMinutes: durationMinutes,
     );
 
-    await _firestore.collection('scheduleTemplates').doc(scheduleTemplateId).set({
-      'trainingTypeId': trainingType.id,
-      'trainingTypeRef': trainingTypeRef,
-      'trainerId': trainerId,
-      'trainerRef': trainerRef,
-      'weekday': weekday,
-      'startHour': startHour,
-      'startMinute': startMinute,
-      'durationMinutes': durationMinutes,
-      'capacity': capacity,
-      'isActive': true,
-      'validFrom': validFrom == null ? null : Timestamp.fromDate(validFrom),
-      'validUntil': validUntil == null ? null : Timestamp.fromDate(validUntil),
-      'createdBy': currentUser.uid,
-      'createdByRef': currentUserRef,
-      'createdAt': FieldValue.serverTimestamp(),
-      'updatedAt': FieldValue.serverTimestamp(),
-    });
+    await _firestore
+        .collection('scheduleTemplates')
+        .doc(scheduleTemplateId)
+        .set({
+          'trainingTypeId': trainingType.id,
+          'trainingTypeRef': trainingTypeRef,
+          'trainerId': trainerId,
+          'trainerRef': trainerRef,
+          'weekday': weekday,
+          'startHour': startHour,
+          'startMinute': startMinute,
+          'durationMinutes': durationMinutes,
+          'capacity': capacity,
+          'isActive': true,
+          'validFrom': validFrom == null ? null : Timestamp.fromDate(validFrom),
+          'validUntil': validUntil == null
+              ? null
+              : Timestamp.fromDate(validUntil),
+          'createdBy': currentUser.uid,
+          'createdByRef': currentUserRef,
+          'createdAt': FieldValue.serverTimestamp(),
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
   }
 
   Future<void> _checkScheduleTemplateOverlap({
@@ -263,10 +274,8 @@ class ScheduleService {
       final existingStartMinute = data['startMinute'] as int? ?? 0;
       final existingDurationMinutes = data['durationMinutes'] as int? ?? 0;
 
-      final existingStartMinutes =
-          existingStartHour * 60 + existingStartMinute;
-      final existingEndMinutes =
-          existingStartMinutes + existingDurationMinutes;
+      final existingStartMinutes = existingStartHour * 60 + existingStartMinute;
+      final existingEndMinutes = existingStartMinutes + existingDurationMinutes;
 
       return existingStartMinutes < newEndMinutes &&
           existingEndMinutes > newStartMinutes;
@@ -278,10 +287,27 @@ class ScheduleService {
   }
 
   Future<void> deleteTrainingSession(String sessionId) async {
-    await _firestore.collection('trainingSessions').doc(sessionId).update({
-      'isActive': false,
-      'status': 'cancelled',
-      'updatedAt': FieldValue.serverTimestamp(),
+    final sessionRef = _firestore.collection('trainingSessions').doc(sessionId);
+
+    await _firestore.runTransaction((transaction) async {
+      final sessionSnapshot = await transaction.get(sessionRef);
+
+      if (!sessionSnapshot.exists) {
+        throw Exception('training-session-not-found');
+      }
+
+      final sessionData = sessionSnapshot.data() ?? {};
+      final reservedCount = sessionData['reservedCount'] as int? ?? 0;
+
+      if (reservedCount > 0) {
+        throw Exception('training-session-has-reservations');
+      }
+
+      transaction.update(sessionRef, {
+        'isActive': false,
+        'status': 'cancelled',
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
     });
   }
 

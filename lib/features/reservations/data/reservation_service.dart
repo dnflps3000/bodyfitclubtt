@@ -1,14 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../schedule/training_session.dart';
-import 'reservation.dart';
+import '../../schedule/domain/training_session.dart';
+import '../domain/reservation.dart';
 
 /* Obsahuje logiku rezervovania tréningov a načítania rezervácií
    prihláseného používateľa. */
 class ReservationService {
-  ReservationService({
-    FirebaseFirestore? firestore,
-  }) : _firestore = firestore ?? FirebaseFirestore.instance;
+  ReservationService({FirebaseFirestore? firestore})
+    : _firestore = firestore ?? FirebaseFirestore.instance;
 
   final FirebaseFirestore _firestore;
 
@@ -18,6 +17,26 @@ class ReservationService {
     final day = dateTime.day.toString().padLeft(2, '0');
 
     return '$year-$month-$day';
+  }
+
+  bool _isTrainerQrScanAllowed({
+    required DateTime sessionStartTime,
+    required DateTime now,
+  }) {
+    final scanWindowStart = sessionStartTime.subtract(
+      const Duration(minutes: 30),
+    );
+
+    final isSameDay =
+        sessionStartTime.year == now.year &&
+        sessionStartTime.month == now.month &&
+        sessionStartTime.day == now.day;
+
+    if (!isSameDay) {
+      return false;
+    }
+
+    return !now.isBefore(scanWindowStart);
   }
 
   Future<DocumentReference<Map<String, dynamic>>?> _findUsableMembershipRef({
@@ -97,12 +116,20 @@ class ReservationService {
         final existingReservationSnapshot = await _firestore
             .collection('reservations')
             .where('userId', isEqualTo: userId)
-            .where('status', isEqualTo: 'active')
             .where('reservationDateId', isEqualTo: sessionDateId)
-            .limit(1)
             .get();
 
-        if (existingReservationSnapshot.docs.isEmpty) {
+        final hasUsedOrActiveReservationForDay = existingReservationSnapshot
+            .docs
+            .any((reservationDocument) {
+              final reservationData = reservationDocument.data();
+              final reservationStatus =
+                  reservationData['status'] as String? ?? 'active';
+
+              return reservationStatus != 'cancelled';
+            });
+
+        if (!hasUsedOrActiveReservationForDay) {
           return document.reference;
         }
       }
@@ -110,7 +137,7 @@ class ReservationService {
 
     return null;
   }
-  
+
   Stream<List<Reservation>> watchMyReservations() {
     final currentUser = FirebaseAuth.instance.currentUser;
 
@@ -124,38 +151,40 @@ class ReservationService {
         .where('status', isEqualTo: 'active')
         .snapshots()
         .map((snapshot) {
-      final reservations =
-          snapshot.docs.map(Reservation.fromFirestore).toList();
+          final reservations = snapshot.docs
+              .map(Reservation.fromFirestore)
+              .toList();
 
-      reservations.sort((a, b) {
-        final firstCreatedAt = a.createdAt;
-        final secondCreatedAt = b.createdAt;
+          reservations.sort((a, b) {
+            final firstCreatedAt = a.createdAt;
+            final secondCreatedAt = b.createdAt;
 
-        if (firstCreatedAt == null && secondCreatedAt == null) {
-          return 0;
-        }
+            if (firstCreatedAt == null && secondCreatedAt == null) {
+              return 0;
+            }
 
-        if (firstCreatedAt == null) {
-          return 1;
-        }
+            if (firstCreatedAt == null) {
+              return 1;
+            }
 
-        if (secondCreatedAt == null) {
-          return -1;
-        }
+            if (secondCreatedAt == null) {
+              return -1;
+            }
 
-        return secondCreatedAt.compareTo(firstCreatedAt);
-      });
+            return secondCreatedAt.compareTo(firstCreatedAt);
+          });
 
-      return reservations;
-    });
+          return reservations;
+        });
   }
 
   Future<void> reserveTrainingSession({
     required TrainingSession session,
     required User currentUser,
   }) async {
-    final sessionRef =
-        _firestore.collection('trainingSessions').doc(session.id);
+    final sessionRef = _firestore
+        .collection('trainingSessions')
+        .doc(session.id);
 
     final userRef = _firestore.collection('users').doc(currentUser.uid);
 
@@ -169,8 +198,9 @@ class ReservationService {
     }
 
     final reservationId = '${session.id}_${currentUser.uid}';
-    final reservationRef =
-        _firestore.collection('reservations').doc(reservationId);
+    final reservationRef = _firestore
+        .collection('reservations')
+        .doc(reservationId);
 
     await _firestore.runTransaction((transaction) async {
       final sessionSnapshot = await transaction.get(sessionRef);
@@ -182,7 +212,6 @@ class ReservationService {
       }
 
       final sessionData = sessionSnapshot.data() ?? {};
-
       final isActive = sessionData['isActive'] as bool? ?? false;
       final status = sessionData['status'] as String? ?? '';
       final capacity = sessionData['capacity'] as int? ?? 0;
@@ -211,7 +240,7 @@ class ReservationService {
         final reservationStatus =
             reservationData['status'] as String? ?? 'active';
 
-        if (reservationStatus == 'active') {
+        if (reservationStatus != 'cancelled') {
           throw Exception('reservation-already-exists');
         }
       }
@@ -247,23 +276,19 @@ class ReservationService {
         });
       }
 
-      transaction.set(
-        reservationRef,
-        {
-          'userId': currentUser.uid,
-          'userRef': userRef,
-          'trainingSessionId': session.id,
-          'trainingSessionRef': sessionRef,
-          'status': 'active',
-          'createdAt': FieldValue.serverTimestamp(),
-          'updatedAt': FieldValue.serverTimestamp(),
-          'membershipId': membershipRef.id,
-          'membershipRef': membershipRef,
-          'entryStatus': 'reserved',
-          'reservationDateId': _dateId(startTime),
-        },
-        SetOptions(merge: true),
-      );
+      transaction.set(reservationRef, {
+        'userId': currentUser.uid,
+        'userRef': userRef,
+        'trainingSessionId': session.id,
+        'trainingSessionRef': sessionRef,
+        'status': 'active',
+        'createdAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+        'membershipId': membershipRef.id,
+        'membershipRef': membershipRef,
+        'entryStatus': 'reserved',
+        'reservationDateId': _dateId(startTime),
+      }, SetOptions(merge: true));
 
       transaction.update(sessionRef, {
         'reservedCount': reservedCount + 1,
@@ -276,11 +301,13 @@ class ReservationService {
     required String reservationId,
     required String trainingSessionId,
   }) async {
-    final reservationRef =
-        _firestore.collection('reservations').doc(reservationId);
+    final reservationRef = _firestore
+        .collection('reservations')
+        .doc(reservationId);
 
-    final sessionRef =
-        _firestore.collection('trainingSessions').doc(trainingSessionId);
+    final sessionRef = _firestore
+        .collection('trainingSessions')
+        .doc(trainingSessionId);
 
     await _firestore.runTransaction((transaction) async {
       final reservationSnapshot = await transaction.get(reservationRef);
@@ -291,8 +318,9 @@ class ReservationService {
           reservationDataForMembership?['membershipRef']
               as DocumentReference<Map<String, dynamic>>?;
 
-      final membershipSnapshot =
-          membershipRef == null ? null : await transaction.get(membershipRef);
+      final membershipSnapshot = membershipRef == null
+          ? null
+          : await transaction.get(membershipRef);
 
       if (!reservationSnapshot.exists) {
         throw Exception('reservation-not-found');
@@ -304,6 +332,13 @@ class ReservationService {
 
       final reservationData = reservationSnapshot.data() ?? {};
       final sessionData = sessionSnapshot.data() ?? {};
+
+      final reservationTrainingSessionId =
+          reservationData['trainingSessionId'] as String? ?? '';
+
+      if (reservationTrainingSessionId != trainingSessionId) {
+        throw Exception('reservation-session-mismatch');
+      }
 
       final reservationStatus =
           reservationData['status'] as String? ?? 'active';
@@ -326,8 +361,9 @@ class ReservationService {
         final entriesReserved = membershipData['entriesReserved'] as int? ?? 0;
 
         if (entriesTotal != null) {
-          final newEntriesReserved =
-              entriesReserved > 0 ? entriesReserved - 1 : 0;
+          final newEntriesReserved = entriesReserved > 0
+              ? entriesReserved - 1
+              : 0;
 
           transaction.update(membershipRef, {
             'entriesReserved': newEntriesReserved,
@@ -345,6 +381,143 @@ class ReservationService {
 
       transaction.update(sessionRef, {
         'reservedCount': newReservedCount,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+    });
+  }
+
+  Future<void> markReservationAttendance({
+    required String reservationId,
+    required String trainingSessionId,
+    required bool attended,
+    String? trainerId,
+  }) async {
+    final reservationRef = _firestore
+        .collection('reservations')
+        .doc(reservationId);
+
+    final sessionRef = _firestore
+        .collection('trainingSessions')
+        .doc(trainingSessionId);
+
+    await _firestore.runTransaction((transaction) async {
+      final reservationSnapshot = await transaction.get(reservationRef);
+      final sessionSnapshot = await transaction.get(sessionRef);
+
+      final reservationDataForMembership = reservationSnapshot.data();
+      final membershipRef =
+          reservationDataForMembership?['membershipRef']
+              as DocumentReference<Map<String, dynamic>>?;
+
+      final membershipSnapshot = membershipRef == null
+          ? null
+          : await transaction.get(membershipRef);
+
+      if (!reservationSnapshot.exists) {
+        throw Exception('reservation-not-found');
+      }
+
+      if (!sessionSnapshot.exists) {
+        throw Exception('training-session-not-found');
+      }
+
+      final sessionData = sessionSnapshot.data() ?? {};
+      final sessionTrainerId = sessionData['trainerId'] as String? ?? '';
+      final sessionStartTime = (sessionData['startTime'] as Timestamp?)
+          ?.toDate();
+
+      if (trainerId != null && sessionTrainerId != trainerId) {
+        throw Exception('trainer-not-owner-of-session');
+      }
+
+      if (sessionStartTime == null) {
+        throw Exception('training-session-start-time-missing');
+      }
+
+      final now = DateTime.now();
+
+      final isToday =
+          sessionStartTime.year == now.year &&
+          sessionStartTime.month == now.month &&
+          sessionStartTime.day == now.day;
+
+      if (!isToday) {
+        throw Exception('attendance-only-for-today');
+      }
+
+      /*
+      // Zapnúť po testovaní/prezentácii:
+      // Tréner môže skenovať QR najskôr 30 minút pred začiatkom tréningu.
+      // Po začiatku tréningu môže skenovať až do polnoci daného dňa.
+      // Admin nemá časové obmedzenie, lebo trainerId je pri adminovi null.
+      if (trainerId != null &&
+          !_isTrainerQrScanAllowed(
+            sessionStartTime: sessionStartTime,
+            now: now,
+          )) {
+        throw Exception('trainer-qr-scan-too-early');
+      }
+      */
+
+      final reservationData = reservationSnapshot.data() ?? {};
+
+      final reservationTrainingSessionId =
+          reservationData['trainingSessionId'] as String? ?? '';
+
+      if (reservationTrainingSessionId != trainingSessionId) {
+        throw Exception('reservation-session-mismatch');
+      }
+
+      final reservationStatus =
+          reservationData['status'] as String? ?? 'active';
+
+      if (reservationStatus != 'active') {
+        throw Exception('reservation-not-active');
+      }
+
+      final entryStatus = reservationData['entryStatus'] as String? ?? '';
+
+      if (entryStatus != 'reserved') {
+        throw Exception('reservation-entry-not-reserved');
+      }
+
+      if (membershipRef != null &&
+          membershipSnapshot != null &&
+          membershipSnapshot.exists) {
+        final membershipData = membershipSnapshot.data() ?? {};
+
+        final entriesTotal = membershipData['entriesTotal'] as int?;
+        final entriesRemaining =
+            membershipData['entriesRemaining'] as int? ?? 0;
+        final entriesReserved = membershipData['entriesReserved'] as int? ?? 0;
+
+        if (entriesTotal != null) {
+          final newEntriesReserved = entriesReserved > 0
+              ? entriesReserved - 1
+              : 0;
+
+          final newEntriesRemaining = entriesRemaining > 0
+              ? entriesRemaining - 1
+              : 0;
+
+          transaction.update(membershipRef, {
+            'entriesReserved': newEntriesReserved,
+            'entriesRemaining': newEntriesRemaining,
+            'updatedAt': FieldValue.serverTimestamp(),
+          });
+        }
+      }
+
+      transaction.update(reservationRef, {
+        'status': attended ? 'attended' : 'no_show',
+        'entryStatus': 'used',
+        'attended': attended,
+        'noShow': !attended,
+        'attendanceMarkedAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+
+      transaction.update(sessionRef, {
         'updatedAt': FieldValue.serverTimestamp(),
       });
     });

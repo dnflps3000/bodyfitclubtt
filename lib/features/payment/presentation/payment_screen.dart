@@ -1,8 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_texts.dart';
-import '../../memberships/membership_plan.dart';
-import '../../memberships/membership_service.dart';
+import '../../memberships/domain/membership_plan.dart';
+import '../../memberships/data/membership_service.dart';
 import '../data/payment_service.dart';
 
 class PaymentScreen extends StatefulWidget {
@@ -52,17 +52,17 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text(AppTexts.paymentSuccessful)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text(AppTexts.paymentSuccessful)));
 
       Navigator.pop(context);
     } catch (e) {
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text(AppTexts.paymentFailed)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text(AppTexts.paymentFailed)));
     } finally {
       if (mounted) {
         setState(() {
@@ -75,24 +75,18 @@ class _PaymentScreenState extends State<PaymentScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(AppTexts.payment),
-      ),
+      appBar: AppBar(title: const Text(AppTexts.payment)),
 
       // Obsah obrazovky - iba zoznam permanentiek/vstupov.
       body: StreamBuilder<List<MembershipPlan>>(
         stream: _membershipService.watchActiveMembershipPlans(),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
-            return const Center(
-              child: Text(AppTexts.membershipPlansLoadError),
-            );
+            return const Center(child: Text(AppTexts.membershipPlansLoadError));
           }
 
           if (!snapshot.hasData) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
+            return const Center(child: CircularProgressIndicator());
           }
 
           final allPlans = snapshot.data!;
@@ -100,15 +94,14 @@ class _PaymentScreenState extends State<PaymentScreen> {
           final plans = widget.purchaseCategory == null
               ? allPlans
               : allPlans
-                  .where(
-                    (plan) => plan.purchaseCategory == widget.purchaseCategory,
-                  )
-                  .toList();
+                    .where(
+                      (plan) =>
+                          plan.purchaseCategory == widget.purchaseCategory,
+                    )
+                    .toList();
 
           if (plans.isEmpty) {
-            return const Center(
-              child: Text(AppTexts.membershipPlansLoadError),
-            );
+            return const Center(child: Text(AppTexts.membershipPlansLoadError));
           }
 
           final initialSelectedPlan = widget.preselectedPlanId == null
@@ -175,8 +168,9 @@ class _PaymentScreenState extends State<PaymentScreen> {
       bottomNavigationBar: SafeArea(
         minimum: const EdgeInsets.all(16),
         child: FilledButton(
-          onPressed:
-              _selectedPlan == null || _isPaying ? null : _payForSelectedPlan,
+          onPressed: _selectedPlan == null || _isPaying
+              ? null
+              : _payForSelectedPlan,
           child: _isPaying
               ? const SizedBox(
                   height: 20,

@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import '../../core/constants/app_roles.dart';
+import '../../../core/constants/app_roles.dart';
 
 // Trieda, ktorá rieši autentifikáciu.
 // UI iba zavolá metódy z tejto triedy, aby nebola login logika rozhádzaná v obrazovkách.
@@ -154,18 +154,15 @@ class AuthService {
       fields: 'name,email,picture.width(800).height(800)',
     );
 
-    final facebookPhotoUrl =
-        userData['picture']?['data']?['url'] as String?;
+    final facebookPhotoUrl = userData['picture']?['data']?['url'] as String?;
 
-    final credential =
-        FacebookAuthProvider.credential(result.accessToken!.tokenString);
+    final credential = FacebookAuthProvider.credential(
+      result.accessToken!.tokenString,
+    );
 
     final userCredential = await _auth.signInWithCredential(credential);
 
-    await _saveUserProfile(
-      userCredential.user!,
-      photoURL: facebookPhotoUrl,
-    );
+    await _saveUserProfile(userCredential.user!, photoURL: facebookPhotoUrl);
 
     return userCredential;
   }
