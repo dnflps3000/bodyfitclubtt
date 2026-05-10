@@ -10,7 +10,7 @@ class PaymentService {
       // volanie backendu
       final response = await http.post(
         Uri.parse(
-          "https://us-central1-bodyfitclubtt-9acd8.cloudfunctions.net/createPaymentIntent",
+          "https://europe-west1-bodyfitclubtt-9acd8.cloudfunctions.net/createPaymentIntent",
         ),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'planId': plan.id}),

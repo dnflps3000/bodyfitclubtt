@@ -6,10 +6,10 @@ import {
   Timestamp,
   getFirestore,
 } from "firebase-admin/firestore";
-import * as functions from "firebase-functions";
 import Stripe from "stripe";
 import {onDocumentCreated} from "firebase-functions/v2/firestore";
 import {getMessaging} from "firebase-admin/messaging";
+import {onRequest} from "firebase-functions/v2/https";
 
 initializeApp();
 
@@ -31,7 +31,11 @@ function getStripe() {
   });
 }
 
-export const createPaymentIntent = functions.https.onRequest(
+export const createPaymentIntent = onRequest(
+  {
+    region: "europe-west1",
+    secrets: ["STRIPE_SECRET_KEY"],
+  },
   async (req, res) => {
     try {
       const planId = req.body?.planId as string | undefined;
@@ -67,6 +71,7 @@ export const createPaymentIntent = functions.https.onRequest(
       }
 
       const stripe = getStripe();
+
       const paymentIntent = await stripe.paymentIntents.create({
         amount: Math.round(price * 100),
         currency,
@@ -79,10 +84,13 @@ export const createPaymentIntent = functions.https.onRequest(
         clientSecret: paymentIntent.client_secret,
       });
     } catch (error) {
-      console.error(error);
-      res.status(500).send({error: "Payment failed"});
+      console.error("CREATE PAYMENT INTENT ERROR:", error);
+
+      res.status(500).send({
+        error: "Payment failed",
+      });
     }
-  }
+  },
 );
 
 type ScheduleTemplate = {
