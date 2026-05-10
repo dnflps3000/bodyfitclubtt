@@ -370,4 +370,19 @@ class AppTexts {
   static const String noUsersFound = 'Nenašli sa žiadni používatelia.';
   static const String changeRoleWarning =
       'Pri zmene roly používateľa sa môžu zmeniť jeho oprávnenia v aplikácii.';
+  static const String deactivateUser = 'Deaktivovať používateľa';
+  static const String userDeactivated = 'Používateľ bol deaktivovaný.';
+  static const String deactivateUserQuestion =
+      'Naozaj chcete deaktivovať tohto používateľa? Nebude sa môcť ďalej používať v správe aplikácie.';
+  static const String cannotDeactivateYourself =
+      'Nemôžete deaktivovať vlastný účet.';
+  static const String userUsedByTemplate =
+      'Používateľa nie je možné deaktivovať alebo zmeniť na bežného používateľa, pretože je priradený v aktívnej šablóne rozvrhu.';
+  static const String userUsedByFutureSession =
+      'Používateľa nie je možné deaktivovať alebo zmeniť na bežného používateľa, pretože je priradený k budúcemu cvičeniu.';
+  static const String userHasActiveReservations =
+      'Používateľa nie je možné deaktivovať, pretože má aktívne rezervácie.';
+  static const String userHasActiveMemberships =
+      'Používateľa nie je možné deaktivovať, pretože má aktívne permanentky.';
+  static const String inactiveUser = 'Neaktívny používateľ';
 }

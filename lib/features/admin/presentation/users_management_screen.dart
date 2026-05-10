@@ -106,6 +106,176 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
     }
   }
 
+  bool _isManagerRole(String role) {
+    return role == AppRoles.admin || role == AppRoles.trainer;
+  }
+
+  Future<void> _ensureUserCanLoseManagerRole({
+    required _ManagedUser user,
+    required String newRole,
+  }) async {
+    if (!_isManagerRole(user.role) || _isManagerRole(newRole)) {
+      return;
+    }
+
+    final templatesSnapshot = await FirebaseFirestore.instance
+        .collection('scheduleTemplates')
+        .where('isActive', isEqualTo: true)
+        .get();
+
+    final isUsedByActiveTemplate = templatesSnapshot.docs.any((document) {
+      final data = document.data();
+      final trainerId = data['trainerId'] as String? ?? '';
+
+      return trainerId == user.id;
+    });
+
+    if (isUsedByActiveTemplate) {
+      throw Exception('user-used-by-template');
+    }
+
+    final sessionsSnapshot = await FirebaseFirestore.instance
+        .collection('trainingSessions')
+        .where('isActive', isEqualTo: true)
+        .get();
+
+    final now = DateTime.now();
+
+    final isUsedByFutureSession = sessionsSnapshot.docs.any((document) {
+      final data = document.data();
+      final trainerId = data['trainerId'] as String? ?? '';
+      final status = data['status'] as String? ?? '';
+      final startTime = (data['startTime'] as Timestamp?)?.toDate();
+
+      return trainerId == user.id &&
+          status == 'scheduled' &&
+          startTime != null &&
+          startTime.isAfter(now);
+    });
+
+    if (isUsedByFutureSession) {
+      throw Exception('user-used-by-future-session');
+    }
+  }
+
+  Future<void> _ensureUserCanBeDeactivated(_ManagedUser user) async {
+    if (user.id == widget.currentUserId) {
+      throw Exception('cannot-deactivate-yourself');
+    }
+
+    await _ensureUserCanLoseManagerRole(user: user, newRole: AppRoles.user);
+
+    final reservationsSnapshot = await FirebaseFirestore.instance
+        .collection('reservations')
+        .where('userId', isEqualTo: user.id)
+        .get();
+
+    final hasActiveReservations = reservationsSnapshot.docs.any((document) {
+      final data = document.data();
+      final status = data['status'] as String? ?? '';
+
+      return status == 'active';
+    });
+
+    if (hasActiveReservations) {
+      throw Exception('user-has-active-reservations');
+    }
+
+    final membershipsSnapshot = await FirebaseFirestore.instance
+        .collection('memberships')
+        .where('userId', isEqualTo: user.id)
+        .get();
+
+    final hasActiveMemberships = membershipsSnapshot.docs.any((document) {
+      final data = document.data();
+      final status = data['status'] as String? ?? '';
+
+      return status == 'active';
+    });
+
+    if (hasActiveMemberships) {
+      throw Exception('user-has-active-memberships');
+    }
+  }
+
+  String _userManagementErrorMessage(Object error) {
+    final errorText = error.toString();
+
+    if (errorText.contains('cannot-deactivate-yourself')) {
+      return AppTexts.cannotDeactivateYourself;
+    }
+
+    if (errorText.contains('user-used-by-template')) {
+      return AppTexts.userUsedByTemplate;
+    }
+
+    if (errorText.contains('user-used-by-future-session')) {
+      return AppTexts.userUsedByFutureSession;
+    }
+
+    if (errorText.contains('user-has-active-reservations')) {
+      return AppTexts.userHasActiveReservations;
+    }
+
+    if (errorText.contains('user-has-active-memberships')) {
+      return AppTexts.userHasActiveMemberships;
+    }
+
+    return AppTexts.userUpdateError;
+  }
+
+  Future<void> _confirmDeactivateUser(_ManagedUser user) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text(AppTexts.deactivateUser),
+          content: Text(
+            '${AppTexts.deactivateUserQuestion}\n\n'
+            '${user.displayLabel}',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: const Text(AppTexts.cancel),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: const Text(AppTexts.deactivateUser),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed != true) {
+      return;
+    }
+
+    try {
+      await _ensureUserCanBeDeactivated(user);
+
+      await FirebaseFirestore.instance.collection('users').doc(user.id).set({
+        'isActive': false,
+        'deactivatedBy': widget.currentUserId,
+        'deactivatedAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text(AppTexts.userDeactivated)));
+    } catch (error) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(_userManagementErrorMessage(error))),
+      );
+    }
+  }
+
   Future<void> _showEditUserDialog(_ManagedUser user) async {
     var firstName = user.firstName;
     var lastName = user.lastName;
@@ -125,15 +295,6 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
               final trimmedLastName = lastName.trim();
               final trimmedPublicName = publicName.trim();
 
-              if (trimmedFirstName.isEmpty ||
-                  trimmedLastName.isEmpty ||
-                  trimmedPublicName.isEmpty) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text(AppTexts.fillAllFields)),
-                );
-                return;
-              }
-
               if (isCurrentUser && selectedRole != user.role) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text(AppTexts.cannotChangeOwnRole)),
@@ -146,28 +307,56 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
               });
 
               try {
-                final displayName = '$trimmedFirstName $trimmedLastName'.trim();
+                await _ensureUserCanLoseManagerRole(
+                  user: user,
+                  newRole: selectedRole,
+                );
+
+                final effectiveFirstName = trimmedFirstName.isNotEmpty
+                    ? trimmedFirstName
+                    : user.firstName.trim();
+
+                final effectiveLastName = trimmedLastName.isNotEmpty
+                    ? trimmedLastName
+                    : user.lastName.trim();
+
+                final displayName = '$effectiveFirstName $effectiveLastName'
+                    .trim();
+
+                final updates = <String, dynamic>{
+                  'role': selectedRole,
+                  'updatedAt': FieldValue.serverTimestamp(),
+                };
+
+                if (trimmedFirstName.isNotEmpty) {
+                  updates['firstName'] = trimmedFirstName;
+                }
+
+                if (trimmedLastName.isNotEmpty) {
+                  updates['lastName'] = trimmedLastName;
+                }
+
+                if (trimmedPublicName.isNotEmpty) {
+                  updates['publicName'] = trimmedPublicName;
+                }
+
+                if (displayName.isNotEmpty) {
+                  updates['displayName'] = displayName;
+                }
 
                 await FirebaseFirestore.instance
                     .collection('users')
                     .doc(user.id)
-                    .set({
-                      'firstName': trimmedFirstName,
-                      'lastName': trimmedLastName,
-                      'publicName': trimmedPublicName,
-                      'displayName': displayName,
-                      'role': selectedRole,
-                      'updatedAt': FieldValue.serverTimestamp(),
-                    }, SetOptions(merge: true));
+                    .set(updates, SetOptions(merge: true));
 
                 if (!dialogContext.mounted) return;
 
                 Navigator.of(dialogContext).pop(true);
-              } catch (_) {
+              } catch (error) {
                 if (!mounted || !dialogContext.mounted) return;
 
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text(AppTexts.userUpdateError)),
+                  SnackBar(content: Text(_userManagementErrorMessage(error))),
                 );
 
                 setDialogState(() {
@@ -177,6 +366,11 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
             }
 
             return AlertDialog(
+              scrollable: true,
+              insetPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 16,
+              ),
               title: const Text(AppTexts.editUser),
               content: SingleChildScrollView(
                 child: Column(
@@ -334,28 +528,59 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
 
   Widget _buildUserCard(_ManagedUser user) {
     final isCurrentUser = user.id == widget.currentUserId;
+    final hasPhoto = user.photoUrl != null && user.photoUrl!.isNotEmpty;
 
     return Card(
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundImage: user.photoUrl != null && user.photoUrl!.isNotEmpty
-              ? NetworkImage(user.photoUrl!)
-              : null,
-          child: user.photoUrl == null || user.photoUrl!.isEmpty
-              ? const Icon(Icons.person)
-              : null,
-        ),
-        title: Text(user.displayLabel),
-        subtitle: Text(
-          '${user.email.isNotEmpty ? '${user.email}\n' : ''}'
-          '${AppTexts.role}: ${_roleLabel(user.role)}'
-          '${isCurrentUser ? ' • vy' : ''}',
-        ),
-        isThreeLine: user.email.isNotEmpty,
-        trailing: IconButton(
-          tooltip: AppTexts.editUser,
-          icon: const Icon(Icons.edit_outlined),
-          onPressed: () => _showEditUserDialog(user),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            CircleAvatar(
+              radius: 24,
+              backgroundImage: hasPhoto ? NetworkImage(user.photoUrl!) : null,
+              child: hasPhoto ? null : const Icon(Icons.person),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    user.displayLabel,
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  if (user.email.isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    Text(user.email),
+                  ],
+                  const SizedBox(height: 4),
+                  Text(
+                    '${AppTexts.role}: ${_roleLabel(user.role)}'
+                    '${isCurrentUser ? ' • vy' : ''}'
+                    '${!user.isActive ? ' • ${AppTexts.inactiveUser}' : ''}',
+                  ),
+                ],
+              ),
+            ),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (user.isActive)
+                  IconButton(
+                    tooltip: AppTexts.editUser,
+                    icon: const Icon(Icons.edit_outlined),
+                    onPressed: () => _showEditUserDialog(user),
+                  ),
+                if (!isCurrentUser && user.isActive)
+                  IconButton(
+                    tooltip: AppTexts.deactivateUser,
+                    icon: const Icon(Icons.person_off_outlined),
+                    onPressed: () => _confirmDeactivateUser(user),
+                  ),
+              ],
+            ),
+          ],
         ),
       ),
     );
@@ -385,7 +610,7 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
               16,
               32 + MediaQuery.of(context).padding.bottom,
             ),
-            itemCount: users.length + 1,
+            itemCount: users.isEmpty ? 2 : users.length + 1,
             separatorBuilder: (context, index) => const SizedBox(height: 8),
             itemBuilder: (context, index) {
               if (index == 0) {
