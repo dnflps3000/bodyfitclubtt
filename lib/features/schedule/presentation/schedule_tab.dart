@@ -382,6 +382,7 @@ class _ScheduleTabState extends State<ScheduleTab> {
     final currentUser = FirebaseAuth.instance.currentUser;
     final isAdmin = role == AppRoles.admin;
     final isTrainer = role == AppRoles.trainer;
+    final isManager = isAdmin || isTrainer;
     final canReserveTrainingSession =
         role == AppRoles.user || role == null || role.isEmpty;
 
@@ -480,7 +481,7 @@ class _ScheduleTabState extends State<ScheduleTab> {
                       '${AppTexts.freeSpots}: '
                       '${session.freeSpots}/${session.capacity}',
                     ),
-                    if (trainingType.description.isNotEmpty) ...[
+                    if (!isManager && trainingType.description.isNotEmpty) ...[
                       const SizedBox(height: 8),
                       Text(trainingType.description),
                     ],

@@ -93,15 +93,18 @@ class _PublicScheduleScreenState extends State<PublicScheduleScreen> {
   }
 
   Widget _buildScheduleCard(ScheduleItem item) {
+    final description = item.trainingType.description.trim();
+
     return Card(
       child: ListTile(
         title: Text(item.trainingType.name),
         subtitle: Text(
           '${_formatTimeRange(item.session.startTime, item.session.endTime)}\n'
           '${AppTexts.trainer}: ${item.trainerName}\n'
-          '${AppTexts.freeSpots}: ${item.session.freeSpots}/${item.session.capacity}',
+          '${AppTexts.freeSpots}: ${item.session.freeSpots}/${item.session.capacity}'
+          '${description.isNotEmpty ? '\n$description' : ''}',
         ),
-        isThreeLine: true,
+        isThreeLine: description.isEmpty,
       ),
     );
   }
