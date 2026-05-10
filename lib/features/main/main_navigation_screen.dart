@@ -59,9 +59,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         .doc(widget.user.uid)
         .snapshots()
         .map((snapshot) {
-      final data = snapshot.data();
-      return data?['role'] as String?;
-    });
+          final data = snapshot.data();
+          return data?['role'] as String?;
+        });
   }
 
   @override

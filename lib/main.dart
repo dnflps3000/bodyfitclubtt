@@ -98,6 +98,77 @@ class _AppSplashScreenState extends State<AppSplashScreen> {
   }
 }
 
+class ActiveUserGate extends StatefulWidget {
+  const ActiveUserGate({
+    super.key,
+    required this.user,
+    required this.authService,
+  });
+
+  final User user;
+  final AuthService authService;
+
+  @override
+  State<ActiveUserGate> createState() => _ActiveUserGateState();
+}
+
+class _ActiveUserGateState extends State<ActiveUserGate> {
+  late Future<void> _activeCheckFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _activeCheckFuture = widget.authService.ensureUserIsActive(widget.user);
+  }
+
+  @override
+  void didUpdateWidget(covariant ActiveUserGate oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (oldWidget.user.uid != widget.user.uid) {
+      _activeCheckFuture = widget.authService.ensureUserIsActive(widget.user);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<void>(
+      future: _activeCheckFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        if (snapshot.hasError) {
+          return const Scaffold(
+            body: Center(
+              child: Padding(
+                padding: EdgeInsets.all(24),
+                child: Text(
+                  AppTexts.inactiveAccount,
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
+          );
+        }
+
+        final needsProfile =
+            widget.user.displayName == null ||
+            widget.user.displayName!.trim().isEmpty;
+
+        if (needsProfile) {
+          return const CompleteProfileScreen();
+        }
+
+        return MainNavigationScreen(user: widget.user);
+      },
+    );
+  }
+}
+
 // Zatiaľ jednoduchá hlavná obrazovka.
 // Je verejná, takže rozvrh bude viditeľný aj bez prihlásenia.
 class HomeScreen extends StatelessWidget {
@@ -113,16 +184,8 @@ class HomeScreen extends StatelessWidget {
         final user = snapshot.data;
         final isLoggedIn = user != null;
 
-        final needsProfile =
-            isLoggedIn &&
-            (user.displayName == null || user.displayName!.trim().isEmpty);
-
-        if (needsProfile) {
-          return const CompleteProfileScreen();
-        }
-
         if (isLoggedIn) {
-          return MainNavigationScreen(user: user);
+          return ActiveUserGate(user: user, authService: authService);
         }
 
         return Scaffold(

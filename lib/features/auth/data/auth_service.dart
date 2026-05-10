@@ -14,6 +14,18 @@ class AuthService {
 
   Stream<User?> get authStateChanges => _auth.userChanges();
 
+  Future<void> ensureUserIsActive(User user) async {
+    final snapshot = await _firestore.collection('users').doc(user.uid).get();
+    final data = snapshot.data();
+
+    final isActive = data?['isActive'] as bool? ?? true;
+
+    if (!isActive) {
+      await _auth.signOut();
+      throw FirebaseAuthException(code: 'user-disabled-in-app');
+    }
+  }
+
   // Uloží základný profil používateľa do Firestore.
   // Rovnaká metóda sa používa pre email, Google aj Facebook login.
   Future<void> _saveUserProfile(
@@ -66,6 +78,7 @@ class AuthService {
       data['createdAt'] = FieldValue.serverTimestamp();
       data['role'] = AppRoles.user;
       data['photoUpdatedManually'] = false;
+      data['isActive'] = true;
     } else if (existingData == null || !existingData.containsKey('role')) {
       data['role'] = AppRoles.user;
     }
@@ -127,6 +140,8 @@ class AuthService {
     }
 
     await _saveUserProfile(refreshedUser);
+    await ensureUserIsActive(refreshedUser);
+
     return credential;
   }
 
@@ -145,7 +160,11 @@ class AuthService {
 
     final userCredential = await _auth.signInWithCredential(credential);
 
-    await _saveUserProfile(userCredential.user!);
+    final user = userCredential.user!;
+
+    await _saveUserProfile(user);
+    await ensureUserIsActive(user);
+
     return userCredential;
   }
 
@@ -180,7 +199,10 @@ class AuthService {
 
     final userCredential = await _auth.signInWithCredential(credential);
 
-    await _saveUserProfile(userCredential.user!, photoURL: facebookPhotoUrl);
+    final user = userCredential.user!;
+
+    await _saveUserProfile(user, photoURL: facebookPhotoUrl);
+    await ensureUserIsActive(user);
 
     return userCredential;
   }

@@ -385,4 +385,6 @@ class AppTexts {
   static const String userHasActiveMemberships =
       'Používateľa nie je možné deaktivovať, pretože má aktívne permanentky.';
   static const String inactiveUser = 'Neaktívny používateľ';
+  static const String inactiveAccount =
+      'Váš účet je deaktivovaný. Kontaktujte administrátora.';
 }
