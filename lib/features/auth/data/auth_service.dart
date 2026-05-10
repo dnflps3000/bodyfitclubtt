@@ -25,20 +25,26 @@ class AuthService {
     final userDoc = _firestore.collection('users').doc(user.uid);
     final snapshot = await userDoc.get();
 
+    final existingData = snapshot.data();
     final providerIds = user.providerData.map((p) => p.providerId).toList();
+    final providerPhotoURL = photoURL ?? user.photoURL;
+    final photoUpdatedManually =
+        existingData?['photoUpdatedManually'] as bool? ?? false;
 
     final Map<String, dynamic> data = {
       'uid': user.uid,
       'email': user.email,
       'displayName': user.displayName,
-      'photoURL': photoURL ?? user.photoURL,
+      'providerPhotoURL': providerPhotoURL,
       'providers': providerIds,
       'emailVerified': user.emailVerified,
       'updatedAt': FieldValue.serverTimestamp(),
     };
 
-    // firstName a lastName zapisujeme iba vtedy, keď ich reálne posielame.
-    // Tým sa pri Google/Facebook/email login-e neprepíšu na null.
+    if (!photoUpdatedManually) {
+      data['photoURL'] = providerPhotoURL;
+    }
+
     if (firstName != null) {
       data['firstName'] = firstName;
     }
@@ -47,13 +53,10 @@ class AuthService {
       data['lastName'] = lastName;
     }
 
-    // createdAt nastavíme iba pri prvom vytvorení dokumentu.
-    final existingData = snapshot.data();
-    /*Rolu nastavíme iba pri novom používateľovi alebo pri starom profile,
-     ktorý ešte rolu vôbec nemá. */
     if (!snapshot.exists) {
       data['createdAt'] = FieldValue.serverTimestamp();
       data['role'] = AppRoles.user;
+      data['photoUpdatedManually'] = false;
     } else if (existingData == null || !existingData.containsKey('role')) {
       data['role'] = AppRoles.user;
     }

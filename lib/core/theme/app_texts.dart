@@ -55,6 +55,25 @@ class AppTexts {
   static const String firstName = 'Meno';
   static const String lastName = 'Priezvisko';
   static const String save = 'Uložiť';
+  static const String editProfile = 'Upraviť profil';
+  // Správa profilu
+  static const String profileSaved = 'Profil bol uložený.';
+  static const String profileSaveError = 'Profil sa nepodarilo uložiť.';
+  static const String firstNameRequired = 'Zadajte meno.';
+  static const String lastNameRequired = 'Zadajte priezvisko.';
+  static const String changeProfilePhoto = 'Zmeniť profilovú fotku';
+  static const String chooseFromGallery = 'Vybrať z galérie';
+  static const String takePhoto = 'Odfotiť';
+  static const String removePhoto = 'Odstrániť fotku';
+  static const String profilePhotoUpdated = 'Profilová fotka bola uložená.';
+  static const String cropProfilePhoto = 'Orezať profilovú fotku';
+  static const String profilePhotoUpdateError =
+      'Profilovú fotku sa nepodarilo uložiť.';
+  static const String profilePhotoRemoveError =
+      'Profilovú fotku sa nepodarilo odstrániť.';
+  static const String publicName = 'Zobrazované meno';
+  static const String publicNameHint = 'Napr. Barbora, Katka, Aďo';
+  static const String publicNameRequired = 'Zadajte zobrazované meno.';
   // Validácia
   static const String fillEmailPassword = 'Vyplň e-mail aj heslo.';
   static const String invalidEmailFormat = 'Zadaj platný e-mail.';
@@ -283,4 +302,16 @@ class AppTexts {
 
     return '$count rezervácií';
   }
+
+  // Nastavenia
+  static const String settings = 'Nastavenia';
+  static const String appearance = 'Vzhľad';
+  static const String appearanceDescription =
+      'Vyberte svetlý, tmavý alebo systémový režim.';
+  static const String themeSystem = 'Podľa systému';
+  static const String themeLight = 'Svetlý režim';
+  static const String themeDark = 'Tmavý režim';
+  static const String language = 'Jazyk';
+  static const String languageComingSoon =
+      'Prepínanie jazyka pripravíme neskôr.';
 }

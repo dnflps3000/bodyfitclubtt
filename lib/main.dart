@@ -12,6 +12,8 @@ import 'features/auth/presentation/complete_profile_screen.dart';
 import 'features/home/presentation/public_home_screen.dart';
 import 'features/main/main_navigation_screen.dart';
 import 'features/schedule/presentation/public_schedule_screen.dart';
+import 'features/settings/data/settings_service.dart';
+import 'features/settings/presentation/settings_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -19,30 +21,39 @@ void main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   Stripe.publishableKey =
       "pk_test_51TQtEE7i16mqcQZHN7bUfWOdwwmhreO884LAle2a2g3elrJcEONKIKtUvJdBcwAGg7oT9IP8tiRG58CfltSaQL6w00RUBrINmE";
-  runApp(const MyApp());
+  await SettingsService.instance.load();
+
+  runApp(MyApp(settingsService: SettingsService.instance));
 }
 
 // Hlavná trieda aplikácie.
 // Tu sa nastavuje globálny theme aplikácie a štartovacia obrazovka.
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  const MyApp({super.key, required this.settingsService});
+
+  final SettingsService settingsService;
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false, // Skryje debug banner
-      title: AppTexts.appName,
-      locale: const Locale('sk', 'SK'),
-      supportedLocales: const [Locale('sk', 'SK')],
-      localizationsDelegates: const [
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.system,
-      home: const AppSplashScreen(),
+    return AnimatedBuilder(
+      animation: settingsService,
+      builder: (context, _) {
+        return MaterialApp(
+          debugShowCheckedModeBanner: false,
+          title: AppTexts.appName,
+          locale: const Locale('sk', 'SK'),
+          supportedLocales: const [Locale('sk', 'SK')],
+          localizationsDelegates: const [
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
+          themeMode: settingsService.themeMode,
+          home: const AppSplashScreen(),
+        );
+      },
     );
   }
 }
@@ -118,6 +129,15 @@ class HomeScreen extends StatelessWidget {
           appBar: AppBar(
             title: const Text(AppTexts.appName),
             actions: [
+              IconButton(
+                tooltip: AppTexts.settings,
+                icon: const Icon(Icons.settings_outlined),
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const SettingsScreen()),
+                  );
+                },
+              ),
               IconButton(
                 tooltip: AppTexts.login,
                 icon: const Icon(Icons.account_circle_outlined),

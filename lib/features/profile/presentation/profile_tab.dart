@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_texts.dart';
 import '../../auth/data/auth_service.dart';
 import '../../../core/constants/app_roles.dart';
+import 'edit_profile_screen.dart';
+import '../../settings/presentation/settings_screen.dart';
 
 class ProfileTab extends StatelessWidget {
   const ProfileTab({super.key, required this.user});
@@ -34,10 +36,20 @@ class ProfileTab extends StatelessWidget {
       builder: (context, snapshot) {
         final data = snapshot.data?.data();
 
+        final firstName = data?['firstName'] as String? ?? '';
+        final lastName = data?['lastName'] as String? ?? '';
         final displayName = data?['displayName'] as String?;
+        final publicName = data?['publicName'] as String? ?? '';
         final email = data?['email'] as String?;
         final role = data?['role'] as String?;
         final photoUrl = data?['photoURL'] as String? ?? user.photoURL;
+        final providerPhotoUrl = data?['providerPhotoURL'] as String?;
+
+        final visibleDisplayName = displayName?.isNotEmpty == true
+            ? displayName!
+            : user.displayName?.isNotEmpty == true
+            ? user.displayName!
+            : AppTexts.profile;
 
         return ListView(
           padding: const EdgeInsets.all(16),
@@ -62,7 +74,7 @@ class ProfileTab extends StatelessWidget {
             const SizedBox(height: 16),
             Center(
               child: Text(
-                displayName ?? user.displayName ?? AppTexts.profile,
+                visibleDisplayName,
                 style: Theme.of(context).textTheme.titleLarge,
               ),
             ),
@@ -82,6 +94,39 @@ class ProfileTab extends StatelessWidget {
                     leading: const Icon(Icons.admin_panel_settings_outlined),
                     title: const Text(AppTexts.role),
                     subtitle: Text(_roleLabel(role)),
+                  ),
+                  const Divider(height: 1),
+                  ListTile(
+                    leading: const Icon(Icons.edit_outlined),
+                    title: const Text(AppTexts.editProfile),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => EditProfileScreen(
+                            user: user,
+                            initialFirstName: firstName,
+                            initialLastName: lastName,
+                            initialPublicName: publicName,
+                            initialPhotoUrl: photoUrl,
+                            providerPhotoUrl: providerPhotoUrl,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                  const Divider(height: 1),
+                  ListTile(
+                    leading: const Icon(Icons.settings_outlined),
+                    title: const Text(AppTexts.settings),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const SettingsScreen(),
+                        ),
+                      );
+                    },
                   ),
                 ],
               ),

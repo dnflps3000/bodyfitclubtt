@@ -51,8 +51,24 @@ class ScheduleService {
               continue;
             }
 
-            final trainerName =
-                trainerData?['displayName'] as String? ?? 'Neznámy tréner';
+            final trainerRole = trainerData?['role'] as String? ?? '';
+            final trainerPublicName =
+                trainerData?['publicName'] as String? ?? '';
+            final trainerFirstName = trainerData?['firstName'] as String? ?? '';
+            final trainerDisplayName =
+                trainerData?['displayName'] as String? ?? '';
+
+            final trainerBaseName = trainerPublicName.isNotEmpty
+                ? trainerPublicName
+                : trainerFirstName.isNotEmpty
+                ? trainerFirstName
+                : trainerDisplayName.isNotEmpty
+                ? trainerDisplayName
+                : 'Neznámy tréner';
+
+            final trainerName = trainerRole == AppRoles.admin
+                ? 'Admin - $trainerBaseName'
+                : trainerBaseName;
 
             items.add(
               ScheduleItem(
