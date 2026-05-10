@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_texts.dart';
 import '../../schedule/data/schedule_service.dart';
 import '../../schedule/domain/schedule_item.dart';
+import '../../messages/latest_public_message_card.dart';
 
 class PublicHomeScreen extends StatelessWidget {
   const PublicHomeScreen({super.key, required this.onOpenSchedule});
@@ -111,13 +112,7 @@ class PublicHomeScreen extends StatelessWidget {
   }
 
   Widget _buildNewsCard() {
-    return const Card(
-      child: ListTile(
-        leading: Icon(Icons.campaign_outlined),
-        title: Text(AppTexts.news),
-        subtitle: Text(AppTexts.newsPlaceholder),
-      ),
-    );
+    return const LatestPublicMessageCard();
   }
 
   String _formatPublicTrainingTime(DateTime dateTime) {
