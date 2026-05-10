@@ -19,31 +19,27 @@ class NotificationService {
   }
 
   static Future<void> saveToken([String? refreshedToken]) async {
-  try {
-    final user = FirebaseAuth.instance.currentUser;
+    try {
+      final user = FirebaseAuth.instance.currentUser;
 
-    final token =
-        refreshedToken ??
-        await FirebaseMessaging.instance.getToken();
+      final token =
+          refreshedToken ?? await FirebaseMessaging.instance.getToken();
 
-    debugPrint('FCM TOKEN: $token');
+      debugPrint('FCM TOKEN: $token');
 
-    if (token == null) return;
+      if (token == null) return;
 
-    await FirebaseFirestore.instance
-        .collection('fcmTokens')
-        .doc(token)
-        .set({
-      'token': token,
-      'userId': user?.uid,
-      'isLoggedIn': user != null,
-      'platform': 'android',
-      'updatedAt': FieldValue.serverTimestamp(),
-    }, SetOptions(merge: true));
+      await FirebaseFirestore.instance.collection('fcmTokens').doc(token).set({
+        'token': token,
+        'userId': user?.uid,
+        'isLoggedIn': user != null,
+        'platform': 'android',
+        'updatedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
 
-    debugPrint('FCM TOKEN SAVED');
-  } catch (e) {
-    debugPrint('FCM ERROR: $e');
+      debugPrint('FCM TOKEN SAVED');
+    } catch (e) {
+      debugPrint('FCM ERROR: $e');
+    }
   }
-}
 }

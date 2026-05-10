@@ -9,12 +9,16 @@ import '../../memberships/domain/membership.dart';
 import '../../payment/presentation/payment_screen.dart';
 import '../../reservations/presentation/attendance_qr_scanner_screen.dart';
 import '../../reservations/presentation/reservation_qr_screen.dart';
-import '../../messages/latest_public_message_card.dart';
+import '../../messages/presentation/latest_public_message_card.dart';
 
 class HomeTab extends StatelessWidget {
   const HomeTab({super.key, required this.onOpenSchedule});
 
   final VoidCallback onOpenSchedule;
+
+  TextStyle? _homeCardTitleStyle(BuildContext context) {
+    return Theme.of(context).textTheme.titleLarge;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -72,11 +76,14 @@ class HomeTab extends StatelessWidget {
         final sessions = snapshot.data ?? [];
 
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Card(
+          return Card(
             child: ListTile(
-              leading: Icon(Icons.event_available),
-              title: Text(AppTexts.todaysTrainings),
-              subtitle: Text(AppTexts.loading),
+              leading: const Icon(Icons.event_available),
+              title: Text(
+                AppTexts.todaysTrainings,
+                style: _homeCardTitleStyle(context),
+              ),
+              subtitle: const Text(AppTexts.loading),
             ),
           );
         }
@@ -85,7 +92,10 @@ class HomeTab extends StatelessWidget {
           return Card(
             child: ListTile(
               leading: const Icon(Icons.event_available),
-              title: const Text(AppTexts.todaysTrainings),
+              title: Text(
+                AppTexts.todaysTrainings,
+                style: _homeCardTitleStyle(context),
+              ),
               subtitle: const Text(AppTexts.noTodaysTrainings),
               trailing: const Icon(Icons.chevron_right),
               onTap: onOpenSchedule,
@@ -141,21 +151,27 @@ class HomeTab extends StatelessWidget {
         final reservation = snapshot.data;
 
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Card(
+          return Card(
             child: ListTile(
-              leading: Icon(Icons.event_available),
-              title: Text(AppTexts.todayReservations),
-              subtitle: Text(AppTexts.loading),
+              leading: const Icon(Icons.event_available),
+              title: Text(
+                AppTexts.todayReservations,
+                style: _homeCardTitleStyle(context),
+              ),
+              subtitle: const Text(AppTexts.loading),
             ),
           );
         }
 
         if (reservation == null) {
-          return const Card(
+          return Card(
             child: ListTile(
-              leading: Icon(Icons.event_available),
-              title: Text(AppTexts.todayReservations),
-              subtitle: Text(AppTexts.noTodayReservations),
+              leading: const Icon(Icons.event_available),
+              title: Text(
+                AppTexts.todayReservations,
+                style: _homeCardTitleStyle(context),
+              ),
+              subtitle: const Text(AppTexts.noTodayReservations),
             ),
           );
         }
@@ -163,7 +179,10 @@ class HomeTab extends StatelessWidget {
         return Card(
           child: ListTile(
             leading: const Icon(Icons.event_available),
-            title: const Text(AppTexts.todayReservations),
+            title: Text(
+              AppTexts.todayReservations,
+              style: _homeCardTitleStyle(context),
+            ),
             subtitle: Text(
               '${reservation.trainingName} - '
               '${_formatTime(reservation.startTime)}\n'
@@ -197,11 +216,14 @@ class HomeTab extends StatelessWidget {
         final session = snapshot.data;
 
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Card(
+          return Card(
             child: ListTile(
-              leading: Icon(Icons.calendar_month_outlined),
-              title: Text(AppTexts.nearestTraining),
-              subtitle: Text(AppTexts.loading),
+              leading: const Icon(Icons.calendar_month_outlined),
+              title: Text(
+                AppTexts.nearestTraining,
+                style: _homeCardTitleStyle(context),
+              ),
+              subtitle: const Text(AppTexts.loading),
             ),
           );
         }
@@ -210,7 +232,10 @@ class HomeTab extends StatelessWidget {
           return Card(
             child: ListTile(
               leading: const Icon(Icons.calendar_month_outlined),
-              title: const Text(AppTexts.nearestTraining),
+              title: Text(
+                AppTexts.nearestTraining,
+                style: _homeCardTitleStyle(context),
+              ),
               subtitle: const Text(AppTexts.noNearestTraining),
               trailing: const Icon(Icons.chevron_right),
               onTap: onOpenSchedule,
@@ -221,7 +246,10 @@ class HomeTab extends StatelessWidget {
         return Card(
           child: ListTile(
             leading: const Icon(Icons.calendar_month_outlined),
-            title: const Text(AppTexts.nearestTraining),
+            title: Text(
+              AppTexts.nearestTraining,
+              style: _homeCardTitleStyle(context),
+            ),
             subtitle: Text(
               '${session.trainingName} - '
               '${_formatNearestTrainingTime(session.startTime)}',
@@ -239,11 +267,14 @@ class HomeTab extends StatelessWidget {
       stream: MembershipService().watchMyActiveMemberships(),
       builder: (context, snapshot) {
         if (snapshot.hasError) {
-          return const Card(
+          return Card(
             child: ListTile(
-              leading: Icon(Icons.card_membership),
-              title: Text(AppTexts.myMemberships),
-              subtitle: Text(AppTexts.membershipLoadError),
+              leading: const Icon(Icons.card_membership),
+              title: Text(
+                AppTexts.myMemberships,
+                style: _homeCardTitleStyle(context),
+              ),
+              subtitle: const Text(AppTexts.membershipLoadError),
             ),
           );
         }
@@ -251,21 +282,27 @@ class HomeTab extends StatelessWidget {
         final memberships = snapshot.data ?? [];
 
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Card(
+          return Card(
             child: ListTile(
-              leading: Icon(Icons.card_membership),
-              title: Text(AppTexts.myMemberships),
-              subtitle: Text(AppTexts.loading),
+              leading: const Icon(Icons.card_membership),
+              title: Text(
+                AppTexts.myMemberships,
+                style: _homeCardTitleStyle(context),
+              ),
+              subtitle: const Text(AppTexts.loading),
             ),
           );
         }
 
         if (memberships.isEmpty) {
-          return const Card(
+          return Card(
             child: ListTile(
-              leading: Icon(Icons.card_membership),
-              title: Text(AppTexts.myMemberships),
-              subtitle: Text(AppTexts.noActiveMembership),
+              leading: const Icon(Icons.card_membership),
+              title: Text(
+                AppTexts.myMemberships,
+                style: _homeCardTitleStyle(context),
+              ),
+              subtitle: const Text(AppTexts.noActiveMembership),
             ),
           );
         }
@@ -313,7 +350,10 @@ class HomeTab extends StatelessWidget {
         return Card(
           child: ListTile(
             leading: const Icon(Icons.card_membership),
-            title: const Text(AppTexts.myMemberships),
+            title: Text(
+              AppTexts.myMemberships,
+              style: _homeCardTitleStyle(context),
+            ),
             subtitle: Text(subtitleParts.join('\n')),
             isThreeLine: subtitleParts.length > 2,
           ),

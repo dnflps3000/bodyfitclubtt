@@ -2,12 +2,16 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_texts.dart';
 import '../../schedule/data/schedule_service.dart';
 import '../../schedule/domain/schedule_item.dart';
-import '../../messages/latest_public_message_card.dart';
+import '../../messages/presentation/latest_public_message_card.dart';
 
 class PublicHomeScreen extends StatelessWidget {
   const PublicHomeScreen({super.key, required this.onOpenSchedule});
 
   final VoidCallback onOpenSchedule;
+
+  TextStyle? _homeCardTitleStyle(BuildContext context) {
+    return Theme.of(context).textTheme.titleLarge;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +33,10 @@ class PublicHomeScreen extends StatelessWidget {
           return Card(
             child: ListTile(
               leading: const Icon(Icons.calendar_month_outlined),
-              title: const Text(AppTexts.nearestTrainings),
+              title: Text(
+                AppTexts.nearestTrainings,
+                style: _homeCardTitleStyle(context),
+              ),
               subtitle: const Text(AppTexts.trainingsLoadError),
               trailing: const Icon(Icons.chevron_right),
               onTap: onOpenSchedule,
@@ -38,11 +45,14 @@ class PublicHomeScreen extends StatelessWidget {
         }
 
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Card(
+          return Card(
             child: ListTile(
-              leading: Icon(Icons.calendar_month_outlined),
-              title: Text(AppTexts.nearestTrainings),
-              subtitle: Text(AppTexts.loading),
+              leading: const Icon(Icons.calendar_month_outlined),
+              title: Text(
+                AppTexts.nearestTrainings,
+                style: _homeCardTitleStyle(context),
+              ),
+              subtitle: const Text(AppTexts.loading),
             ),
           );
         }
@@ -62,7 +72,10 @@ class PublicHomeScreen extends StatelessWidget {
           return Card(
             child: ListTile(
               leading: const Icon(Icons.calendar_month_outlined),
-              title: const Text(AppTexts.nearestTrainings),
+              title: Text(
+                AppTexts.nearestTrainings,
+                style: _homeCardTitleStyle(context),
+              ),
               subtitle: const Text(AppTexts.noNearestTraining),
               trailing: const Icon(Icons.chevron_right),
               onTap: onOpenSchedule,
