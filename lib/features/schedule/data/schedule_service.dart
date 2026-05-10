@@ -90,11 +90,14 @@ class ScheduleService {
         .where('isActive', isEqualTo: true)
         .snapshots()
         .map((snapshot) {
-          final trainingTypes = snapshot.docs
-              .map(TrainingType.fromFirestore)
-              .toList();
+          final trainingTypes = snapshot.docs.map((document) {
+            return TrainingType.fromFirestore(document);
+          }).toList();
 
-          trainingTypes.sort((a, b) => a.name.compareTo(b.name));
+          trainingTypes.sort((a, b) {
+            return a.name.toLowerCase().compareTo(b.name.toLowerCase());
+          });
+
           return trainingTypes;
         });
   }
@@ -161,6 +164,91 @@ class ScheduleService {
       'createdBy': currentUser.uid,
       'createdByRef': currentUserRef,
       'createdAt': FieldValue.serverTimestamp(),
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+  Future<void> updateTrainingType({
+    required TrainingType trainingType,
+    required String name,
+    required String description,
+    required int defaultDurationMinutes,
+    required int defaultCapacity,
+    required User currentUser,
+  }) async {
+    final normalizedName = name.trim().toLowerCase();
+
+    final trainingTypesSnapshot = await _firestore
+        .collection('trainingTypes')
+        .where('isActive', isEqualTo: true)
+        .get();
+
+    final duplicateExists = trainingTypesSnapshot.docs.any((document) {
+      if (document.id == trainingType.id) {
+        return false;
+      }
+
+      final data = document.data();
+      final existingName = (data['name'] as String? ?? '').trim().toLowerCase();
+
+      return existingName == normalizedName;
+    });
+
+    if (duplicateExists) {
+      throw Exception('training-type-already-exists');
+    }
+
+    await _firestore.collection('trainingTypes').doc(trainingType.id).update({
+      'name': name,
+      'description': description,
+      'defaultDurationMinutes': defaultDurationMinutes,
+      'defaultCapacity': defaultCapacity,
+      'updatedBy': currentUser.uid,
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+  Future<void> deactivateTrainingType({
+    required TrainingType trainingType,
+    required User currentUser,
+  }) async {
+    final templatesSnapshot = await _firestore
+        .collection('scheduleTemplates')
+        .where('trainingTypeId', isEqualTo: trainingType.id)
+        .get();
+
+    final isUsedByActiveTemplate = templatesSnapshot.docs.any((document) {
+      final data = document.data();
+      return data['isActive'] as bool? ?? false;
+    });
+
+    if (isUsedByActiveTemplate) {
+      throw Exception('training-type-used-by-template');
+    }
+
+    final futureSessionsSnapshot = await _firestore
+        .collection('trainingSessions')
+        .where('trainingTypeId', isEqualTo: trainingType.id)
+        .get();
+
+    final now = DateTime.now();
+
+    final isUsedByFutureSession = futureSessionsSnapshot.docs.any((document) {
+      final data = document.data();
+      final isActive = data['isActive'] as bool? ?? false;
+      final startTime = (data['startTime'] as Timestamp?)?.toDate();
+
+      return isActive && startTime != null && startTime.isAfter(now);
+    });
+
+    if (isUsedByFutureSession) {
+      throw Exception('training-type-used-by-session');
+    }
+
+    await _firestore.collection('trainingTypes').doc(trainingType.id).update({
+      'isActive': false,
+      'deactivatedBy': currentUser.uid,
+      'deactivatedAt': FieldValue.serverTimestamp(),
       'updatedAt': FieldValue.serverTimestamp(),
     });
   }

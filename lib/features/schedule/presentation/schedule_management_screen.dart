@@ -4,7 +4,7 @@ import '../../../core/constants/app_roles.dart';
 import '../../../core/theme/app_texts.dart';
 import 'add_schedule_template_screen.dart';
 import 'add_training_session_screen.dart';
-import 'add_training_type_screen.dart';
+import 'training_types_management_screen.dart';
 import '../../memberships/presentation/assign_membership_screen.dart';
 import '../../reservations/presentation/attendance_screen.dart';
 
@@ -20,10 +20,10 @@ class ScheduleManagementScreen extends StatelessWidget {
   final String? role;
   final bool showAppBar;
 
-  Future<void> _openAddTrainingTypeScreen(BuildContext context) async {
-    await Navigator.of(
-      context,
-    ).push(MaterialPageRoute(builder: (_) => const AddTrainingTypeScreen()));
+  Future<void> _openTrainingTypesManagementScreen(BuildContext context) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const TrainingTypesManagementScreen()),
+    );
   }
 
   Future<void> _openAddScheduleTemplateScreen(BuildContext context) async {
@@ -143,9 +143,9 @@ class ScheduleManagementScreen extends StatelessWidget {
         if (isAdmin) ...[
           _buildManagementButton(
             context: context,
-            icon: Icons.add,
-            label: AppTexts.addTrainingType,
-            onPressed: () => _openAddTrainingTypeScreen(context),
+            icon: Icons.fitness_center_outlined,
+            label: AppTexts.trainingTypesManagement,
+            onPressed: () => _openTrainingTypesManagementScreen(context),
           ),
         ],
       ],

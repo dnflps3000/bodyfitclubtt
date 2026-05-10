@@ -130,6 +130,21 @@ class AppTexts {
       'Termín cvičenia sa nepodarilo upraviť.';
   static const String capacityLowerThanReservations =
       'Kapacita nemôže byť nižšia ako počet existujúcich rezervácií.';
+  static const String trainingTypesManagement = 'Správa typov cvičení';
+  static const String editTrainingType = 'Upraviť typ cvičenia';
+  static const String trainingTypeUpdated = 'Typ cvičenia bol upravený.';
+  static const String deleteTrainingType = 'Vymazať typ cvičenia';
+  static const String trainingTypeDeleted = 'Typ cvičenia bol vymazaný.';
+  static const String trainingTypeDeleteQuestion =
+      'Naozaj chcete vymazať tento typ cvičenia? Nebude sa už ponúkať pri nových termínoch.';
+  static const String trainingTypeAlreadyExists =
+      'Typ cvičenia s týmto názvom už existuje.';
+  static const String trainingTypeUsedByTemplate =
+      'Typ cvičenia nie je možné vymazať, pretože sa používa v aktívnej šablóne rozvrhu.';
+  static const String trainingTypeUsedBySession =
+      'Typ cvičenia nie je možné vymazať, pretože sa používa v budúcom termíne cvičenia.';
+  static const String noTrainingTypes =
+      'Momentálne nie sú vytvorené žiadne typy cvičení.';
   static const String trainingType = 'Typ cvičenia';
   static const String selectTrainingType = 'Vyberte typ cvičenia';
   static const String trainingName = 'Názov cvičenia';
