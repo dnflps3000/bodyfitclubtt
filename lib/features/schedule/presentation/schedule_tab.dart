@@ -331,9 +331,13 @@ class _ScheduleTabState extends State<ScheduleTab> {
             final session = item.session;
             final trainingType = item.trainingType;
             final isReserved = reservedSessionIds.contains(session.id);
-            final sessionHasNotStarted = session.startTime.isAfter(
-              DateTime.now(),
-            );
+
+            final now = DateTime.now();
+            final sessionHasNotStarted = session.startTime.isAfter(now);
+            final sessionHasEnded = session.endTime.isBefore(now);
+            final canShowReservationButton =
+                canReserveTrainingSession && sessionHasNotStarted;
+
             final canCancelTrainingSession =
                 isAdmin ||
                 (isTrainer &&
@@ -388,7 +392,7 @@ class _ScheduleTabState extends State<ScheduleTab> {
                                 ),
                             ],
                           )
-                        else if (canReserveTrainingSession)
+                        else if (canShowReservationButton)
                           FilledButton(
                             style: FilledButton.styleFrom(
                               padding: const EdgeInsets.symmetric(
@@ -408,6 +412,10 @@ class _ScheduleTabState extends State<ScheduleTab> {
                                   ? AppTexts.reserve
                                   : AppTexts.fullCapacity,
                             ),
+                          )
+                        else if (!isManager && sessionHasEnded)
+                          const Chip(
+                            label: Text(AppTexts.trainingSessionFinished),
                           ),
                       ],
                     ),

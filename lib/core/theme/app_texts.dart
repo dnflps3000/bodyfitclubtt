@@ -167,7 +167,7 @@ class AppTexts {
   static const String unknownTraining = 'Neznámy tréning';
   static const String unknownTrainer = 'Neznámy tréner';
   static const String unknownUser = 'Neznámy používateľ';
-
+  static const String trainingSessionFinished = 'Prebehlo';
   static const List<String> shortWeekdays = [
     'Po',
     'Ut',
@@ -314,6 +314,7 @@ class AppTexts {
       'Rezervácie sa nepodarilo načítať.';
 
   // Permanentky
+  static const String memberships = 'Permanentky';
   static const String assignMembership = 'Priradiť permanentku';
   static const String selectUser = 'Vyberte používateľa';
   static const String selectMembershipPlan = 'Vyberte typ permanentky';
@@ -340,6 +341,45 @@ class AppTexts {
       'Nemáte dostupný vstup na rezerváciu.';
   static const String noUpcomingTraining =
       'Dnes nemáte rezervované žiadne cvičenie.';
+  static const String membershipsManagement = 'Správa permanentiek';
+  static const String membershipDetail = 'Detail permanentky';
+  static const String noMemberships =
+      'Momentálne nie sú dostupné žiadne permanentky.';
+  static const String status = 'Stav';
+  static const String validFrom = 'Platná od';
+  static const String entriesTotal = 'Celkový počet vstupov';
+  static const String entriesRemaining = 'Zostávajúce vstupy';
+  static const String entriesReserved = 'Alokované v rezerváciách';
+  static const String entriesAvailable = 'Dostupné vstupy';
+  static const String adminMembershipEdit = 'Administrátorská úprava';
+  static const String membershipStatusActive = 'Aktívna';
+  static const String membershipStatusInactive = 'Neaktívna';
+  static const String membershipStatusCancelled = 'Zrušená';
+  static const String membershipStatusExpired = 'Expirovaná';
+  static const String membershipStatusUsedUp = 'Minutá';
+  static const String membershipUpdated = 'Permanentka bola upravená.';
+  static const String membershipUpdateError =
+      'Permanentku sa nepodarilo upraviť.';
+  static const String invalidRemainingEntries =
+      'Zadajte platný počet zostávajúcich vstupov.';
+  static const String allocatedReservations = 'Alokované rezervácie';
+  static const String cancelAllocatedReservations =
+      'Zrušiť alokované rezervácie';
+  static const String cancelAllocatedReservationsQuestion =
+      'Naozaj chcete zrušiť aktívne rezervácie naviazané na túto permanentku? Alokované vstupy sa uvoľnia.';
+  static const String cancelReservations = 'Zrušiť rezervácie';
+  static const String cancelAllocatedReservationsError =
+      'Alokované rezervácie sa nepodarilo zrušiť.';
+  static const String usedEntries = 'Použité vstupy';
+  static const String noAllocatedReservations =
+      'Na túto permanentku nie sú aktuálne alokované žiadne rezervácie.';
+  static const String noUsedEntries =
+      'Z tejto permanentky zatiaľ nebol použitý žiadny vstup.';
+  static const String membershipUsageLoadError =
+      'Históriu permanentky sa nepodarilo načítať.';
+  static const String searchMemberships =
+      'Hľadať podľa používateľa alebo permanentky';
+  static const String allMembershipStatuses = 'Všetky stavy';
 
   // Dochádzka
   static const String attendance = 'Dochádzka';
@@ -411,6 +451,18 @@ class AppTexts {
   static const String language = 'Jazyk';
   static const String languageComingSoon =
       'Prepínanie jazyka pripravíme neskôr.';
+
+  static String allocatedReservationsCancelled(int count) {
+    if (count == 1) {
+      return 'Bola zrušená 1 rezervácia.';
+    }
+
+    if (count >= 2 && count <= 4) {
+      return 'Boli zrušené $count rezervácie.';
+    }
+
+    return 'Bolo zrušených $count rezervácií.';
+  }
 
   static String trainingCount(int count) {
     if (count == 1) {

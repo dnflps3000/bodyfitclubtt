@@ -8,6 +8,7 @@ import '../profile/presentation/profile_tab.dart';
 import '../reservations/presentation/reservations_tab.dart';
 import '../schedule/presentation/schedule_tab.dart';
 import '../schedule/presentation/schedule_management_screen.dart';
+import '../memberships/presentation/my_memberships_screen.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key, required this.user});
@@ -25,6 +26,22 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   List<Widget> _buildTabs(String? role) {
     final isManager = role == AppRoles.admin || role == AppRoles.trainer;
 
+    if (isManager) {
+      return [
+        HomeTab(
+          onOpenSchedule: () {
+            setState(() {
+              _scheduleTabVersion++;
+              _selectedIndex = 1;
+            });
+          },
+        ),
+        ScheduleTab(key: ValueKey('schedule-tab-$_scheduleTabVersion')),
+        ScheduleManagementScreen(role: role, showAppBar: false),
+        ProfileTab(user: widget.user),
+      ];
+    }
+
     return [
       HomeTab(
         onOpenSchedule: () {
@@ -35,9 +52,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         },
       ),
       ScheduleTab(key: ValueKey('schedule-tab-$_scheduleTabVersion')),
-      isManager
-          ? ScheduleManagementScreen(role: role, showAppBar: false)
-          : const ReservationsTab(),
+      const ReservationsTab(),
+      const MyMembershipsScreen(),
       ProfileTab(user: widget.user),
     ];
   }
@@ -45,10 +61,20 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   List<String> _buildTitles(String? role) {
     final isManager = role == AppRoles.admin || role == AppRoles.trainer;
 
+    if (isManager) {
+      return [
+        AppTexts.home,
+        AppTexts.schedule,
+        AppTexts.management,
+        AppTexts.profile,
+      ];
+    }
+
     return [
       AppTexts.home,
       AppTexts.schedule,
-      isManager ? AppTexts.management : AppTexts.reservations,
+      AppTexts.reservations,
+      AppTexts.memberships,
       AppTexts.profile,
     ];
   }
@@ -100,6 +126,12 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                 selectedIcon: const Icon(Icons.event_note),
                 label: isManager ? AppTexts.management : AppTexts.reservations,
               ),
+              if (!isManager)
+                const NavigationDestination(
+                  icon: Icon(Icons.card_membership_outlined),
+                  selectedIcon: Icon(Icons.card_membership),
+                  label: AppTexts.memberships,
+                ),
               const NavigationDestination(
                 icon: Icon(Icons.person_outline),
                 selectedIcon: Icon(Icons.person),

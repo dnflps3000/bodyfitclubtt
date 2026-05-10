@@ -7,6 +7,7 @@ import 'add_training_session_screen.dart';
 import 'training_types_management_screen.dart';
 import '../../admin/presentation/users_management_screen.dart';
 import '../../memberships/presentation/assign_membership_screen.dart';
+import '../../memberships/presentation/memberships_management_screen.dart';
 import '../../reservations/presentation/attendance_screen.dart';
 
 /*Obrazovka pre admina a trénera, ktorá združuje správcovské akcie mimo 
@@ -47,6 +48,12 @@ class ScheduleManagementScreen extends StatelessWidget {
     await Navigator.of(
       context,
     ).push(MaterialPageRoute(builder: (_) => const AssignMembershipScreen()));
+  }
+
+  Future<void> _openMembershipsManagementScreen(BuildContext context) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const MembershipsManagementScreen()),
+    );
   }
 
   Future<void> _openAttendanceScreen(BuildContext context) async {
@@ -129,6 +136,16 @@ class ScheduleManagementScreen extends StatelessWidget {
             icon: Icons.card_membership,
             label: AppTexts.assignMembership,
             onPressed: () => _openAssignMembershipScreen(context),
+          ),
+          const SizedBox(height: 12),
+        ],
+
+        if (isAdmin) ...[
+          _buildManagementButton(
+            context: context,
+            icon: Icons.manage_accounts_outlined,
+            label: AppTexts.membershipsManagement,
+            onPressed: () => _openMembershipsManagementScreen(context),
           ),
           const SizedBox(height: 12),
         ],

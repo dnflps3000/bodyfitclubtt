@@ -30,7 +30,7 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
   void _onSearchChanged(String value) {
     _searchDebounce?.cancel();
 
-    _searchDebounce = Timer(const Duration(milliseconds: 300), () {
+    _searchDebounce = Timer(const Duration(milliseconds: 500), () {
       if (!mounted) {
         return;
       }
