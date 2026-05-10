@@ -38,6 +38,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
       'firstName': firstName,
       'lastName': lastName,
       'displayName': displayName,
+      'publicName': firstName,
       'updatedAt': FieldValue.serverTimestamp(),
     }, SetOptions(merge: true));
 

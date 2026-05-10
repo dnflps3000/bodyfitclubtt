@@ -120,7 +120,10 @@ class _ScheduleTabState extends State<ScheduleTab> {
     ).push(MaterialPageRoute(builder: (_) => const ScheduleManagementScreen()));
   }
 
-  Future<void> _openTrainerAttendanceScreen(BuildContext context) async {
+  Future<void> _openTrainerAttendanceScreen(
+    BuildContext context,
+    String? role,
+  ) async {
     final currentUser = FirebaseAuth.instance.currentUser;
 
     if (currentUser == null) {
@@ -129,7 +132,9 @@ class _ScheduleTabState extends State<ScheduleTab> {
 
     await Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => AttendanceScreen(trainerId: currentUser.uid),
+        builder: (_) => AttendanceScreen(
+          trainerId: role == AppRoles.trainer ? currentUser.uid : null,
+        ),
       ),
     );
   }
@@ -264,15 +269,15 @@ class _ScheduleTabState extends State<ScheduleTab> {
           icon: const Icon(Icons.admin_panel_settings_outlined),
           label: const Text(AppTexts.scheduleManagement),
         ),
-      if (isTrainer)
+      if (isAdmin || isTrainer)
         FilledButton.icon(
           onPressed: () => _openAddTrainingSessionScreen(context),
           icon: const Icon(Icons.event_available),
           label: const Text(AppTexts.addTrainingSession),
         ),
-      if (isTrainer)
+      if (isAdmin || isTrainer)
         FilledButton.icon(
-          onPressed: () => _openTrainerAttendanceScreen(context),
+          onPressed: () => _openTrainerAttendanceScreen(context, role),
           icon: const Icon(Icons.fact_check),
           label: const Text(AppTexts.attendance),
         ),

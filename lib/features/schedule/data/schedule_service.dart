@@ -1,10 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../../core/constants/app_roles.dart';
+import '../../../core/theme/app_texts.dart';
 import '../domain/schedule_item.dart';
 import '../domain/schedule_template.dart';
 import '../domain/training_session.dart';
 import '../domain/training_type.dart';
+
 
 /* Načítava dáta z Firestore z kolekcií trainingSessions, trainingTypes a users
    a skladá ich do zoznamu položiek rozvrhu. */
@@ -64,10 +66,10 @@ class ScheduleService {
                 ? trainerFirstName
                 : trainerDisplayName.isNotEmpty
                 ? trainerDisplayName
-                : 'Neznámy tréner';
+                : AppTexts.unknownTrainer;
 
             final trainerName = trainerRole == AppRoles.admin
-                ? 'Admin - $trainerBaseName'
+                ? '${AppTexts.roleAdmin} - $trainerBaseName'
                 : trainerBaseName;
 
             items.add(

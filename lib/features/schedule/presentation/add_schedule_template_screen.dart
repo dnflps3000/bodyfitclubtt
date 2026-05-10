@@ -38,7 +38,7 @@ class _AddScheduleTemplateScreenState extends State<AddScheduleTemplateScreen> {
   Stream<List<_TrainerOption>> _watchTrainers() {
     return FirebaseFirestore.instance
         .collection('users')
-        .where('role', isEqualTo: AppRoles.trainer)
+        .where('role', whereIn: [AppRoles.trainer, AppRoles.admin])
         .snapshots()
         .map((snapshot) {
           final trainers = snapshot.docs
@@ -47,7 +47,7 @@ class _AddScheduleTemplateScreenState extends State<AddScheduleTemplateScreen> {
 
                 return _TrainerOption(
                   id: document.id,
-                  name: data['displayName'] as String? ?? 'Neznámy tréner',
+                  name: _resolveTrainerName(data),
                   isActive: data['isActive'] as bool? ?? true,
                 );
               })
@@ -60,6 +60,26 @@ class _AddScheduleTemplateScreenState extends State<AddScheduleTemplateScreen> {
 
           return trainers;
         });
+  }
+
+  String _resolveTrainerName(Map<String, dynamic> data) {
+    final publicName = data['publicName'] as String? ?? '';
+    final firstName = data['firstName'] as String? ?? '';
+    final displayName = data['displayName'] as String? ?? '';
+
+    if (publicName.trim().isNotEmpty) {
+      return publicName.trim();
+    }
+
+    if (firstName.trim().isNotEmpty) {
+      return firstName.trim();
+    }
+
+    if (displayName.trim().isNotEmpty) {
+      return displayName.trim();
+    }
+
+    return AppTexts.unknownTrainer;
   }
 
   TrainingType? _findSelectedTrainingType(List<TrainingType> trainingTypes) {

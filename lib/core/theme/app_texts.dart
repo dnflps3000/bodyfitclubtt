@@ -23,6 +23,8 @@ class AppTexts {
   static const String reservedEntriesSummary = 'Alokované vstupy';
   static const String dailyMembershipsSummary = 'Denné permanentky';
   static const String tapToShowQrCode = 'Kliknutím zobrazíte QR kód.';
+  static const String todayLower = 'dnes';
+  static const String tomorrowLower = 'zajtra';
   // Hlavná navigácia
   static const String home = 'Domov';
   static const String schedule = 'Rozvrh';
@@ -218,6 +220,11 @@ class AppTexts {
       'Rezerváciu sa nepodarilo zrušiť.';
   static const String trainingSessionHasReservations =
       'Termín má rezervácie, preto ho nie je možné vymazať.';
+  static const String reservationsLoadError =
+      'Rezervácie sa nepodarilo načítať.';
+  static const String unknownTraining = 'Neznámy tréning';
+  static const String unknownTrainer = 'Neznámy tréner';
+  static const String unknownUser = 'Neznámy používateľ';
   // Permanentky
   static const String assignMembership = 'Priradiť permanentku';
   static const String selectUser = 'Vyberte používateľa';

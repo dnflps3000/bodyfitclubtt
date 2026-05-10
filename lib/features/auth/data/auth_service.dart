@@ -31,6 +31,16 @@ class AuthService {
     final photoUpdatedManually =
         existingData?['photoUpdatedManually'] as bool? ?? false;
 
+    final displayName = user.displayName?.trim() ?? '';
+    final existingPublicName =
+        existingData?['publicName'] as String? ?? '';
+
+    final generatedPublicName = firstName?.trim().isNotEmpty == true
+        ? firstName!.trim()
+        : displayName.isNotEmpty
+            ? displayName.split(' ').first
+            : null;
+
     final Map<String, dynamic> data = {
       'uid': user.uid,
       'email': user.email,
@@ -59,6 +69,12 @@ class AuthService {
       data['photoUpdatedManually'] = false;
     } else if (existingData == null || !existingData.containsKey('role')) {
       data['role'] = AppRoles.user;
+    }
+
+    if (existingPublicName.trim().isEmpty &&
+        generatedPublicName != null &&
+        generatedPublicName.isNotEmpty) {
+      data['publicName'] = generatedPublicName;
     }
 
     await userDoc.set(data, SetOptions(merge: true));
