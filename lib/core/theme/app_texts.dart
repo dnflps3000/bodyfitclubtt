@@ -207,6 +207,16 @@ class AppTexts {
   static const String scheduleTemplatesManagement = 'Správa šablón rozvrhu';
   // Šablóny rozvrhu
   static const String addScheduleTemplate = 'Pridať šablónu rozvrhu';
+  static const String editScheduleTemplate = 'Upraviť šablónu rozvrhu';
+  static const String scheduleTemplateUpdated =
+      'Šablóna rozvrhu bola upravená.';
+  static const String scheduleTemplateDeleted =
+      'Šablóna rozvrhu bola vymazaná.';
+  static const String deleteScheduleTemplate = 'Vymazať šablónu rozvrhu';
+  static const String scheduleTemplateDeleteQuestion =
+      'Naozaj chcete vymazať túto šablónu rozvrhu? Nebude sa už používať pri generovaní nových termínov.';
+  static const String noScheduleTemplates =
+      'Momentálne nie sú vytvorené žiadne šablóny rozvrhu.';
   static const String weekday = 'Deň v týždni';
   static const String selectWeekday = 'Vyberte deň v týždni';
   static const String scheduleTemplateCreated =

@@ -357,11 +357,69 @@ class ScheduleService {
         });
   }
 
+  Future<void> updateScheduleTemplate({
+    required ScheduleTemplate scheduleTemplate,
+    required TrainingType trainingType,
+    required User currentUser,
+    required String trainerId,
+    required int weekday,
+    required int startHour,
+    required int startMinute,
+    required int durationMinutes,
+    required int capacity,
+  }) async {
+    await _checkScheduleTemplateOverlap(
+      weekday: weekday,
+      startHour: startHour,
+      startMinute: startMinute,
+      durationMinutes: durationMinutes,
+      ignoredTemplateId: scheduleTemplate.id,
+    );
+
+    final trainerRef = _firestore.collection('users').doc(trainerId);
+    final trainingTypeRef = _firestore
+        .collection('trainingTypes')
+        .doc(trainingType.id);
+
+    await _firestore
+        .collection('scheduleTemplates')
+        .doc(scheduleTemplate.id)
+        .update({
+          'trainingTypeId': trainingType.id,
+          'trainingTypeRef': trainingTypeRef,
+          'trainerId': trainerId,
+          'trainerRef': trainerRef,
+          'weekday': weekday,
+          'startHour': startHour,
+          'startMinute': startMinute,
+          'durationMinutes': durationMinutes,
+          'capacity': capacity,
+          'updatedBy': currentUser.uid,
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
+  }
+
+  Future<void> deactivateScheduleTemplate({
+    required ScheduleTemplate scheduleTemplate,
+    required User currentUser,
+  }) async {
+    await _firestore
+        .collection('scheduleTemplates')
+        .doc(scheduleTemplate.id)
+        .update({
+          'isActive': false,
+          'deactivatedBy': currentUser.uid,
+          'deactivatedAt': FieldValue.serverTimestamp(),
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
+  }
+
   Future<void> _checkScheduleTemplateOverlap({
     required int weekday,
     required int startHour,
     required int startMinute,
     required int durationMinutes,
+    String? ignoredTemplateId,
   }) async {
     final newStartMinutes = startHour * 60 + startMinute;
     final newEndMinutes = newStartMinutes + durationMinutes;
@@ -373,6 +431,10 @@ class ScheduleService {
         .get();
 
     final hasOverlap = templatesSnapshot.docs.any((document) {
+      if (ignoredTemplateId != null && document.id == ignoredTemplateId) {
+        return false;
+      }
+
       final data = document.data();
 
       final existingStartHour = data['startHour'] as int? ?? 0;

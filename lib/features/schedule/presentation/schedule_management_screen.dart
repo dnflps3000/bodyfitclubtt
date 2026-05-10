@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../../core/constants/app_roles.dart';
 import '../../../core/theme/app_texts.dart';
-import 'add_schedule_template_screen.dart';
+import 'schedule_templates_management_screen.dart';
 import 'add_training_session_screen.dart';
 import 'training_types_management_screen.dart';
 import '../../memberships/presentation/assign_membership_screen.dart';
@@ -26,9 +26,13 @@ class ScheduleManagementScreen extends StatelessWidget {
     );
   }
 
-  Future<void> _openAddScheduleTemplateScreen(BuildContext context) async {
+  Future<void> _openScheduleTemplatesManagementScreen(
+    BuildContext context,
+  ) async {
     await Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const AddScheduleTemplateScreen()),
+      MaterialPageRoute(
+        builder: (_) => const ScheduleTemplatesManagementScreen(),
+      ),
     );
   }
 
@@ -125,7 +129,7 @@ class ScheduleManagementScreen extends StatelessWidget {
             context: context,
             icon: Icons.calendar_view_week,
             label: AppTexts.scheduleTemplatesManagement,
-            onPressed: () => _openAddScheduleTemplateScreen(context),
+            onPressed: () => _openScheduleTemplatesManagementScreen(context),
           ),
           const SizedBox(height: 12),
         ],
