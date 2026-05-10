@@ -303,6 +303,215 @@ class ScheduleService {
     }
   }
 
+  Future<void> updateTrainingSession({
+    required ScheduleItem item,
+    required User currentUser,
+    required String? role,
+    required String trainerId,
+    required DateTime startTime,
+    required int durationMinutes,
+    required int capacity,
+  }) async {
+    final sessionId = item.session.id;
+    final endTime = startTime.add(Duration(minutes: durationMinutes));
+    final sessionRef = _firestore.collection('trainingSessions').doc(sessionId);
+    final trainerRef = _firestore.collection('users').doc(trainerId);
+
+    await _checkTrainingSessionOverlap(
+      startTime: startTime,
+      endTime: endTime,
+      ignoredSessionId: sessionId,
+    );
+
+    final reservationsSnapshot = await _firestore
+        .collection('reservations')
+        .where('trainingSessionId', isEqualTo: sessionId)
+        .get();
+
+    await _firestore.runTransaction((transaction) async {
+      final sessionSnapshot = await transaction.get(sessionRef);
+
+      if (!sessionSnapshot.exists) {
+        throw Exception('training-session-not-found');
+      }
+
+      final sessionData = sessionSnapshot.data() ?? {};
+      final sessionTrainerId = sessionData['trainerId'] as String? ?? '';
+      final sessionStatus = sessionData['status'] as String? ?? '';
+      final isActive = sessionData['isActive'] as bool? ?? false;
+      final existingStartTime = (sessionData['startTime'] as Timestamp?)
+          ?.toDate();
+      final existingEndTime = (sessionData['endTime'] as Timestamp?)?.toDate();
+      final reservedCount = sessionData['reservedCount'] as int? ?? 0;
+
+      if (existingStartTime == null || existingEndTime == null) {
+        throw Exception('training-session-invalid-time');
+      }
+
+      if (!isActive || sessionStatus != 'scheduled') {
+        throw Exception('training-session-not-available');
+      }
+
+      final isAdmin = role == AppRoles.admin;
+      final isTrainer = role == AppRoles.trainer;
+
+      if (!isAdmin && !isTrainer) {
+        throw Exception('permission-denied');
+      }
+
+      if (isTrainer && sessionTrainerId != currentUser.uid) {
+        throw Exception('trainer-not-owner-of-session');
+      }
+
+      if (isTrainer && !existingStartTime.isAfter(DateTime.now())) {
+        throw Exception('trainer-cannot-cancel-started-session');
+      }
+
+      final startTimeChanged =
+          existingStartTime.millisecondsSinceEpoch !=
+          startTime.millisecondsSinceEpoch;
+
+      if (!startTimeChanged && capacity < reservedCount) {
+        throw Exception('capacity-lower-than-reservations');
+      }
+
+      final reservationSnapshots = <DocumentSnapshot<Map<String, dynamic>>>[];
+
+      if (startTimeChanged) {
+        for (final reservationDocument in reservationsSnapshot.docs) {
+          final reservationSnapshot = await transaction.get(
+            reservationDocument.reference,
+          );
+
+          if (reservationSnapshot.exists) {
+            reservationSnapshots.add(reservationSnapshot);
+          }
+        }
+      }
+
+      final membershipAdjustments = <String, _MembershipCancelAdjustment>{};
+
+      if (startTimeChanged) {
+        for (final reservationSnapshot in reservationSnapshots) {
+          final reservationData = reservationSnapshot.data() ?? {};
+          final reservationStatus = reservationData['status'] as String? ?? '';
+          final entryStatus = reservationData['entryStatus'] as String? ?? '';
+
+          if (reservationStatus == 'cancelled') {
+            continue;
+          }
+
+          final membershipRef =
+              reservationData['membershipRef']
+                  as DocumentReference<Map<String, dynamic>>?;
+
+          if (membershipRef == null) {
+            continue;
+          }
+
+          final existingAdjustment =
+              membershipAdjustments[membershipRef.path] ??
+              _MembershipCancelAdjustment(membershipRef: membershipRef);
+
+          if (entryStatus == 'reserved') {
+            membershipAdjustments[membershipRef.path] = existingAdjustment
+                .copyWith(
+                  reservedToRelease: existingAdjustment.reservedToRelease + 1,
+                );
+          } else if (entryStatus == 'used') {
+            membershipAdjustments[membershipRef.path] = existingAdjustment
+                .copyWith(usedToRefund: existingAdjustment.usedToRefund + 1);
+          }
+        }
+      }
+
+      final membershipSnapshots =
+          <String, DocumentSnapshot<Map<String, dynamic>>>{};
+
+      if (startTimeChanged) {
+        for (final adjustment in membershipAdjustments.values) {
+          final membershipSnapshot = await transaction.get(
+            adjustment.membershipRef,
+          );
+
+          membershipSnapshots[adjustment.membershipRef.path] =
+              membershipSnapshot;
+        }
+      }
+
+      if (startTimeChanged) {
+        for (final reservationSnapshot in reservationSnapshots) {
+          final reservationData = reservationSnapshot.data() ?? {};
+          final reservationStatus = reservationData['status'] as String? ?? '';
+          final entryStatus = reservationData['entryStatus'] as String? ?? '';
+
+          if (reservationStatus == 'cancelled') {
+            continue;
+          }
+
+          final newEntryStatus = entryStatus == 'used'
+              ? 'refunded'
+              : 'released';
+
+          transaction.update(reservationSnapshot.reference, {
+            'status': 'cancelled',
+            'entryStatus': newEntryStatus,
+            'cancelledAt': FieldValue.serverTimestamp(),
+            'cancelledBy': currentUser.uid,
+            'cancelledReason': 'training-session-time-changed',
+            'updatedAt': FieldValue.serverTimestamp(),
+          });
+        }
+
+        for (final adjustment in membershipAdjustments.values) {
+          final membershipSnapshot =
+              membershipSnapshots[adjustment.membershipRef.path];
+
+          if (membershipSnapshot == null || !membershipSnapshot.exists) {
+            continue;
+          }
+
+          final membershipData = membershipSnapshot.data() ?? {};
+          final entriesTotal = membershipData['entriesTotal'] as int?;
+          final entriesReserved =
+              membershipData['entriesReserved'] as int? ?? 0;
+          final entriesRemaining =
+              membershipData['entriesRemaining'] as int? ?? 0;
+
+          final updates = <String, Object?>{
+            'updatedAt': FieldValue.serverTimestamp(),
+          };
+
+          if (entriesTotal != null) {
+            final newEntriesReserved =
+                entriesReserved - adjustment.reservedToRelease;
+            final newEntriesRemaining =
+                entriesRemaining + adjustment.usedToRefund;
+
+            updates['entriesReserved'] = newEntriesReserved > 0
+                ? newEntriesReserved
+                : 0;
+            updates['entriesRemaining'] = newEntriesRemaining > entriesTotal
+                ? entriesTotal
+                : newEntriesRemaining;
+          }
+
+          transaction.update(adjustment.membershipRef, updates);
+        }
+      }
+
+      transaction.update(sessionRef, {
+        'trainerId': trainerId,
+        'trainerRef': trainerRef,
+        'startTime': Timestamp.fromDate(startTime),
+        'endTime': Timestamp.fromDate(endTime),
+        'capacity': capacity,
+        'reservedCount': startTimeChanged ? 0 : reservedCount,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+    });
+  }
+
   Future<void> cancelTrainingSessionWithReservations({
     required String sessionId,
     required User currentUser,
@@ -480,6 +689,7 @@ class ScheduleService {
   Future<void> _checkTrainingSessionOverlap({
     required DateTime startTime,
     required DateTime endTime,
+    String? ignoredSessionId,
   }) async {
     final overlappingSessions = await _firestore
         .collection('trainingSessions')
@@ -487,6 +697,9 @@ class ScheduleService {
         .get();
 
     final hasOverlap = overlappingSessions.docs.any((document) {
+      if (ignoredSessionId != null && document.id == ignoredSessionId) {
+        return false;
+      }
       final data = document.data();
 
       final isActive = data['isActive'] as bool? ?? false;

@@ -123,6 +123,12 @@ class AppTexts {
   // Správa rozvrhu
   static const String addTrainingType = 'Pridať typ cvičenia';
   static const String addTrainingSession = 'Pridať termín cvičenia';
+  static const String editTrainingSession = 'Upraviť detaily cvičenia';
+  static const String trainingSessionUpdated = 'Termín cvičenia bol upravený.';
+  static const String updateTrainingSessionError =
+      'Termín cvičenia sa nepodarilo upraviť.';
+  static const String capacityLowerThanReservations =
+      'Kapacita nemôže byť nižšia ako počet existujúcich rezervácií.';
   static const String trainingType = 'Typ cvičenia';
   static const String selectTrainingType = 'Vyberte typ cvičenia';
   static const String trainingName = 'Názov cvičenia';

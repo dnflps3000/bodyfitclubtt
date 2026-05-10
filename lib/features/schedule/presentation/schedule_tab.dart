@@ -7,6 +7,7 @@ import '../../../core/widgets/day_card_selector.dart';
 import '../data/schedule_service.dart';
 import '../domain/schedule_item.dart';
 import '../../reservations/data/reservation_service.dart';
+import 'edit_training_session_screen.dart';
 
 /* Zobrazuje obrazovku Rozvrh, teda zoznam tréningov, ich čas,
    trénera, voľné miesta, popis a tlačidlo rezervácie. */
@@ -103,6 +104,18 @@ class _ScheduleTabState extends State<ScheduleTab> {
     final minute = dateTime.minute.toString().padLeft(2, '0');
 
     return '$hour:$minute';
+  }
+
+  Future<void> _openEditTrainingSessionScreen(
+    BuildContext context,
+    ScheduleItem item,
+    String? role,
+  ) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => EditTrainingSessionScreen(item: item, role: role),
+      ),
+    );
   }
 
   Future<void> _confirmCancelTrainingSession(
@@ -326,6 +339,11 @@ class _ScheduleTabState extends State<ScheduleTab> {
                 (isTrainer &&
                     session.trainerId == currentUser?.uid &&
                     sessionHasNotStarted);
+            final canEditTrainingSession =
+                isAdmin ||
+                (isTrainer &&
+                    session.trainerId == currentUser?.uid &&
+                    sessionHasNotStarted);
 
             return Card(
               child: Padding(
@@ -342,15 +360,33 @@ class _ScheduleTabState extends State<ScheduleTab> {
                             style: Theme.of(context).textTheme.titleLarge,
                           ),
                         ),
-                        if (canCancelTrainingSession)
-                          IconButton(
-                            tooltip: AppTexts.cancelTrainingSession,
-                            icon: const Icon(Icons.event_busy_outlined),
-                            onPressed: () => _confirmCancelTrainingSession(
-                              context,
-                              item,
-                              role,
-                            ),
+                        if (canEditTrainingSession || canCancelTrainingSession)
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (canEditTrainingSession)
+                                IconButton(
+                                  tooltip: AppTexts.editTrainingSession,
+                                  icon: const Icon(Icons.edit_outlined),
+                                  onPressed: () =>
+                                      _openEditTrainingSessionScreen(
+                                        context,
+                                        item,
+                                        role,
+                                      ),
+                                ),
+                              if (canCancelTrainingSession)
+                                IconButton(
+                                  tooltip: AppTexts.cancelTrainingSession,
+                                  icon: const Icon(Icons.delete_outline),
+                                  onPressed: () =>
+                                      _confirmCancelTrainingSession(
+                                        context,
+                                        item,
+                                        role,
+                                      ),
+                                ),
+                            ],
                           )
                         else if (canReserveTrainingSession)
                           FilledButton(
