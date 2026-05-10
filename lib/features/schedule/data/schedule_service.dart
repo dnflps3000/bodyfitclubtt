@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../../core/constants/app_roles.dart';
+import '../../../core/theme/app_texts.dart';
 import '../domain/schedule_item.dart';
 import '../domain/schedule_template.dart';
 import '../domain/training_session.dart';
@@ -64,10 +65,10 @@ class ScheduleService {
                 ? trainerFirstName
                 : trainerDisplayName.isNotEmpty
                 ? trainerDisplayName
-                : 'Neznámy tréner';
+                : AppTexts.unknownTrainer;
 
             final trainerName = trainerRole == AppRoles.admin
-                ? 'Admin - $trainerBaseName'
+                ? '${AppTexts.roleAdmin} - $trainerBaseName'
                 : trainerBaseName;
 
             items.add(
@@ -89,11 +90,14 @@ class ScheduleService {
         .where('isActive', isEqualTo: true)
         .snapshots()
         .map((snapshot) {
-          final trainingTypes = snapshot.docs
-              .map(TrainingType.fromFirestore)
-              .toList();
+          final trainingTypes = snapshot.docs.map((document) {
+            return TrainingType.fromFirestore(document);
+          }).toList();
 
-          trainingTypes.sort((a, b) => a.name.compareTo(b.name));
+          trainingTypes.sort((a, b) {
+            return a.name.toLowerCase().compareTo(b.name.toLowerCase());
+          });
+
           return trainingTypes;
         });
   }
@@ -160,6 +164,91 @@ class ScheduleService {
       'createdBy': currentUser.uid,
       'createdByRef': currentUserRef,
       'createdAt': FieldValue.serverTimestamp(),
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+  Future<void> updateTrainingType({
+    required TrainingType trainingType,
+    required String name,
+    required String description,
+    required int defaultDurationMinutes,
+    required int defaultCapacity,
+    required User currentUser,
+  }) async {
+    final normalizedName = name.trim().toLowerCase();
+
+    final trainingTypesSnapshot = await _firestore
+        .collection('trainingTypes')
+        .where('isActive', isEqualTo: true)
+        .get();
+
+    final duplicateExists = trainingTypesSnapshot.docs.any((document) {
+      if (document.id == trainingType.id) {
+        return false;
+      }
+
+      final data = document.data();
+      final existingName = (data['name'] as String? ?? '').trim().toLowerCase();
+
+      return existingName == normalizedName;
+    });
+
+    if (duplicateExists) {
+      throw Exception('training-type-already-exists');
+    }
+
+    await _firestore.collection('trainingTypes').doc(trainingType.id).update({
+      'name': name,
+      'description': description,
+      'defaultDurationMinutes': defaultDurationMinutes,
+      'defaultCapacity': defaultCapacity,
+      'updatedBy': currentUser.uid,
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+  Future<void> deactivateTrainingType({
+    required TrainingType trainingType,
+    required User currentUser,
+  }) async {
+    final templatesSnapshot = await _firestore
+        .collection('scheduleTemplates')
+        .where('trainingTypeId', isEqualTo: trainingType.id)
+        .get();
+
+    final isUsedByActiveTemplate = templatesSnapshot.docs.any((document) {
+      final data = document.data();
+      return data['isActive'] as bool? ?? false;
+    });
+
+    if (isUsedByActiveTemplate) {
+      throw Exception('training-type-used-by-template');
+    }
+
+    final futureSessionsSnapshot = await _firestore
+        .collection('trainingSessions')
+        .where('trainingTypeId', isEqualTo: trainingType.id)
+        .get();
+
+    final now = DateTime.now();
+
+    final isUsedByFutureSession = futureSessionsSnapshot.docs.any((document) {
+      final data = document.data();
+      final isActive = data['isActive'] as bool? ?? false;
+      final startTime = (data['startTime'] as Timestamp?)?.toDate();
+
+      return isActive && startTime != null && startTime.isAfter(now);
+    });
+
+    if (isUsedByFutureSession) {
+      throw Exception('training-type-used-by-session');
+    }
+
+    await _firestore.collection('trainingTypes').doc(trainingType.id).update({
+      'isActive': false,
+      'deactivatedBy': currentUser.uid,
+      'deactivatedAt': FieldValue.serverTimestamp(),
       'updatedAt': FieldValue.serverTimestamp(),
     });
   }
@@ -268,11 +357,69 @@ class ScheduleService {
         });
   }
 
+  Future<void> updateScheduleTemplate({
+    required ScheduleTemplate scheduleTemplate,
+    required TrainingType trainingType,
+    required User currentUser,
+    required String trainerId,
+    required int weekday,
+    required int startHour,
+    required int startMinute,
+    required int durationMinutes,
+    required int capacity,
+  }) async {
+    await _checkScheduleTemplateOverlap(
+      weekday: weekday,
+      startHour: startHour,
+      startMinute: startMinute,
+      durationMinutes: durationMinutes,
+      ignoredTemplateId: scheduleTemplate.id,
+    );
+
+    final trainerRef = _firestore.collection('users').doc(trainerId);
+    final trainingTypeRef = _firestore
+        .collection('trainingTypes')
+        .doc(trainingType.id);
+
+    await _firestore
+        .collection('scheduleTemplates')
+        .doc(scheduleTemplate.id)
+        .update({
+          'trainingTypeId': trainingType.id,
+          'trainingTypeRef': trainingTypeRef,
+          'trainerId': trainerId,
+          'trainerRef': trainerRef,
+          'weekday': weekday,
+          'startHour': startHour,
+          'startMinute': startMinute,
+          'durationMinutes': durationMinutes,
+          'capacity': capacity,
+          'updatedBy': currentUser.uid,
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
+  }
+
+  Future<void> deactivateScheduleTemplate({
+    required ScheduleTemplate scheduleTemplate,
+    required User currentUser,
+  }) async {
+    await _firestore
+        .collection('scheduleTemplates')
+        .doc(scheduleTemplate.id)
+        .update({
+          'isActive': false,
+          'deactivatedBy': currentUser.uid,
+          'deactivatedAt': FieldValue.serverTimestamp(),
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
+  }
+
   Future<void> _checkScheduleTemplateOverlap({
     required int weekday,
     required int startHour,
     required int startMinute,
     required int durationMinutes,
+    String? ignoredTemplateId,
   }) async {
     final newStartMinutes = startHour * 60 + startMinute;
     final newEndMinutes = newStartMinutes + durationMinutes;
@@ -284,6 +431,10 @@ class ScheduleService {
         .get();
 
     final hasOverlap = templatesSnapshot.docs.any((document) {
+      if (ignoredTemplateId != null && document.id == ignoredTemplateId) {
+        return false;
+      }
+
       final data = document.data();
 
       final existingStartHour = data['startHour'] as int? ?? 0;
@@ -300,6 +451,215 @@ class ScheduleService {
     if (hasOverlap) {
       throw Exception('schedule-template-overlap');
     }
+  }
+
+  Future<void> updateTrainingSession({
+    required ScheduleItem item,
+    required User currentUser,
+    required String? role,
+    required String trainerId,
+    required DateTime startTime,
+    required int durationMinutes,
+    required int capacity,
+  }) async {
+    final sessionId = item.session.id;
+    final endTime = startTime.add(Duration(minutes: durationMinutes));
+    final sessionRef = _firestore.collection('trainingSessions').doc(sessionId);
+    final trainerRef = _firestore.collection('users').doc(trainerId);
+
+    await _checkTrainingSessionOverlap(
+      startTime: startTime,
+      endTime: endTime,
+      ignoredSessionId: sessionId,
+    );
+
+    final reservationsSnapshot = await _firestore
+        .collection('reservations')
+        .where('trainingSessionId', isEqualTo: sessionId)
+        .get();
+
+    await _firestore.runTransaction((transaction) async {
+      final sessionSnapshot = await transaction.get(sessionRef);
+
+      if (!sessionSnapshot.exists) {
+        throw Exception('training-session-not-found');
+      }
+
+      final sessionData = sessionSnapshot.data() ?? {};
+      final sessionTrainerId = sessionData['trainerId'] as String? ?? '';
+      final sessionStatus = sessionData['status'] as String? ?? '';
+      final isActive = sessionData['isActive'] as bool? ?? false;
+      final existingStartTime = (sessionData['startTime'] as Timestamp?)
+          ?.toDate();
+      final existingEndTime = (sessionData['endTime'] as Timestamp?)?.toDate();
+      final reservedCount = sessionData['reservedCount'] as int? ?? 0;
+
+      if (existingStartTime == null || existingEndTime == null) {
+        throw Exception('training-session-invalid-time');
+      }
+
+      if (!isActive || sessionStatus != 'scheduled') {
+        throw Exception('training-session-not-available');
+      }
+
+      final isAdmin = role == AppRoles.admin;
+      final isTrainer = role == AppRoles.trainer;
+
+      if (!isAdmin && !isTrainer) {
+        throw Exception('permission-denied');
+      }
+
+      if (isTrainer && sessionTrainerId != currentUser.uid) {
+        throw Exception('trainer-not-owner-of-session');
+      }
+
+      if (isTrainer && !existingStartTime.isAfter(DateTime.now())) {
+        throw Exception('trainer-cannot-cancel-started-session');
+      }
+
+      final startTimeChanged =
+          existingStartTime.millisecondsSinceEpoch !=
+          startTime.millisecondsSinceEpoch;
+
+      if (!startTimeChanged && capacity < reservedCount) {
+        throw Exception('capacity-lower-than-reservations');
+      }
+
+      final reservationSnapshots = <DocumentSnapshot<Map<String, dynamic>>>[];
+
+      if (startTimeChanged) {
+        for (final reservationDocument in reservationsSnapshot.docs) {
+          final reservationSnapshot = await transaction.get(
+            reservationDocument.reference,
+          );
+
+          if (reservationSnapshot.exists) {
+            reservationSnapshots.add(reservationSnapshot);
+          }
+        }
+      }
+
+      final membershipAdjustments = <String, _MembershipCancelAdjustment>{};
+
+      if (startTimeChanged) {
+        for (final reservationSnapshot in reservationSnapshots) {
+          final reservationData = reservationSnapshot.data() ?? {};
+          final reservationStatus = reservationData['status'] as String? ?? '';
+          final entryStatus = reservationData['entryStatus'] as String? ?? '';
+
+          if (reservationStatus == 'cancelled') {
+            continue;
+          }
+
+          final membershipRef =
+              reservationData['membershipRef']
+                  as DocumentReference<Map<String, dynamic>>?;
+
+          if (membershipRef == null) {
+            continue;
+          }
+
+          final existingAdjustment =
+              membershipAdjustments[membershipRef.path] ??
+              _MembershipCancelAdjustment(membershipRef: membershipRef);
+
+          if (entryStatus == 'reserved') {
+            membershipAdjustments[membershipRef.path] = existingAdjustment
+                .copyWith(
+                  reservedToRelease: existingAdjustment.reservedToRelease + 1,
+                );
+          } else if (entryStatus == 'used') {
+            membershipAdjustments[membershipRef.path] = existingAdjustment
+                .copyWith(usedToRefund: existingAdjustment.usedToRefund + 1);
+          }
+        }
+      }
+
+      final membershipSnapshots =
+          <String, DocumentSnapshot<Map<String, dynamic>>>{};
+
+      if (startTimeChanged) {
+        for (final adjustment in membershipAdjustments.values) {
+          final membershipSnapshot = await transaction.get(
+            adjustment.membershipRef,
+          );
+
+          membershipSnapshots[adjustment.membershipRef.path] =
+              membershipSnapshot;
+        }
+      }
+
+      if (startTimeChanged) {
+        for (final reservationSnapshot in reservationSnapshots) {
+          final reservationData = reservationSnapshot.data() ?? {};
+          final reservationStatus = reservationData['status'] as String? ?? '';
+          final entryStatus = reservationData['entryStatus'] as String? ?? '';
+
+          if (reservationStatus == 'cancelled') {
+            continue;
+          }
+
+          final newEntryStatus = entryStatus == 'used'
+              ? 'refunded'
+              : 'released';
+
+          transaction.update(reservationSnapshot.reference, {
+            'status': 'cancelled',
+            'entryStatus': newEntryStatus,
+            'cancelledAt': FieldValue.serverTimestamp(),
+            'cancelledBy': currentUser.uid,
+            'cancelledReason': 'training-session-time-changed',
+            'updatedAt': FieldValue.serverTimestamp(),
+          });
+        }
+
+        for (final adjustment in membershipAdjustments.values) {
+          final membershipSnapshot =
+              membershipSnapshots[adjustment.membershipRef.path];
+
+          if (membershipSnapshot == null || !membershipSnapshot.exists) {
+            continue;
+          }
+
+          final membershipData = membershipSnapshot.data() ?? {};
+          final entriesTotal = membershipData['entriesTotal'] as int?;
+          final entriesReserved =
+              membershipData['entriesReserved'] as int? ?? 0;
+          final entriesRemaining =
+              membershipData['entriesRemaining'] as int? ?? 0;
+
+          final updates = <String, Object?>{
+            'updatedAt': FieldValue.serverTimestamp(),
+          };
+
+          if (entriesTotal != null) {
+            final newEntriesReserved =
+                entriesReserved - adjustment.reservedToRelease;
+            final newEntriesRemaining =
+                entriesRemaining + adjustment.usedToRefund;
+
+            updates['entriesReserved'] = newEntriesReserved > 0
+                ? newEntriesReserved
+                : 0;
+            updates['entriesRemaining'] = newEntriesRemaining > entriesTotal
+                ? entriesTotal
+                : newEntriesRemaining;
+          }
+
+          transaction.update(adjustment.membershipRef, updates);
+        }
+      }
+
+      transaction.update(sessionRef, {
+        'trainerId': trainerId,
+        'trainerRef': trainerRef,
+        'startTime': Timestamp.fromDate(startTime),
+        'endTime': Timestamp.fromDate(endTime),
+        'capacity': capacity,
+        'reservedCount': startTimeChanged ? 0 : reservedCount,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+    });
   }
 
   Future<void> cancelTrainingSessionWithReservations({
@@ -479,6 +839,7 @@ class ScheduleService {
   Future<void> _checkTrainingSessionOverlap({
     required DateTime startTime,
     required DateTime endTime,
+    String? ignoredSessionId,
   }) async {
     final overlappingSessions = await _firestore
         .collection('trainingSessions')
@@ -486,6 +847,9 @@ class ScheduleService {
         .get();
 
     final hasOverlap = overlappingSessions.docs.any((document) {
+      if (ignoredSessionId != null && document.id == ignoredSessionId) {
+        return false;
+      }
       final data = document.data();
 
       final isActive = data['isActive'] as bool? ?? false;

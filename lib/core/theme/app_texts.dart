@@ -23,10 +23,13 @@ class AppTexts {
   static const String reservedEntriesSummary = 'Alokované vstupy';
   static const String dailyMembershipsSummary = 'Denné permanentky';
   static const String tapToShowQrCode = 'Kliknutím zobrazíte QR kód.';
+  static const String todayLower = 'dnes';
+  static const String tomorrowLower = 'zajtra';
   // Hlavná navigácia
   static const String home = 'Domov';
   static const String schedule = 'Rozvrh';
   static const String reservations = 'Rezervácie';
+  static const String management = 'Správa';
   static const String profile = 'Profil';
   // Placeholder obrazovky
   static const String membershipStatus = 'Stav permanentky';
@@ -65,6 +68,7 @@ class AppTexts {
   static const String chooseFromGallery = 'Vybrať z galérie';
   static const String takePhoto = 'Odfotiť';
   static const String removePhoto = 'Odstrániť fotku';
+  static const String editPhoto = 'Upraviť fotku';
   static const String profilePhotoUpdated = 'Profilová fotka bola uložená.';
   static const String cropProfilePhoto = 'Orezať profilovú fotku';
   static const String profilePhotoUpdateError =
@@ -119,7 +123,28 @@ class AppTexts {
       'Nepodarilo sa načítať rozvrh tréningov.';
   // Správa rozvrhu
   static const String addTrainingType = 'Pridať typ cvičenia';
-  static const String addTrainingSession = 'Pridať termín';
+  static const String addTrainingSession = 'Pridať termín cvičenia';
+  static const String editTrainingSession = 'Upraviť detaily cvičenia';
+  static const String trainingSessionUpdated = 'Termín cvičenia bol upravený.';
+  static const String updateTrainingSessionError =
+      'Termín cvičenia sa nepodarilo upraviť.';
+  static const String capacityLowerThanReservations =
+      'Kapacita nemôže byť nižšia ako počet existujúcich rezervácií.';
+  static const String trainingTypesManagement = 'Správa typov cvičení';
+  static const String editTrainingType = 'Upraviť typ cvičenia';
+  static const String trainingTypeUpdated = 'Typ cvičenia bol upravený.';
+  static const String deleteTrainingType = 'Vymazať typ cvičenia';
+  static const String trainingTypeDeleted = 'Typ cvičenia bol vymazaný.';
+  static const String trainingTypeDeleteQuestion =
+      'Naozaj chcete vymazať tento typ cvičenia? Nebude sa už ponúkať pri nových termínoch.';
+  static const String trainingTypeAlreadyExists =
+      'Typ cvičenia s týmto názvom už existuje.';
+  static const String trainingTypeUsedByTemplate =
+      'Typ cvičenia nie je možné vymazať, pretože sa používa v aktívnej šablóne rozvrhu.';
+  static const String trainingTypeUsedBySession =
+      'Typ cvičenia nie je možné vymazať, pretože sa používa v budúcom termíne cvičenia.';
+  static const String noTrainingTypes =
+      'Momentálne nie sú vytvorené žiadne typy cvičení.';
   static const String trainingType = 'Typ cvičenia';
   static const String selectTrainingType = 'Vyberte typ cvičenia';
   static const String trainingName = 'Názov cvičenia';
@@ -173,8 +198,25 @@ class AppTexts {
       'Tréner môže zrušiť iba vlastný termín.';
   static const String trainerCannotCancelStartedSession =
       'Tréner nemôže zrušiť termín, ktorý už začal alebo prebehol.';
+  static const String managementDescription =
+      'Tu môžete spravovať termíny cvičení, dochádzku, permanentky a používateľov.';
+  static const String attendanceManagement = 'Správa dochádzky';
+  static const String usersManagement = 'Správa používateľov';
+  static const String usersManagementComingSoon =
+      'Správa používateľov bude doplnená neskôr.';
+  static const String scheduleTemplatesManagement = 'Správa šablón rozvrhu';
   // Šablóny rozvrhu
   static const String addScheduleTemplate = 'Pridať šablónu rozvrhu';
+  static const String editScheduleTemplate = 'Upraviť šablónu rozvrhu';
+  static const String scheduleTemplateUpdated =
+      'Šablóna rozvrhu bola upravená.';
+  static const String scheduleTemplateDeleted =
+      'Šablóna rozvrhu bola vymazaná.';
+  static const String deleteScheduleTemplate = 'Vymazať šablónu rozvrhu';
+  static const String scheduleTemplateDeleteQuestion =
+      'Naozaj chcete vymazať túto šablónu rozvrhu? Nebude sa už používať pri generovaní nových termínov.';
+  static const String noScheduleTemplates =
+      'Momentálne nie sú vytvorené žiadne šablóny rozvrhu.';
   static const String weekday = 'Deň v týždni';
   static const String selectWeekday = 'Vyberte deň v týždni';
   static const String scheduleTemplateCreated =
@@ -218,6 +260,11 @@ class AppTexts {
       'Rezerváciu sa nepodarilo zrušiť.';
   static const String trainingSessionHasReservations =
       'Termín má rezervácie, preto ho nie je možné vymazať.';
+  static const String reservationsLoadError =
+      'Rezervácie sa nepodarilo načítať.';
+  static const String unknownTraining = 'Neznámy tréning';
+  static const String unknownTrainer = 'Neznámy tréner';
+  static const String unknownUser = 'Neznámy používateľ';
   // Permanentky
   static const String assignMembership = 'Priradiť permanentku';
   static const String selectUser = 'Vyberte používateľa';
@@ -314,4 +361,30 @@ class AppTexts {
   static const String language = 'Jazyk';
   static const String languageComingSoon =
       'Prepínanie jazyka pripravíme neskôr.';
+  static const String allRoles = 'Všetky role';
+  static const String editUser = 'Upraviť používateľa';
+  static const String userUpdated = 'Používateľ bol upravený.';
+  static const String userUpdateError = 'Používateľa sa nepodarilo upraviť.';
+  static const String cannotChangeOwnRole = 'Nemôžete zmeniť vlastnú rolu.';
+  static const String searchUsers = 'Hľadať používateľa';
+  static const String noUsersFound = 'Nenašli sa žiadni používatelia.';
+  static const String changeRoleWarning =
+      'Pri zmene roly používateľa sa môžu zmeniť jeho oprávnenia v aplikácii.';
+  static const String deactivateUser = 'Deaktivovať používateľa';
+  static const String userDeactivated = 'Používateľ bol deaktivovaný.';
+  static const String deactivateUserQuestion =
+      'Naozaj chcete deaktivovať tohto používateľa? Nebude sa môcť ďalej používať v správe aplikácie.';
+  static const String cannotDeactivateYourself =
+      'Nemôžete deaktivovať vlastný účet.';
+  static const String userUsedByTemplate =
+      'Používateľa nie je možné deaktivovať alebo zmeniť na bežného používateľa, pretože je priradený v aktívnej šablóne rozvrhu.';
+  static const String userUsedByFutureSession =
+      'Používateľa nie je možné deaktivovať alebo zmeniť na bežného používateľa, pretože je priradený k budúcemu cvičeniu.';
+  static const String userHasActiveReservations =
+      'Používateľa nie je možné deaktivovať, pretože má aktívne rezervácie.';
+  static const String userHasActiveMemberships =
+      'Používateľa nie je možné deaktivovať, pretože má aktívne permanentky.';
+  static const String inactiveUser = 'Neaktívny používateľ';
+  static const String inactiveAccount =
+      'Váš účet je deaktivovaný. Kontaktujte administrátora.';
 }

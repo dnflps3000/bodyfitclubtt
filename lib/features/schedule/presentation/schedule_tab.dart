@@ -7,9 +7,7 @@ import '../../../core/widgets/day_card_selector.dart';
 import '../data/schedule_service.dart';
 import '../domain/schedule_item.dart';
 import '../../reservations/data/reservation_service.dart';
-import '../../reservations/presentation/attendance_screen.dart';
-import 'add_training_session_screen.dart';
-import 'schedule_management_screen.dart';
+import 'edit_training_session_screen.dart';
 
 /* Zobrazuje obrazovku Rozvrh, teda zoznam tréningov, ich čas,
    trénera, voľné miesta, popis a tlačidlo rezervácie. */
@@ -108,28 +106,14 @@ class _ScheduleTabState extends State<ScheduleTab> {
     return '$hour:$minute';
   }
 
-  Future<void> _openAddTrainingSessionScreen(BuildContext context) async {
-    await Navigator.of(
-      context,
-    ).push(MaterialPageRoute(builder: (_) => const AddTrainingSessionScreen()));
-  }
-
-  Future<void> _openScheduleManagementScreen(BuildContext context) async {
-    await Navigator.of(
-      context,
-    ).push(MaterialPageRoute(builder: (_) => const ScheduleManagementScreen()));
-  }
-
-  Future<void> _openTrainerAttendanceScreen(BuildContext context) async {
-    final currentUser = FirebaseAuth.instance.currentUser;
-
-    if (currentUser == null) {
-      return;
-    }
-
+  Future<void> _openEditTrainingSessionScreen(
+    BuildContext context,
+    ScheduleItem item,
+    String? role,
+  ) async {
     await Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => AttendanceScreen(trainerId: currentUser.uid),
+        builder: (_) => EditTrainingSessionScreen(item: item, role: role),
       ),
     );
   }
@@ -247,65 +231,6 @@ class _ScheduleTabState extends State<ScheduleTab> {
     }
   }
 
-  Widget _buildManagementButtons(BuildContext context, String? role) {
-    final isAdmin = role == AppRoles.admin;
-    final isTrainer = role == AppRoles.trainer;
-    final isLandscape =
-        MediaQuery.of(context).orientation == Orientation.landscape;
-
-    if (!isAdmin && !isTrainer) {
-      return const SizedBox.shrink();
-    }
-
-    final buttons = <Widget>[
-      if (isAdmin)
-        FilledButton.icon(
-          onPressed: () => _openScheduleManagementScreen(context),
-          icon: const Icon(Icons.admin_panel_settings_outlined),
-          label: const Text(AppTexts.scheduleManagement),
-        ),
-      if (isTrainer)
-        FilledButton.icon(
-          onPressed: () => _openAddTrainingSessionScreen(context),
-          icon: const Icon(Icons.event_available),
-          label: const Text(AppTexts.addTrainingSession),
-        ),
-      if (isTrainer)
-        FilledButton.icon(
-          onPressed: () => _openTrainerAttendanceScreen(context),
-          icon: const Icon(Icons.fact_check),
-          label: const Text(AppTexts.attendance),
-        ),
-    ];
-
-    if (isLandscape) {
-      return Padding(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-        child: Row(
-          children: [
-            for (var index = 0; index < buttons.length; index++) ...[
-              Expanded(child: buttons[index]),
-              if (index < buttons.length - 1) const SizedBox(width: 8),
-            ],
-          ],
-        ),
-      );
-    }
-
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          for (var index = 0; index < buttons.length; index++) ...[
-            buttons[index],
-            if (index < buttons.length - 1) const SizedBox(height: 8),
-          ],
-        ],
-      ),
-    );
-  }
-
   Widget _buildDaySelector() {
     final days = _nextFourteenDays();
 
@@ -352,7 +277,6 @@ class _ScheduleTabState extends State<ScheduleTab> {
 
             return Column(
               children: [
-                _buildManagementButtons(context, role),
                 _buildDaySelector(),
                 Expanded(
                   child: _buildScheduleListFromItems(
@@ -377,6 +301,7 @@ class _ScheduleTabState extends State<ScheduleTab> {
     final currentUser = FirebaseAuth.instance.currentUser;
     final isAdmin = role == AppRoles.admin;
     final isTrainer = role == AppRoles.trainer;
+    final isManager = isAdmin || isTrainer;
     final canReserveTrainingSession =
         role == AppRoles.user || role == null || role.isEmpty;
 
@@ -414,6 +339,11 @@ class _ScheduleTabState extends State<ScheduleTab> {
                 (isTrainer &&
                     session.trainerId == currentUser?.uid &&
                     sessionHasNotStarted);
+            final canEditTrainingSession =
+                isAdmin ||
+                (isTrainer &&
+                    session.trainerId == currentUser?.uid &&
+                    sessionHasNotStarted);
 
             return Card(
               child: Padding(
@@ -430,15 +360,33 @@ class _ScheduleTabState extends State<ScheduleTab> {
                             style: Theme.of(context).textTheme.titleLarge,
                           ),
                         ),
-                        if (canCancelTrainingSession)
-                          IconButton(
-                            tooltip: AppTexts.cancelTrainingSession,
-                            icon: const Icon(Icons.event_busy_outlined),
-                            onPressed: () => _confirmCancelTrainingSession(
-                              context,
-                              item,
-                              role,
-                            ),
+                        if (canEditTrainingSession || canCancelTrainingSession)
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (canEditTrainingSession)
+                                IconButton(
+                                  tooltip: AppTexts.editTrainingSession,
+                                  icon: const Icon(Icons.edit_outlined),
+                                  onPressed: () =>
+                                      _openEditTrainingSessionScreen(
+                                        context,
+                                        item,
+                                        role,
+                                      ),
+                                ),
+                              if (canCancelTrainingSession)
+                                IconButton(
+                                  tooltip: AppTexts.cancelTrainingSession,
+                                  icon: const Icon(Icons.delete_outline),
+                                  onPressed: () =>
+                                      _confirmCancelTrainingSession(
+                                        context,
+                                        item,
+                                        role,
+                                      ),
+                                ),
+                            ],
                           )
                         else if (canReserveTrainingSession)
                           FilledButton(
@@ -475,7 +423,7 @@ class _ScheduleTabState extends State<ScheduleTab> {
                       '${AppTexts.freeSpots}: '
                       '${session.freeSpots}/${session.capacity}',
                     ),
-                    if (trainingType.description.isNotEmpty) ...[
+                    if (!isManager && trainingType.description.isNotEmpty) ...[
                       const SizedBox(height: 8),
                       Text(trainingType.description),
                     ],

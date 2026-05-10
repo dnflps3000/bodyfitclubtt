@@ -431,7 +431,8 @@ class HomeTab extends StatelessWidget {
         _HomeReservation(
           reservationId: reservationDocument.id,
           trainingSessionId: trainingSessionId,
-          trainingName: trainingTypeData?['name'] as String? ?? 'Tréning',
+          trainingName:
+              trainingTypeData?['name'] as String? ?? AppTexts.unknownTraining,
           startTime: startTime,
           endTime: endTime,
         ),
@@ -483,7 +484,8 @@ class HomeTab extends StatelessWidget {
 
       sessions.add(
         _HomeTrainingSession(
-          trainingName: trainingTypeData?['name'] as String? ?? 'Tréning',
+          trainingName:
+              trainingTypeData?['name'] as String? ?? AppTexts.unknownTraining,
           startTime: startTime,
           capacity: sessionData['capacity'] as int? ?? 0,
           reservedCount: sessionData['reservedCount'] as int? ?? 0,
@@ -563,13 +565,13 @@ class HomeTab extends StatelessWidget {
     final now = DateTime.now();
 
     if (_isSameDate(dateTime, now)) {
-      return 'dnes ${_formatTime(dateTime)}';
+      return '${AppTexts.todayLower} ${_formatTime(dateTime)}';
     }
 
     final tomorrow = DateTime(now.year, now.month, now.day + 1);
 
     if (_isSameDate(dateTime, tomorrow)) {
-      return 'zajtra ${_formatTime(dateTime)}';
+      return '${AppTexts.tomorrowLower} ${_formatTime(dateTime)}';
     }
 
     final day = dateTime.day.toString().padLeft(2, '0');

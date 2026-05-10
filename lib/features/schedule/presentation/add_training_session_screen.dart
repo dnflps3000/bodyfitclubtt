@@ -57,7 +57,7 @@ class _AddTrainingSessionScreenState extends State<AddTrainingSessionScreen> {
   Stream<List<_TrainerOption>> _watchTrainers() {
     return FirebaseFirestore.instance
         .collection('users')
-        .where('role', isEqualTo: AppRoles.trainer)
+        .where('role', whereIn: [AppRoles.trainer, AppRoles.admin])
         .snapshots()
         .map((snapshot) {
           final trainers = snapshot.docs
@@ -66,7 +66,7 @@ class _AddTrainingSessionScreenState extends State<AddTrainingSessionScreen> {
 
                 return _TrainerOption(
                   id: document.id,
-                  name: data['displayName'] as String? ?? 'Neznámy tréner',
+                  name: _resolveTrainerName(data),
                   isActive: data['isActive'] as bool? ?? true,
                 );
               })
@@ -293,6 +293,26 @@ class _AddTrainingSessionScreenState extends State<AddTrainingSessionScreen> {
         );
       },
     );
+  }
+
+  String _resolveTrainerName(Map<String, dynamic> data) {
+    final publicName = data['publicName'] as String? ?? '';
+    final firstName = data['firstName'] as String? ?? '';
+    final displayName = data['displayName'] as String? ?? '';
+
+    if (publicName.trim().isNotEmpty) {
+      return publicName.trim();
+    }
+
+    if (firstName.trim().isNotEmpty) {
+      return firstName.trim();
+    }
+
+    if (displayName.trim().isNotEmpty) {
+      return displayName.trim();
+    }
+
+    return AppTexts.unknownTrainer;
   }
 
   @override

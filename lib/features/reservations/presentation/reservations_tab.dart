@@ -136,6 +136,17 @@ class ReservationsTab extends StatelessWidget {
 
     final trainingTypeData = trainingTypeDocument.data();
     final trainerData = trainerDocument.data();
+    final trainerPublicName = trainerData?['publicName'] as String? ?? '';
+    final trainerFirstName = trainerData?['firstName'] as String? ?? '';
+    final trainerDisplayName = trainerData?['displayName'] as String? ?? '';
+
+    final trainerName = trainerPublicName.isNotEmpty
+        ? trainerPublicName
+        : trainerFirstName.isNotEmpty
+        ? trainerFirstName
+        : trainerDisplayName.isNotEmpty
+        ? trainerDisplayName
+        : AppTexts.unknownTrainer;
 
     final startTime =
         (sessionData['startTime'] as Timestamp?)?.toDate() ?? DateTime.now();
@@ -150,8 +161,9 @@ class ReservationsTab extends StatelessWidget {
     return _ReservationDetail(
       reservationId: reservationDocument.id,
       trainingSessionId: sessionId,
-      trainingName: trainingTypeData?['name'] as String? ?? 'Tréning',
-      trainerName: trainerData?['displayName'] as String? ?? 'Neznámy tréner',
+      trainingName:
+          trainingTypeData?['name'] as String? ?? AppTexts.unknownTraining,
+      trainerName: trainerName,
       startTime: startTime,
       endTime: endTime,
     );
@@ -191,7 +203,7 @@ class ReservationsTab extends StatelessWidget {
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.hasError) {
-          return const Center(child: Text(AppTexts.reservationError));
+          return const Center(child: Text(AppTexts.reservationsLoadError));
         }
 
         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -212,7 +224,7 @@ class ReservationsTab extends StatelessWidget {
             }
 
             if (detailSnapshot.hasError) {
-              return const Center(child: Text(AppTexts.reservationError));
+              return const Center(child: Text(AppTexts.reservationsLoadError));
             }
 
             final reservations = detailSnapshot.data ?? [];

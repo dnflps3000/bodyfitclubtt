@@ -33,7 +33,7 @@ class _AssignMembershipScreenState extends State<AssignMembershipScreen> {
 
                 return _UserOption(
                   id: document.id,
-                  name: data['displayName'] as String? ?? 'Neznámy používateľ',
+                  name: data['displayName'] as String? ?? AppTexts.unknownUser,
                   email: data['email'] as String?,
                   isActive: data['isActive'] as bool? ?? true,
                 );

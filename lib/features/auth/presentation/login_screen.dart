@@ -71,6 +71,9 @@ class _LoginScreenState extends State<LoginScreen> {
           return AppTexts.tooManyRequests;
         case 'network-request-failed':
           return AppTexts.networkError;
+        case 'user-disabled-in-app':
+        case 'user-disabled':
+          return AppTexts.inactiveAccount;
         case 'email-not-verified':
           return '${AppTexts.emailNotVerified} ${AppTexts.verificationEmailSentAgain}';
         case 'sign-in-cancelled':
