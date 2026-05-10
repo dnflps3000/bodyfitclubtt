@@ -361,4 +361,13 @@ class AppTexts {
   static const String language = 'Jazyk';
   static const String languageComingSoon =
       'Prepínanie jazyka pripravíme neskôr.';
+  static const String allRoles = 'Všetky role';
+  static const String editUser = 'Upraviť používateľa';
+  static const String userUpdated = 'Používateľ bol upravený.';
+  static const String userUpdateError = 'Používateľa sa nepodarilo upraviť.';
+  static const String cannotChangeOwnRole = 'Nemôžete zmeniť vlastnú rolu.';
+  static const String searchUsers = 'Hľadať používateľa';
+  static const String noUsersFound = 'Nenašli sa žiadni používatelia.';
+  static const String changeRoleWarning =
+      'Pri zmene roly používateľa sa môžu zmeniť jeho oprávnenia v aplikácii.';
 }

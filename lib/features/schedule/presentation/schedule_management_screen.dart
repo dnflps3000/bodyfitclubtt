@@ -5,6 +5,7 @@ import '../../../core/theme/app_texts.dart';
 import 'schedule_templates_management_screen.dart';
 import 'add_training_session_screen.dart';
 import 'training_types_management_screen.dart';
+import '../../admin/presentation/users_management_screen.dart';
 import '../../memberships/presentation/assign_membership_screen.dart';
 import '../../reservations/presentation/attendance_screen.dart';
 
@@ -60,9 +61,17 @@ class ScheduleManagementScreen extends StatelessWidget {
     );
   }
 
-  void _showUsersManagementComingSoon(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text(AppTexts.usersManagementComingSoon)),
+  Future<void> _openUsersManagementScreen(BuildContext context) async {
+    final currentUser = FirebaseAuth.instance.currentUser;
+
+    if (currentUser == null) {
+      return;
+    }
+
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => UsersManagementScreen(currentUserId: currentUser.uid),
+      ),
     );
   }
 
@@ -109,7 +118,7 @@ class ScheduleManagementScreen extends StatelessWidget {
             context: context,
             icon: Icons.group_outlined,
             label: AppTexts.usersManagement,
-            onPressed: () => _showUsersManagementComingSoon(context),
+            onPressed: () => _openUsersManagementScreen(context),
           ),
           const SizedBox(height: 12),
         ],
