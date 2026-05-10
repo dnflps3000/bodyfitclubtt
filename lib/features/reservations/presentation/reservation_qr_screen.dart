@@ -92,26 +92,46 @@ class _ReservationQrScreenState extends State<ReservationQrScreen> {
       body: Center(
         child: Card(
           margin: const EdgeInsets.all(24),
+          color: Colors.white,
           child: Padding(
             padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  widget.trainingName,
-                  style: Theme.of(context).textTheme.titleLarge,
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 8),
-                Text(_formatDateTimeRange(), textAlign: TextAlign.center),
-                const SizedBox(height: 24),
-                QrImageView(data: qrData, version: QrVersions.auto, size: 240),
-                const SizedBox(height: 24),
-                const Text(
-                  AppTexts.showQrToTrainer,
-                  textAlign: TextAlign.center,
-                ),
-              ],
+            child: DefaultTextStyle.merge(
+              style: const TextStyle(color: Colors.black87),
+              textAlign: TextAlign.center,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    widget.trainingName,
+                    style: Theme.of(
+                      context,
+                    ).textTheme.titleLarge?.copyWith(color: Colors.black87),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(_formatDateTimeRange(), textAlign: TextAlign.center),
+                  const SizedBox(height: 24),
+                  QrImageView(
+                    data: qrData,
+                    version: QrVersions.auto,
+                    size: 240,
+                    backgroundColor: Colors.white,
+                    eyeStyle: const QrEyeStyle(
+                      eyeShape: QrEyeShape.square,
+                      color: Colors.black,
+                    ),
+                    dataModuleStyle: const QrDataModuleStyle(
+                      dataModuleShape: QrDataModuleShape.square,
+                      color: Colors.black,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  const Text(
+                    AppTexts.showQrToTrainer,
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
             ),
           ),
         ),
