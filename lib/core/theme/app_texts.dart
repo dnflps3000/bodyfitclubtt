@@ -29,6 +29,7 @@ class AppTexts {
   static const String home = 'Domov';
   static const String schedule = 'Rozvrh';
   static const String reservations = 'Rezervácie';
+  static const String management = 'Správa';
   static const String profile = 'Profil';
   // Placeholder obrazovky
   static const String membershipStatus = 'Stav permanentky';
@@ -175,6 +176,13 @@ class AppTexts {
       'Tréner môže zrušiť iba vlastný termín.';
   static const String trainerCannotCancelStartedSession =
       'Tréner nemôže zrušiť termín, ktorý už začal alebo prebehol.';
+  static const String managementDescription =
+      'Tu môžete spravovať termíny cvičení, dochádzku, permanentky a používateľov.';
+  static const String attendanceManagement = 'Správa dochádzky';
+  static const String usersManagement = 'Správa používateľov';
+  static const String usersManagementComingSoon =
+      'Správa používateľov bude doplnená neskôr.';
+  static const String scheduleTemplatesManagement = 'Správa šablón rozvrhu';
   // Šablóny rozvrhu
   static const String addScheduleTemplate = 'Pridať šablónu rozvrhu';
   static const String weekday = 'Deň v týždni';

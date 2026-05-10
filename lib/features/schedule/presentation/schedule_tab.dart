@@ -6,11 +6,7 @@ import '../../../core/theme/app_texts.dart';
 import '../../../core/widgets/day_card_selector.dart';
 import '../data/schedule_service.dart';
 import '../domain/schedule_item.dart';
-import '../../memberships/presentation/assign_membership_screen.dart';
 import '../../reservations/data/reservation_service.dart';
-import '../../reservations/presentation/attendance_screen.dart';
-import 'add_training_session_screen.dart';
-import 'schedule_management_screen.dart';
 
 /* Zobrazuje obrazovku Rozvrh, teda zoznam tréningov, ich čas,
    trénera, voľné miesta, popis a tlačidlo rezervácie. */
@@ -107,43 +103,6 @@ class _ScheduleTabState extends State<ScheduleTab> {
     final minute = dateTime.minute.toString().padLeft(2, '0');
 
     return '$hour:$minute';
-  }
-
-  Future<void> _openAddTrainingSessionScreen(BuildContext context) async {
-    await Navigator.of(
-      context,
-    ).push(MaterialPageRoute(builder: (_) => const AddTrainingSessionScreen()));
-  }
-
-  Future<void> _openScheduleManagementScreen(BuildContext context) async {
-    await Navigator.of(
-      context,
-    ).push(MaterialPageRoute(builder: (_) => const ScheduleManagementScreen()));
-  }
-
-  Future<void> _openAssignMembershipScreen(BuildContext context) async {
-    await Navigator.of(
-      context,
-    ).push(MaterialPageRoute(builder: (_) => const AssignMembershipScreen()));
-  }
-
-  Future<void> _openTrainerAttendanceScreen(
-    BuildContext context,
-    String? role,
-  ) async {
-    final currentUser = FirebaseAuth.instance.currentUser;
-
-    if (currentUser == null) {
-      return;
-    }
-
-    await Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => AttendanceScreen(
-          trainerId: role == AppRoles.trainer ? currentUser.uid : null,
-        ),
-      ),
-    );
   }
 
   Future<void> _confirmCancelTrainingSession(
@@ -259,71 +218,6 @@ class _ScheduleTabState extends State<ScheduleTab> {
     }
   }
 
-  Widget _buildManagementButtons(BuildContext context, String? role) {
-    final isAdmin = role == AppRoles.admin;
-    final isTrainer = role == AppRoles.trainer;
-    final isLandscape =
-        MediaQuery.of(context).orientation == Orientation.landscape;
-
-    if (!isAdmin && !isTrainer) {
-      return const SizedBox.shrink();
-    }
-
-    final buttons = <Widget>[
-      if (isAdmin)
-        FilledButton.icon(
-          onPressed: () => _openScheduleManagementScreen(context),
-          icon: const Icon(Icons.admin_panel_settings_outlined),
-          label: const Text(AppTexts.scheduleManagement),
-        ),
-      if (isAdmin || isTrainer)
-        FilledButton.icon(
-          onPressed: () => _openAddTrainingSessionScreen(context),
-          icon: const Icon(Icons.event_available),
-          label: const Text(AppTexts.addTrainingSession),
-        ),
-      if (isTrainer)
-        FilledButton.icon(
-          onPressed: () => _openAssignMembershipScreen(context),
-          icon: const Icon(Icons.card_membership),
-          label: const Text(AppTexts.assignMembership),
-        ),
-      if (isAdmin || isTrainer)
-        FilledButton.icon(
-          onPressed: () => _openTrainerAttendanceScreen(context, role),
-          icon: const Icon(Icons.fact_check),
-          label: const Text(AppTexts.attendance),
-        ),
-    ];
-
-    if (isLandscape) {
-      return Padding(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-        child: Row(
-          children: [
-            for (var index = 0; index < buttons.length; index++) ...[
-              Expanded(child: buttons[index]),
-              if (index < buttons.length - 1) const SizedBox(width: 8),
-            ],
-          ],
-        ),
-      );
-    }
-
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          for (var index = 0; index < buttons.length; index++) ...[
-            buttons[index],
-            if (index < buttons.length - 1) const SizedBox(height: 8),
-          ],
-        ],
-      ),
-    );
-  }
-
   Widget _buildDaySelector() {
     final days = _nextFourteenDays();
 
@@ -370,7 +264,6 @@ class _ScheduleTabState extends State<ScheduleTab> {
 
             return Column(
               children: [
-                _buildManagementButtons(context, role),
                 _buildDaySelector(),
                 Expanded(
                   child: _buildScheduleListFromItems(
