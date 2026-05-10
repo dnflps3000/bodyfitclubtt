@@ -9,6 +9,7 @@ import '../../memberships/domain/membership.dart';
 import '../../payment/presentation/payment_screen.dart';
 import '../../reservations/presentation/attendance_qr_scanner_screen.dart';
 import '../../reservations/presentation/reservation_qr_screen.dart';
+import '../../messages/latest_public_message_card.dart';
 
 class HomeTab extends StatelessWidget {
   const HomeTab({super.key, required this.onOpenSchedule});
@@ -322,13 +323,7 @@ class HomeTab extends StatelessWidget {
   }
 
   Widget _buildNewsCard() {
-    return const Card(
-      child: ListTile(
-        leading: Icon(Icons.campaign_outlined),
-        title: Text(AppTexts.news),
-        subtitle: Text(AppTexts.newsPlaceholder),
-      ),
-    );
+    return const LatestPublicMessageCard();
   }
 
   Widget _buildPaymentButtons(BuildContext context) {

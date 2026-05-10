@@ -8,6 +8,8 @@ import {
 } from "firebase-admin/firestore";
 import * as functions from "firebase-functions";
 import Stripe from "stripe";
+import {onDocumentCreated} from "firebase-functions/v2/firestore";
+import {getMessaging} from "firebase-admin/messaging";
 
 initializeApp();
 
@@ -363,5 +365,66 @@ export const generateTrainingSessions = onSchedule(
       "Training session generation finished. " +
         `Created: ${createdCount}, skipped: ${skippedCount}.`,
     );
+  },
+);
+
+export const sendNotificationOnPublicMessageCreate = onDocumentCreated(
+  {
+    document: "public_messages/{messageId}",
+    region: "europe-west1",
+  },
+  async (event) => {
+    const messageData = event.data?.data();
+
+    if (!messageData) {
+      logger.info("Message data is empty, notification skipped.");
+      return;
+    }
+
+    const text = messageData.text as string | undefined;
+    const authorName = messageData.authorName as string | undefined;
+
+    if (!text) {
+      logger.info("Message text is empty, notification skipped.");
+      return;
+    }
+
+    const tokensSnapshot = await db.collection("fcmTokens").get();
+
+    const tokens = tokensSnapshot.docs
+      .map((doc) => doc.data().token as string | undefined)
+      .filter((token): token is string => Boolean(token));
+
+    if (tokens.length === 0) {
+      logger.info("No FCM tokens found.");
+      return;
+    }
+
+    const title = "Nová správa";
+    const body = authorName ? `${authorName}: ${text}` : text;
+
+    const chunks: string[][] = [];
+
+    for (let i = 0; i < tokens.length; i += 500) {
+      chunks.push(tokens.slice(i, i + 500));
+    }
+
+    for (const chunk of chunks) {
+      const response = await getMessaging().sendEachForMulticast({
+        tokens: chunk,
+        notification: {
+          title,
+          body,
+        },
+        data: {
+          type: "public_message",
+          messageId: event.params.messageId,
+        },
+      });
+
+      logger.info(
+        `Notifications sent: ${response.successCount}, failed: ${response.failureCount}`,
+      );
+    }
   },
 );
