@@ -68,6 +68,7 @@ class AppTexts {
   static const String chooseFromGallery = 'Vybrať z galérie';
   static const String takePhoto = 'Odfotiť';
   static const String removePhoto = 'Odstrániť fotku';
+  static const String editPhoto = 'Upraviť fotku';
   static const String profilePhotoUpdated = 'Profilová fotka bola uložená.';
   static const String cropProfilePhoto = 'Orezať profilovú fotku';
   static const String profilePhotoUpdateError =

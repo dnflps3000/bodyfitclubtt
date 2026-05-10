@@ -174,6 +174,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               ),
               if (_photoUrl != null && _photoUrl!.isNotEmpty)
                 ListTile(
+                  leading: const Icon(Icons.tune_outlined),
+                  title: const Text(AppTexts.editPhoto),
+                  onTap: () {
+                    Navigator.of(bottomSheetContext).pop();
+                    _editCurrentPhoto();
+                  },
+                ),
+              if (_photoUrl != null && _photoUrl!.isNotEmpty)
+                ListTile(
                   leading: const Icon(Icons.delete_outline),
                   title: const Text(AppTexts.removePhoto),
                   onTap: () {
@@ -188,6 +197,128 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     );
   }
 
+  Future<CroppedFile?> _cropProfilePhoto(String sourcePath) async {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return ImageCropper().cropImage(
+      sourcePath: sourcePath,
+      aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1),
+      compressFormat: ImageCompressFormat.jpg,
+      compressQuality: 85,
+      uiSettings: [
+        AndroidUiSettings(
+          toolbarTitle: AppTexts.cropProfilePhoto,
+          toolbarColor: colorScheme.surface,
+          toolbarWidgetColor: colorScheme.onSurface,
+          activeControlsWidgetColor: colorScheme.primary,
+          cropStyle: CropStyle.circle,
+          lockAspectRatio: true,
+          hideBottomControls: false,
+        ),
+        IOSUiSettings(
+          title: AppTexts.cropProfilePhoto,
+          cropStyle: CropStyle.circle,
+          aspectRatioLockEnabled: true,
+          resetAspectRatioEnabled: false,
+        ),
+      ],
+    );
+  }
+
+  Future<void> _uploadCroppedProfilePhoto(CroppedFile croppedFile) async {
+    setState(() {
+      _photoSaving = true;
+    });
+
+    final file = File(croppedFile.path);
+
+    final storageRef = FirebaseStorage.instance
+        .ref()
+        .child('profile_photos')
+        .child(widget.user.uid)
+        .child('profile.jpg');
+
+    await storageRef.putFile(file, SettableMetadata(contentType: 'image/jpeg'));
+
+    final downloadUrl = await storageRef.getDownloadURL();
+
+    await widget.user.updatePhotoURL(downloadUrl);
+
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(widget.user.uid)
+        .set({
+          'photoURL': downloadUrl,
+          'photoUpdatedManually': true,
+          'updatedAt': FieldValue.serverTimestamp(),
+        }, SetOptions(merge: true));
+
+    if (!mounted) return;
+
+    setState(() {
+      _photoUrl = downloadUrl;
+    });
+
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text(AppTexts.profilePhotoUpdated)));
+  }
+
+  Future<File> _downloadCurrentProfilePhoto(String photoUrl) async {
+    final uri = Uri.parse(photoUrl);
+    final request = await HttpClient().getUrl(uri);
+    final response = await request.close();
+
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw Exception('profile-photo-download-failed');
+    }
+
+    final bytes = await response.fold<List<int>>(
+      <int>[],
+      (previous, element) => previous..addAll(element),
+    );
+
+    final tempFile = File(
+      '${Directory.systemTemp.path}/profile_photo_${widget.user.uid}.jpg',
+    );
+
+    return tempFile.writeAsBytes(bytes, flush: true);
+  }
+
+  Future<void> _editCurrentPhoto() async {
+    final currentPhotoUrl = _photoUrl;
+
+    if (currentPhotoUrl == null || currentPhotoUrl.isEmpty) {
+      return;
+    }
+
+    try {
+      final photoFile = await _downloadCurrentProfilePhoto(currentPhotoUrl);
+
+      if (!mounted) return;
+
+      final croppedFile = await _cropProfilePhoto(photoFile.path);
+
+      if (croppedFile == null) {
+        return;
+      }
+
+      await _uploadCroppedProfilePhoto(croppedFile);
+    } catch (_) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text(AppTexts.profilePhotoUpdateError)),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _photoSaving = false;
+        });
+      }
+    }
+  }
+
   Future<void> _pickAndUploadPhoto(ImageSource source) async {
     try {
       final pickedFile = await _imagePicker.pickImage(
@@ -200,65 +331,17 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         return;
       }
 
-      final croppedFile = await ImageCropper().cropImage(
-        sourcePath: pickedFile.path,
-        aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1),
-        uiSettings: [
-          AndroidUiSettings(
-            toolbarTitle: AppTexts.cropProfilePhoto,
-            lockAspectRatio: true,
-            hideBottomControls: false,
-          ),
-          IOSUiSettings(
-            title: AppTexts.cropProfilePhoto,
-            aspectRatioLockEnabled: true,
-          ),
-        ],
-      );
+      if (!mounted) {
+        return;
+      }
+
+      final croppedFile = await _cropProfilePhoto(pickedFile.path);
 
       if (croppedFile == null) {
         return;
       }
 
-      setState(() {
-        _photoSaving = true;
-      });
-
-      final file = File(croppedFile.path);
-
-      final storageRef = FirebaseStorage.instance
-          .ref()
-          .child('profile_photos')
-          .child(widget.user.uid)
-          .child('profile.jpg');
-
-      await storageRef.putFile(
-        file,
-        SettableMetadata(contentType: 'image/jpeg'),
-      );
-
-      final downloadUrl = await storageRef.getDownloadURL();
-
-      await widget.user.updatePhotoURL(downloadUrl);
-
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(widget.user.uid)
-          .set({
-            'photoURL': downloadUrl,
-            'photoUpdatedManually': true,
-            'updatedAt': FieldValue.serverTimestamp(),
-          }, SetOptions(merge: true));
-
-      if (!mounted) return;
-
-      setState(() {
-        _photoUrl = downloadUrl;
-      });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text(AppTexts.profilePhotoUpdated)),
-      );
+      await _uploadCroppedProfilePhoto(croppedFile);
     } catch (_) {
       if (!mounted) return;
 
