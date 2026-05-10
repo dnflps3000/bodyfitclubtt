@@ -17,19 +17,23 @@ class MainNavigationScreen extends StatefulWidget {
 
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
   int _selectedIndex = 0;
+  int _scheduleTabVersion = 0;
 
-  late final List<Widget> _tabs = [
-    HomeTab(
-      onOpenSchedule: () {
-        setState(() {
-          _selectedIndex = 1;
-        });
-      },
-    ),
-    const ScheduleTab(),
-    const ReservationsTab(),
-    ProfileTab(user: widget.user),
-  ];
+  List<Widget> _buildTabs() {
+    return [
+      HomeTab(
+        onOpenSchedule: () {
+          setState(() {
+            _scheduleTabVersion++;
+            _selectedIndex = 1;
+          });
+        },
+      ),
+      ScheduleTab(key: ValueKey('schedule-tab-$_scheduleTabVersion')),
+      const ReservationsTab(),
+      ProfileTab(user: widget.user),
+    ];
+  }
 
   static const List<String> _titles = [
     AppTexts.home,
@@ -42,7 +46,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(_titles[_selectedIndex])),
-      body: _tabs[_selectedIndex],
+      body: _buildTabs()[_selectedIndex],
       bottomNavigationBar: NavigationBar(
         selectedIndex: _selectedIndex,
         onDestinationSelected: (index) {

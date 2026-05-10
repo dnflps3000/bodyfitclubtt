@@ -53,26 +53,39 @@ class _DayCardSelectorState extends State<DayCardSelector> {
   }
 
   void _scrollSelectedDateToCenter() {
+    if (!_scrollController.hasClients) {
+      return;
+    }
+
     final selectedIndex = widget.days.indexWhere((day) {
       return _isSameDate(day, widget.selectedDate);
     });
 
-    if (selectedIndex == -1 || selectedIndex >= _cardKeys.length) {
+    if (selectedIndex == -1) {
       return;
     }
 
-    final selectedContext = _cardKeys[selectedIndex].currentContext;
+    const cardWidth = 104.0;
+    const separatorWidth = 10.0;
+    const horizontalPadding = 16.0;
 
-    if (selectedContext == null) {
-      return;
-    }
+    final viewportWidth = _scrollController.position.viewportDimension;
+    final itemCenter =
+        horizontalPadding +
+        selectedIndex * (cardWidth + separatorWidth) +
+        cardWidth / 2;
 
-    Scrollable.ensureVisible(
-      selectedContext,
+    final targetOffset = itemCenter - viewportWidth / 2;
+
+    final minOffset = _scrollController.position.minScrollExtent;
+    final maxOffset = _scrollController.position.maxScrollExtent;
+
+    final clampedOffset = targetOffset.clamp(minOffset, maxOffset).toDouble();
+
+    _scrollController.animateTo(
+      clampedOffset,
       duration: const Duration(milliseconds: 250),
       curve: Curves.easeOut,
-      alignment: 0.5,
-      alignmentPolicy: ScrollPositionAlignmentPolicy.explicit,
     );
   }
 
