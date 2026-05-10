@@ -431,7 +431,8 @@ class HomeTab extends StatelessWidget {
         _HomeReservation(
           reservationId: reservationDocument.id,
           trainingSessionId: trainingSessionId,
-          trainingName: trainingTypeData?['name'] as String? ?? AppTexts.unknownTraining,
+          trainingName:
+              trainingTypeData?['name'] as String? ?? AppTexts.unknownTraining,
           startTime: startTime,
           endTime: endTime,
         ),
@@ -483,7 +484,8 @@ class HomeTab extends StatelessWidget {
 
       sessions.add(
         _HomeTrainingSession(
-          trainingName: trainingTypeData?['name'] as String? ?? AppTexts.unknownTraining,
+          trainingName:
+              trainingTypeData?['name'] as String? ?? AppTexts.unknownTraining,
           startTime: startTime,
           capacity: sessionData['capacity'] as int? ?? 0,
           reservedCount: sessionData['reservedCount'] as int? ?? 0,

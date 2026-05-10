@@ -7,7 +7,6 @@ import '../domain/schedule_template.dart';
 import '../domain/training_session.dart';
 import '../domain/training_type.dart';
 
-
 /* Načítava dáta z Firestore z kolekcií trainingSessions, trainingTypes a users
    a skladá ich do zoznamu položiek rozvrhu. */
 class ScheduleService {

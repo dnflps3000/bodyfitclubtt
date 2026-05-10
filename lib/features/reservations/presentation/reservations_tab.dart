@@ -143,10 +143,10 @@ class ReservationsTab extends StatelessWidget {
     final trainerName = trainerPublicName.isNotEmpty
         ? trainerPublicName
         : trainerFirstName.isNotEmpty
-            ? trainerFirstName
-            : trainerDisplayName.isNotEmpty
-                ? trainerDisplayName
-                : AppTexts.unknownTrainer;
+        ? trainerFirstName
+        : trainerDisplayName.isNotEmpty
+        ? trainerDisplayName
+        : AppTexts.unknownTrainer;
 
     final startTime =
         (sessionData['startTime'] as Timestamp?)?.toDate() ?? DateTime.now();
@@ -161,7 +161,8 @@ class ReservationsTab extends StatelessWidget {
     return _ReservationDetail(
       reservationId: reservationDocument.id,
       trainingSessionId: sessionId,
-      trainingName: trainingTypeData?['name'] as String? ?? AppTexts.unknownTraining,
+      trainingName:
+          trainingTypeData?['name'] as String? ?? AppTexts.unknownTraining,
       trainerName: trainerName,
       startTime: startTime,
       endTime: endTime,

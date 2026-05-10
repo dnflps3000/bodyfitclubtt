@@ -6,6 +6,7 @@ import '../../../core/theme/app_texts.dart';
 import '../../../core/widgets/day_card_selector.dart';
 import '../data/schedule_service.dart';
 import '../domain/schedule_item.dart';
+import '../../memberships/presentation/assign_membership_screen.dart';
 import '../../reservations/data/reservation_service.dart';
 import '../../reservations/presentation/attendance_screen.dart';
 import 'add_training_session_screen.dart';
@@ -118,6 +119,12 @@ class _ScheduleTabState extends State<ScheduleTab> {
     await Navigator.of(
       context,
     ).push(MaterialPageRoute(builder: (_) => const ScheduleManagementScreen()));
+  }
+
+  Future<void> _openAssignMembershipScreen(BuildContext context) async {
+    await Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const AssignMembershipScreen()));
   }
 
   Future<void> _openTrainerAttendanceScreen(
@@ -274,6 +281,12 @@ class _ScheduleTabState extends State<ScheduleTab> {
           onPressed: () => _openAddTrainingSessionScreen(context),
           icon: const Icon(Icons.event_available),
           label: const Text(AppTexts.addTrainingSession),
+        ),
+      if (isTrainer)
+        FilledButton.icon(
+          onPressed: () => _openAssignMembershipScreen(context),
+          icon: const Icon(Icons.card_membership),
+          label: const Text(AppTexts.assignMembership),
         ),
       if (isAdmin || isTrainer)
         FilledButton.icon(

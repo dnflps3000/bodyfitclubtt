@@ -32,14 +32,13 @@ class AuthService {
         existingData?['photoUpdatedManually'] as bool? ?? false;
 
     final displayName = user.displayName?.trim() ?? '';
-    final existingPublicName =
-        existingData?['publicName'] as String? ?? '';
+    final existingPublicName = existingData?['publicName'] as String? ?? '';
 
     final generatedPublicName = firstName?.trim().isNotEmpty == true
         ? firstName!.trim()
         : displayName.isNotEmpty
-            ? displayName.split(' ').first
-            : null;
+        ? displayName.split(' ').first
+        : null;
 
     final Map<String, dynamic> data = {
       'uid': user.uid,

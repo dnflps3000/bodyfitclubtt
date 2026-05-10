@@ -119,7 +119,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
           ? displayName
           : email,
       userEmail: email,
-      trainingName: trainingTypeData?['name'] as String? ?? AppTexts.unknownTraining,
+      trainingName:
+          trainingTypeData?['name'] as String? ?? AppTexts.unknownTraining,
       startTime: startTime,
       endTime: endTime,
     );

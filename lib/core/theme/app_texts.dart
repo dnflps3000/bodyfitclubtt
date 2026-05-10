@@ -121,7 +121,7 @@ class AppTexts {
       'Nepodarilo sa načítať rozvrh tréningov.';
   // Správa rozvrhu
   static const String addTrainingType = 'Pridať typ cvičenia';
-  static const String addTrainingSession = 'Pridať termín';
+  static const String addTrainingSession = 'Pridať termín cvičenia';
   static const String trainingType = 'Typ cvičenia';
   static const String selectTrainingType = 'Vyberte typ cvičenia';
   static const String trainingName = 'Názov cvičenia';
