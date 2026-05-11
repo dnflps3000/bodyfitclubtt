@@ -317,6 +317,86 @@ class MembershipService {
     return cancelledCount;
   }
 
+  Future<void> cancelReservedReservationForMembership({
+    required Membership membership,
+    required MembershipUsageItem reservation,
+    required User currentUser,
+  }) async {
+    final reservationRef = _firestore
+        .collection('reservations')
+        .doc(reservation.reservationId);
+
+    final sessionRef = _firestore
+        .collection('trainingSessions')
+        .doc(reservation.trainingSessionId);
+
+    final membershipRef = _firestore
+        .collection('memberships')
+        .doc(membership.id);
+
+    await _firestore.runTransaction((transaction) async {
+      final reservationSnapshot = await transaction.get(reservationRef);
+      final sessionSnapshot = await transaction.get(sessionRef);
+      final membershipSnapshot = await transaction.get(membershipRef);
+
+      if (!reservationSnapshot.exists) {
+        throw Exception('reservation-not-found');
+      }
+
+      final reservationData = reservationSnapshot.data() ?? {};
+      final reservationStatus = reservationData['status'] as String? ?? '';
+      final entryStatus = reservationData['entryStatus'] as String? ?? '';
+      final reservationMembershipId =
+          reservationData['membershipId'] as String? ?? '';
+      final reservationTrainingSessionId =
+          reservationData['trainingSessionId'] as String? ?? '';
+
+      if (reservationMembershipId != membership.id) {
+        throw Exception('reservation-membership-mismatch');
+      }
+
+      if (reservationTrainingSessionId != reservation.trainingSessionId) {
+        throw Exception('reservation-session-mismatch');
+      }
+
+      if (reservationStatus != 'active' || entryStatus != 'reserved') {
+        throw Exception('reservation-not-active');
+      }
+
+      if (sessionSnapshot.exists) {
+        final sessionData = sessionSnapshot.data() ?? {};
+        final reservedCount = sessionData['reservedCount'] as int? ?? 0;
+        final newReservedCount = reservedCount > 0 ? reservedCount - 1 : 0;
+
+        transaction.update(sessionRef, {
+          'reservedCount': newReservedCount,
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
+      }
+
+      if (membershipSnapshot.exists && membership.entriesTotal != null) {
+        final membershipData = membershipSnapshot.data() ?? {};
+        final entriesReserved = membershipData['entriesReserved'] as int? ?? 0;
+        final newEntriesReserved = entriesReserved > 0
+            ? entriesReserved - 1
+            : 0;
+
+        transaction.update(membershipRef, {
+          'entriesReserved': newEntriesReserved,
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
+      }
+
+      transaction.update(reservationRef, {
+        'status': 'cancelled',
+        'entryStatus': 'released',
+        'cancelledBy': currentUser.uid,
+        'cancelledAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+    });
+  }
+
   Future<MembershipUsageSummary> loadMembershipUsage(
     Membership membership,
   ) async {

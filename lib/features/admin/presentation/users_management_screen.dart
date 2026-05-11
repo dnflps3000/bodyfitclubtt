@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_roles.dart';
 import '../../../core/theme/app_texts.dart';
+import '../../memberships/presentation/memberships_management_screen.dart';
 
 class UsersManagementScreen extends StatefulWidget {
   const UsersManagementScreen({super.key, required this.currentUserId});
@@ -158,7 +159,9 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
     }
   }
 
-  Future<void> _ensureUserCanBeDeactivated(_ManagedUser user) async {
+  Future<_DeactivationBlockInfo> _loadDeactivationBlockInfo(
+    _ManagedUser user,
+  ) async {
     if (user.id == widget.currentUserId) {
       throw Exception('cannot-deactivate-yourself');
     }
@@ -168,34 +171,60 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
     final reservationsSnapshot = await FirebaseFirestore.instance
         .collection('reservations')
         .where('userId', isEqualTo: user.id)
+        .where('status', isEqualTo: 'active')
         .get();
-
-    final hasActiveReservations = reservationsSnapshot.docs.any((document) {
-      final data = document.data();
-      final status = data['status'] as String? ?? '';
-
-      return status == 'active';
-    });
-
-    if (hasActiveReservations) {
-      throw Exception('user-has-active-reservations');
-    }
 
     final membershipsSnapshot = await FirebaseFirestore.instance
         .collection('memberships')
         .where('userId', isEqualTo: user.id)
+        .where('status', isEqualTo: 'active')
         .get();
 
-    final hasActiveMemberships = membershipsSnapshot.docs.any((document) {
-      final data = document.data();
-      final status = data['status'] as String? ?? '';
+    return _DeactivationBlockInfo(
+      activeReservationsCount: reservationsSnapshot.docs.length,
+      activeMembershipsCount: membershipsSnapshot.docs.length,
+    );
+  }
 
-      return status == 'active';
-    });
+  Future<void> _showDeactivationBlockedDialog({
+    required _ManagedUser user,
+    required _DeactivationBlockInfo blockInfo,
+  }) async {
+    final openMemberships = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text(AppTexts.userCannotBeDeactivated),
+          content: Text(
+            '${AppTexts.userCannotBeDeactivatedDescription}\n\n'
+            '${user.displayLabel}\n\n'
+            '${AppTexts.userHasBlockingItems}\n'
+            '- ${AppTexts.activeReservationsCount}: '
+            '${blockInfo.activeReservationsCount}\n'
+            '- ${AppTexts.activeMembershipsCount}: '
+            '${blockInfo.activeMembershipsCount}',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: const Text(AppTexts.back),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: const Text(AppTexts.showMemberships),
+            ),
+          ],
+        );
+      },
+    );
 
-    if (hasActiveMemberships) {
-      throw Exception('user-has-active-memberships');
+    if (!mounted || openMemberships != true) {
+      return;
     }
+
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const MembershipsManagementScreen()),
+    );
   }
 
   String _userManagementErrorMessage(Object error) {
@@ -253,7 +282,15 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
     }
 
     try {
-      await _ensureUserCanBeDeactivated(user);
+      final blockInfo = await _loadDeactivationBlockInfo(user);
+
+      if (blockInfo.hasBlockingItems) {
+        if (!mounted) return;
+
+        await _showDeactivationBlockedDialog(user: user, blockInfo: blockInfo);
+
+        return;
+      }
 
       await FirebaseFirestore.instance.collection('users').doc(user.id).set({
         'isActive': false,
@@ -679,5 +716,19 @@ class _ManagedUser {
     }
 
     return AppTexts.unknownUser;
+  }
+}
+
+class _DeactivationBlockInfo {
+  const _DeactivationBlockInfo({
+    required this.activeReservationsCount,
+    required this.activeMembershipsCount,
+  });
+
+  final int activeReservationsCount;
+  final int activeMembershipsCount;
+
+  bool get hasBlockingItems {
+    return activeReservationsCount > 0 || activeMembershipsCount > 0;
   }
 }

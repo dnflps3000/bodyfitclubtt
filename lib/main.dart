@@ -106,7 +106,7 @@ class _AppSplashScreenState extends State<AppSplashScreen> {
       backgroundColor: AppTheme.splashBackground(Theme.of(context).brightness),
       body: Center(
         child: Image.asset(
-          'assets/splash.png',
+          'assets/splash_logo.png',
           width: 320,
           fit: BoxFit.contain,
         ),

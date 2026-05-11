@@ -23,8 +23,11 @@ class _MembershipDetailScreenState extends State<MembershipDetailScreen> {
 
   late final TextEditingController _entriesRemainingController;
   late String _selectedStatus;
+  late Future<MembershipUsageSummary> _usageFuture;
 
   bool _isSaving = false;
+  int? _entriesReservedOverride;
+  int? _entriesRemainingOverride;
 
   @override
   void initState() {
@@ -35,12 +38,17 @@ class _MembershipDetailScreenState extends State<MembershipDetailScreen> {
     );
 
     _selectedStatus = widget.membership.status;
+    _usageFuture = _membershipService.loadMembershipUsage(widget.membership);
   }
 
   @override
   void dispose() {
     _entriesRemainingController.dispose();
     super.dispose();
+  }
+
+  void _reloadUsage() {
+    _usageFuture = _membershipService.loadMembershipUsage(widget.membership);
   }
 
   String _formatDate(DateTime? dateTime) {
@@ -65,11 +73,38 @@ class _MembershipDetailScreenState extends State<MembershipDetailScreen> {
     return '$day.$month.$year $hour:$minute';
   }
 
+  String _currentMembershipDisplayStatusLabel({required int availableEntries}) {
+    if (_selectedStatus == 'cancelled') {
+      return AppTexts.membershipStatusCancelled;
+    }
+
+    if (_selectedStatus == 'inactive') {
+      return AppTexts.membershipStatusInactive;
+    }
+
+    if (widget.membership.validFrom != null &&
+        DateTime.now().isBefore(widget.membership.validFrom!)) {
+      return AppTexts.membershipStatusNotYetValid;
+    }
+
+    if (widget.membership.validUntil != null &&
+        DateTime.now().isAfter(widget.membership.validUntil!)) {
+      return AppTexts.membershipStatusExpired;
+    }
+
+    if (widget.membership.entriesTotal != null && availableEntries <= 0) {
+      return AppTexts.membershipStatusUsedUp;
+    }
+
+    return AppTexts.membershipStatusActive;
+  }
+
   Widget _buildUsageCard({
     required BuildContext context,
     required String title,
     required String emptyText,
     required List<MembershipUsageItem> items,
+    bool canCancelItems = false,
   }) {
     return Card(
       child: Padding(
@@ -81,7 +116,7 @@ class _MembershipDetailScreenState extends State<MembershipDetailScreen> {
             const SizedBox(height: 12),
             if (items.isEmpty)
               Text(emptyText)
-            else
+            else ...[
               for (final item in items)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 8),
@@ -96,26 +131,34 @@ class _MembershipDetailScreenState extends State<MembershipDetailScreen> {
                           '${item.trainingName}',
                         ),
                       ),
+                      if (canCancelItems) ...[
+                        const SizedBox(width: 8),
+                        TextButton(
+                          onPressed: _isSaving
+                              ? null
+                              : () => _cancelReservedReservation(item),
+                          child: const Text(AppTexts.cancel),
+                        ),
+                      ],
                     ],
                   ),
                 ),
+              if (canCancelItems) ...[
+                const SizedBox(height: 8),
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton.icon(
+                    onPressed: _isSaving ? null : _cancelReservedReservations,
+                    icon: const Icon(Icons.event_busy_outlined),
+                    label: const Text(AppTexts.cancelAllReservations),
+                  ),
+                ),
+              ],
+            ],
           ],
         ),
       ),
     );
-  }
-
-  String _statusLabel(String status) {
-    switch (status) {
-      case 'active':
-        return AppTexts.membershipStatusActive;
-      case 'inactive':
-        return AppTexts.membershipStatusInactive;
-      case 'cancelled':
-        return AppTexts.membershipStatusCancelled;
-      default:
-        return status;
-    }
   }
 
   Future<void> _saveAdminChanges() async {
@@ -130,7 +173,11 @@ class _MembershipDetailScreenState extends State<MembershipDetailScreen> {
         ? null
         : int.tryParse(entriesRemainingText);
 
-    if (widget.membership.entriesTotal != null && entriesRemaining == null) {
+    final entriesTotal = widget.membership.entriesTotal;
+    final entriesReserved =
+        _entriesReservedOverride ?? (widget.membership.entriesReserved ?? 0);
+
+    if (entriesTotal != null && entriesRemaining == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text(AppTexts.invalidRemainingEntries)),
       );
@@ -140,6 +187,38 @@ class _MembershipDetailScreenState extends State<MembershipDetailScreen> {
     if (entriesRemaining != null && entriesRemaining < 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text(AppTexts.invalidRemainingEntries)),
+      );
+      return;
+    }
+
+    if (entriesTotal != null &&
+        entriesRemaining != null &&
+        entriesRemaining > entriesTotal) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(AppTexts.invalidRemainingEntriesHigherThanTotal),
+        ),
+      );
+      return;
+    }
+
+    if (entriesRemaining != null && entriesReserved > entriesRemaining) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(AppTexts.invalidRemainingEntriesLowerThanReserved),
+        ),
+      );
+      return;
+    }
+
+    final isDeactivatingMembership =
+        _selectedStatus == 'inactive' || _selectedStatus == 'cancelled';
+
+    if (isDeactivatingMembership && entriesReserved > 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(AppTexts.cancelReservationsBeforeDeactivation),
+        ),
       );
       return;
     }
@@ -158,11 +237,13 @@ class _MembershipDetailScreenState extends State<MembershipDetailScreen> {
 
       if (!mounted) return;
 
+      setState(() {
+        _entriesRemainingOverride = entriesRemaining;
+      });
+
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text(AppTexts.membershipUpdated)));
-
-      Navigator.of(context).pop();
     } catch (_) {
       if (!mounted) return;
 
@@ -194,7 +275,7 @@ class _MembershipDetailScreenState extends State<MembershipDetailScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: const Text(AppTexts.cancel),
+              child: const Text(AppTexts.back),
             ),
             FilledButton(
               onPressed: () => Navigator.of(dialogContext).pop(true),
@@ -222,11 +303,14 @@ class _MembershipDetailScreenState extends State<MembershipDetailScreen> {
 
       if (!mounted) return;
 
+      setState(() {
+        _entriesReservedOverride = 0;
+        _reloadUsage();
+      });
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(AppTexts.allocatedReservationsCancelled(count))),
       );
-
-      Navigator.of(context).pop();
     } catch (_) {
       if (!mounted) return;
 
@@ -244,12 +328,103 @@ class _MembershipDetailScreenState extends State<MembershipDetailScreen> {
     }
   }
 
+  Future<void> _cancelReservedReservation(
+    MembershipUsageItem reservation,
+  ) async {
+    final currentUser = FirebaseAuth.instance.currentUser;
+
+    if (currentUser == null) {
+      return;
+    }
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text(AppTexts.cancelReservationForMembership),
+          content: const Text(AppTexts.cancelReservationForMembershipQuestion),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: const Text(AppTexts.back),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: const Text(AppTexts.cancelReservation),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed != true) {
+      return;
+    }
+
+    setState(() {
+      _isSaving = true;
+    });
+
+    try {
+      await _membershipService.cancelReservedReservationForMembership(
+        membership: widget.membership,
+        reservation: reservation,
+        currentUser: currentUser,
+      );
+
+      if (!mounted) return;
+
+      final currentEntriesReserved =
+          _entriesReservedOverride ?? (widget.membership.entriesReserved ?? 0);
+
+      setState(() {
+        _entriesReservedOverride = currentEntriesReserved > 0
+            ? currentEntriesReserved - 1
+            : 0;
+        _reloadUsage();
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(AppTexts.reservationForMembershipCancelled),
+        ),
+      );
+    } catch (_) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text(AppTexts.reservationCancelError)),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSaving = false;
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final membership = widget.membership;
     final entriesTotal = membership.entriesTotal;
-    final entriesReserved = membership.entriesReserved ?? 0;
-    final availableEntries = membership.availableEntries;
+    final entriesReserved =
+        _entriesReservedOverride ?? (membership.entriesReserved ?? 0);
+
+    final entriesRemainingValue =
+        _entriesRemainingOverride ?? membership.entriesRemaining;
+
+    final entriesRemainingForCalculation = entriesRemainingValue ?? 0;
+
+    final availableEntries = membership.entriesTotal == null
+        ? membership.availableEntries
+        : entriesRemainingForCalculation - entriesReserved < 0
+        ? 0
+        : entriesRemainingForCalculation - entriesReserved;
+
+    final displayStatusLabel = _currentMembershipDisplayStatusLabel(
+      availableEntries: availableEntries,
+    );
 
     return Scaffold(
       appBar: AppBar(title: const Text(AppTexts.membershipDetail)),
@@ -274,9 +449,7 @@ class _MembershipDetailScreenState extends State<MembershipDetailScreen> {
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
                     const SizedBox(height: 12),
-                    Text(
-                      '${AppTexts.status}: ${_statusLabel(membership.status)}',
-                    ),
+                    Text('${AppTexts.status}: $displayStatusLabel'),
                     Text(
                       '${AppTexts.validFrom}: ${_formatDate(membership.validFrom)}',
                     ),
@@ -286,7 +459,7 @@ class _MembershipDetailScreenState extends State<MembershipDetailScreen> {
                     const SizedBox(height: 12),
                     Text('${AppTexts.entriesTotal}: ${entriesTotal ?? '-'}'),
                     Text(
-                      '${AppTexts.entriesRemaining}: ${membership.entriesRemaining ?? '-'}',
+                      '${AppTexts.entriesRemaining}: ${entriesRemainingValue ?? '-'}',
                     ),
                     Text('${AppTexts.entriesReserved}: $entriesReserved'),
                     Text('${AppTexts.entriesAvailable}: $availableEntries'),
@@ -296,7 +469,7 @@ class _MembershipDetailScreenState extends State<MembershipDetailScreen> {
             ),
             const SizedBox(height: 16),
             FutureBuilder<MembershipUsageSummary>(
-              future: _membershipService.loadMembershipUsage(membership),
+              future: _usageFuture,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Card(
@@ -329,6 +502,7 @@ class _MembershipDetailScreenState extends State<MembershipDetailScreen> {
                       title: AppTexts.allocatedReservations,
                       emptyText: AppTexts.noAllocatedReservations,
                       items: usage.allocatedReservations,
+                      canCancelItems: widget.isAdmin,
                     ),
                     const SizedBox(height: 16),
                     _buildUsageCard(
@@ -402,33 +576,6 @@ class _MembershipDetailScreenState extends State<MembershipDetailScreen> {
                   ),
                 ),
               ),
-              if (entriesReserved > 0) ...[
-                const SizedBox(height: 16),
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Text(
-                          AppTexts.allocatedReservations,
-                          style: Theme.of(context).textTheme.titleLarge,
-                        ),
-                        const SizedBox(height: 8),
-                        Text('${AppTexts.entriesReserved}: $entriesReserved'),
-                        const SizedBox(height: 12),
-                        FilledButton.icon(
-                          onPressed: _isSaving
-                              ? null
-                              : _cancelReservedReservations,
-                          icon: const Icon(Icons.event_busy_outlined),
-                          label: const Text(AppTexts.cancelReservations),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
             ],
           ],
         ),

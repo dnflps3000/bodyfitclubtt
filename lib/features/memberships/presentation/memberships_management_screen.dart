@@ -64,22 +64,128 @@ class _MembershipsManagementScreenState
     });
   }
 
+  String _membershipDisplayStatusKey(Membership membership) {
+    if (membership.isCancelled) {
+      return 'cancelled';
+    }
+
+    if (membership.isInactive) {
+      return 'inactive';
+    }
+
+    if (membership.isNotYetValid) {
+      return 'not_yet_valid';
+    }
+
+    if (membership.isExpired) {
+      return 'expired';
+    }
+
+    if (membership.isUsedUp) {
+      return 'used_up';
+    }
+
+    if (membership.isUsableNow) {
+      return 'active';
+    }
+
+    return membership.status;
+  }
+
+  String _membershipDisplayStatusLabel(Membership membership) {
+    switch (_membershipDisplayStatusKey(membership)) {
+      case 'active':
+        return AppTexts.membershipStatusActive;
+      case 'used_up':
+        return AppTexts.membershipStatusUsedUp;
+      case 'expired':
+        return AppTexts.membershipStatusExpired;
+      case 'not_yet_valid':
+        return AppTexts.membershipStatusNotYetValid;
+      case 'inactive':
+        return AppTexts.membershipStatusInactive;
+      case 'cancelled':
+        return AppTexts.membershipStatusCancelled;
+      default:
+        return membership.status;
+    }
+  }
+
+  int _membershipSortPriority(Membership membership) {
+    switch (_membershipDisplayStatusKey(membership)) {
+      case 'active':
+        return 0;
+      case 'not_yet_valid':
+        return 1;
+      case 'used_up':
+        return 2;
+      case 'expired':
+        return 3;
+      case 'inactive':
+        return 4;
+      case 'cancelled':
+        return 5;
+      default:
+        return 6;
+    }
+  }
+
+  bool _isMembershipVisuallyInactive(Membership membership) {
+    return _membershipSortPriority(membership) >= 2;
+  }
+
+  List<Membership> _sortMemberships(List<Membership> memberships) {
+    final sortedMemberships = [...memberships];
+
+    sortedMemberships.sort((a, b) {
+      final priorityCompare = _membershipSortPriority(
+        a,
+      ).compareTo(_membershipSortPriority(b));
+
+      if (priorityCompare != 0) {
+        return priorityCompare;
+      }
+
+      final firstValidUntil = a.validUntil;
+      final secondValidUntil = b.validUntil;
+
+      if (firstValidUntil == null && secondValidUntil == null) {
+        return a.planName.toLowerCase().compareTo(b.planName.toLowerCase());
+      }
+
+      if (firstValidUntil == null) {
+        return 1;
+      }
+
+      if (secondValidUntil == null) {
+        return -1;
+      }
+
+      return firstValidUntil.compareTo(secondValidUntil);
+    });
+
+    return sortedMemberships;
+  }
+
   List<Membership> _filterMemberships({
     required List<Membership> memberships,
     required Map<String, _MembershipUserInfo> usersById,
   }) {
     final query = _searchQuery.trim().toLowerCase();
 
-    return memberships.where((membership) {
+    final filteredMemberships = memberships.where((membership) {
+      final displayStatusKey = _membershipDisplayStatusKey(membership);
+
       final matchesStatus =
           _selectedStatusFilter.isEmpty ||
-          membership.status == _selectedStatusFilter;
+          displayStatusKey == _selectedStatusFilter;
 
       final user = usersById[membership.userId];
 
       final searchableText = [
         membership.planName,
         membership.status,
+        _membershipDisplayStatusLabel(membership),
         membership.userId,
         user?.displayLabel ?? '',
         user?.email ?? '',
@@ -89,6 +195,8 @@ class _MembershipsManagementScreenState
 
       return matchesStatus && matchesQuery;
     }).toList();
+
+    return _sortMemberships(filteredMemberships);
   }
 
   String _formatDate(DateTime? dateTime) {
@@ -101,19 +209,6 @@ class _MembershipsManagementScreenState
     final year = dateTime.year.toString();
 
     return '$day.$month.$year';
-  }
-
-  String _statusLabel(String status) {
-    switch (status) {
-      case 'active':
-        return AppTexts.membershipStatusActive;
-      case 'inactive':
-        return AppTexts.membershipStatusInactive;
-      case 'cancelled':
-        return AppTexts.membershipStatusCancelled;
-      default:
-        return status;
-    }
   }
 
   Widget _buildFilters() {
@@ -141,6 +236,18 @@ class _MembershipsManagementScreenState
               child: Text(AppTexts.membershipStatusActive),
             ),
             DropdownMenuItem(
+              value: 'not_yet_valid',
+              child: Text(AppTexts.membershipStatusNotYetValid),
+            ),
+            DropdownMenuItem(
+              value: 'used_up',
+              child: Text(AppTexts.membershipStatusUsedUp),
+            ),
+            DropdownMenuItem(
+              value: 'expired',
+              child: Text(AppTexts.membershipStatusExpired),
+            ),
+            DropdownMenuItem(
               value: 'inactive',
               child: Text(AppTexts.membershipStatusInactive),
             ),
@@ -166,15 +273,17 @@ class _MembershipsManagementScreenState
   }) {
     final userLabel = user?.displayLabel ?? membership.userId;
     final entriesReserved = membership.entriesReserved ?? 0;
+    final displayStatusLabel = _membershipDisplayStatusLabel(membership);
+    final isVisuallyInactive = _isMembershipVisuallyInactive(membership);
 
-    return Card(
+    final card = Card(
       child: ListTile(
         leading: const Icon(Icons.card_membership),
         title: Text(membership.planName),
         subtitle: Text(
           '${AppTexts.client}: $userLabel\n'
           '${user?.email.isNotEmpty == true ? '${user!.email}\n' : ''}'
-          '${AppTexts.status}: ${_statusLabel(membership.status)}\n'
+          '${AppTexts.status}: $displayStatusLabel\n'
           '${AppTexts.validUntil}: ${_formatDate(membership.validUntil)}\n'
           '${AppTexts.entriesRemaining}: ${membership.entriesRemaining ?? '-'}'
           '${entriesReserved > 0 ? '\n${AppTexts.entriesReserved}: $entriesReserved' : ''}',
@@ -191,6 +300,11 @@ class _MembershipsManagementScreenState
         },
       ),
     );
+    if (!isVisuallyInactive) {
+      return card;
+    }
+
+    return Opacity(opacity: 0.65, child: card);
   }
 
   @override

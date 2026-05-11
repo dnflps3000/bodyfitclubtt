@@ -5,9 +5,7 @@ import 'app_fonts.dart';
 // Globálny theme aplikácie, pripravený light aj dark mode.
 class AppTheme {
   static Color splashBackground(Brightness brightness) {
-    return brightness == Brightness.dark
-        ? AppColors.backgroundDark
-        : AppColors.splashBackground;
+    return AppColors.splashBackground;
   }
 
   static ThemeData lightTheme = ThemeData(

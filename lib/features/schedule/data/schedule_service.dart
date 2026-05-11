@@ -271,6 +271,11 @@ class ScheduleService {
 
     await _checkTrainingSessionOverlap(startTime: startTime, endTime: endTime);
 
+    await _checkTrainingSessionTemplateOverlap(
+      startTime: startTime,
+      endTime: endTime,
+    );
+
     await _firestore.collection('trainingSessions').add({
       'trainingTypeId': trainingType.id,
       'trainingTypeRef': trainingTypeRef,
@@ -467,10 +472,20 @@ class ScheduleService {
     final sessionRef = _firestore.collection('trainingSessions').doc(sessionId);
     final trainerRef = _firestore.collection('users').doc(trainerId);
 
+    final editedSessionSnapshot = await sessionRef.get();
+    final editedSessionData = editedSessionSnapshot.data() ?? {};
+    final editedTemplateId = editedSessionData['templateId'] as String?;
+
     await _checkTrainingSessionOverlap(
       startTime: startTime,
       endTime: endTime,
       ignoredSessionId: sessionId,
+    );
+
+    await _checkTrainingSessionTemplateOverlap(
+      startTime: startTime,
+      endTime: endTime,
+      ignoredTemplateId: editedTemplateId,
     );
 
     final reservationsSnapshot = await _firestore
@@ -866,6 +881,84 @@ class ScheduleService {
     if (hasOverlap) {
       throw Exception('training-session-overlap');
     }
+  }
+
+  Future<void> _checkTrainingSessionTemplateOverlap({
+    required DateTime startTime,
+    required DateTime endTime,
+    String? ignoredTemplateId,
+  }) async {
+    final weekday = startTime.weekday;
+    final newStartMinutes = startTime.hour * 60 + startTime.minute;
+    final newEndMinutes = endTime.hour * 60 + endTime.minute;
+
+    final templatesSnapshot = await _firestore
+        .collection('scheduleTemplates')
+        .where('weekday', isEqualTo: weekday)
+        .where('isActive', isEqualTo: true)
+        .get();
+
+    final hasOverlap = templatesSnapshot.docs.any((document) {
+      if (ignoredTemplateId != null && document.id == ignoredTemplateId) {
+        return false;
+      }
+
+      final data = document.data();
+
+      if (!_isTemplateValidForDate(data, startTime)) {
+        return false;
+      }
+
+      final existingStartHour = data['startHour'] as int? ?? 0;
+      final existingStartMinute = data['startMinute'] as int? ?? 0;
+      final existingDurationMinutes = data['durationMinutes'] as int? ?? 0;
+
+      final existingStartMinutes = existingStartHour * 60 + existingStartMinute;
+      final existingEndMinutes = existingStartMinutes + existingDurationMinutes;
+
+      return existingStartMinutes < newEndMinutes &&
+          existingEndMinutes > newStartMinutes;
+    });
+
+    if (hasOverlap) {
+      throw Exception('training-session-overlap');
+    }
+  }
+
+  bool _isTemplateValidForDate(
+    Map<String, dynamic> templateData,
+    DateTime date,
+  ) {
+    final validFrom = (templateData['validFrom'] as Timestamp?)?.toDate();
+    final validUntil = (templateData['validUntil'] as Timestamp?)?.toDate();
+
+    final selectedDate = DateTime(date.year, date.month, date.day);
+
+    if (validFrom != null) {
+      final validFromDate = DateTime(
+        validFrom.year,
+        validFrom.month,
+        validFrom.day,
+      );
+
+      if (selectedDate.isBefore(validFromDate)) {
+        return false;
+      }
+    }
+
+    if (validUntil != null) {
+      final validUntilDate = DateTime(
+        validUntil.year,
+        validUntil.month,
+        validUntil.day,
+      );
+
+      if (selectedDate.isAfter(validUntilDate)) {
+        return false;
+      }
+    }
+
+    return true;
   }
 
   String _createTrainingTypeId(String name) {

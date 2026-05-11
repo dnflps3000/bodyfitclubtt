@@ -9,6 +9,7 @@ import '../../admin/presentation/users_management_screen.dart';
 import '../../memberships/presentation/assign_membership_screen.dart';
 import '../../memberships/presentation/memberships_management_screen.dart';
 import '../../reservations/presentation/attendance_screen.dart';
+import '../../audit/presentation/audit_logs_screen.dart';
 
 /*Obrazovka pre admina a trénera, ktorá združuje správcovské akcie mimo 
   bežného používateľského zobrazenia.*/
@@ -54,6 +55,12 @@ class ScheduleManagementScreen extends StatelessWidget {
     await Navigator.of(context).push(
       MaterialPageRoute(builder: (_) => const MembershipsManagementScreen()),
     );
+  }
+
+  Future<void> _openAuditLogsScreen(BuildContext context) async {
+    await Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const AuditLogsScreen()));
   }
 
   Future<void> _openAttendanceScreen(BuildContext context) async {
@@ -146,6 +153,16 @@ class ScheduleManagementScreen extends StatelessWidget {
             icon: Icons.manage_accounts_outlined,
             label: AppTexts.membershipsManagement,
             onPressed: () => _openMembershipsManagementScreen(context),
+          ),
+          const SizedBox(height: 12),
+        ],
+
+        if (isAdmin) ...[
+          _buildManagementButton(
+            context: context,
+            icon: Icons.history_outlined,
+            label: AppTexts.auditLogs,
+            onPressed: () => _openAuditLogsScreen(context),
           ),
           const SizedBox(height: 12),
         ],

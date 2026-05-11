@@ -31,6 +31,38 @@ class Membership {
 
   bool get isActive => status == 'active';
 
+  bool get isInactive => status == 'inactive';
+
+  bool get isCancelled => status == 'cancelled';
+
+  bool get isExpired {
+    if (!isActive || validUntil == null) {
+      return false;
+    }
+
+    return DateTime.now().isAfter(validUntil!);
+  }
+
+  bool get isNotYetValid {
+    if (!isActive || validFrom == null) {
+      return false;
+    }
+
+    return DateTime.now().isBefore(validFrom!);
+  }
+
+  bool get isUsedUp {
+    if (!isActive || !isEntryBasedMembership) {
+      return false;
+    }
+
+    return availableEntries <= 0;
+  }
+
+  bool get isUsableNow {
+    return isValidNow && hasRemainingEntries;
+  }
+
   bool get isValidNow {
     final now = DateTime.now();
 

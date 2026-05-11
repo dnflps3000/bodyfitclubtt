@@ -8,12 +8,18 @@ class AppTexts {
   static const String save = 'Uložiť';
   static const String delete = 'Vymazať';
   static const String cancel = 'Zrušiť';
+  static const String back = 'Späť';
   static const String today = 'Dnes';
   static const String tomorrow = 'Zajtra';
   static const String todayLower = 'dnes';
   static const String tomorrowLower = 'zajtra';
   static const String minutes = 'min.';
   static const String role = 'Rola';
+  static const String refresh = 'Aktualizovať';
+  static const String yesterday = 'Včera';
+  static const String last7Days = 'Posledných 7 dní';
+  static const String last30Days = 'Posledných 30 dní';
+  static const String allTime = 'Celé obdobie';
 
   // Role
   static const String roleUser = 'Používateľ';
@@ -368,6 +374,7 @@ class AppTexts {
   static const String cancelAllocatedReservationsQuestion =
       'Naozaj chcete zrušiť aktívne rezervácie naviazané na túto permanentku? Alokované vstupy sa uvoľnia.';
   static const String cancelReservations = 'Zrušiť rezervácie';
+  static const String cancelAllReservations = 'Zrušiť všetky rezervácie';
   static const String cancelAllocatedReservationsError =
       'Alokované rezervácie sa nepodarilo zrušiť.';
   static const String usedEntries = 'Použité vstupy';
@@ -380,6 +387,19 @@ class AppTexts {
   static const String searchMemberships =
       'Hľadať podľa používateľa alebo permanentky';
   static const String allMembershipStatuses = 'Všetky stavy';
+  static const String membershipStatusNotYetValid = 'Ešte neplatná';
+  static const String membershipStatusUsable = 'Aktívna';
+  static const String invalidRemainingEntriesHigherThanTotal =
+      'Zostávajúce vstupy nemôžu byť vyššie ako celkový počet vstupov.';
+  static const String invalidRemainingEntriesLowerThanReserved =
+      'Zostávajúce vstupy nemôžu byť nižšie ako počet alokovaných vstupov.';
+  static const String cancelReservationsBeforeDeactivation =
+      'Pred deaktiváciou alebo zrušením permanentky najskôr zrušte alokované rezervácie.';
+  static const String cancelReservationForMembership = 'Zrušiť túto rezerváciu';
+  static const String cancelReservationForMembershipQuestion =
+      'Naozaj chcete zrušiť túto rezerváciu naviazanú na permanentku? Alokovaný vstup sa uvoľní.';
+  static const String reservationForMembershipCancelled =
+      'Rezervácia bola zrušená a alokovaný vstup bol uvoľnený.';
 
   // Dochádzka
   static const String attendance = 'Dochádzka';
@@ -439,6 +459,13 @@ class AppTexts {
   static const String userHasActiveMemberships =
       'Používateľa nie je možné deaktivovať, pretože má aktívne permanentky.';
   static const String inactiveUser = 'Neaktívny používateľ';
+  static const String userCannotBeDeactivated =
+      'Používateľa nemožno deaktivovať';
+  static const String userCannotBeDeactivatedDescription =
+      'Pred deaktiváciou je potrebné najskôr vyriešiť jeho aktívne rezervácie alebo permanentky.';
+  static const String userHasBlockingItems = 'Používateľ má:';
+  static const String activeReservationsCount = 'Aktívne rezervácie';
+  static const String showMemberships = 'Zobraziť permanentky';
 
   // Nastavenia
   static const String settings = 'Nastavenia';
@@ -451,6 +478,43 @@ class AppTexts {
   static const String language = 'Jazyk';
   static const String languageComingSoon =
       'Prepínanie jazyka pripravíme neskôr.';
+
+  // História zásahov
+  static const String auditLogs = 'História zásahov';
+  static const String auditLogsDescription =
+      'Prehľad dôležitých zásahov v aplikácii.';
+  static const String auditLogsLoadError =
+      'Históriu zásahov sa nepodarilo načítať.';
+  static const String noAuditLogs = 'Nenašli sa žiadne zásahy.';
+  static const String searchAuditLogs =
+      'Hľadať podľa používateľa, e-mailu alebo popisu';
+  static const String auditCategory = 'Kategória';
+  static const String auditAction = 'Akcia';
+  static const String auditActor = 'Vykonal';
+  static const String auditActorRole = 'Rola vykonávateľa';
+  static const String auditPeriod = 'Obdobie';
+  static const String auditAllCategories = 'Všetky kategórie';
+  static const String auditCategoryMemberships = 'Permanentky';
+  static const String auditCategoryReservations = 'Rezervácie';
+  static const String auditCategoryAttendance = 'Dochádzka';
+  static const String auditCategoryUsers = 'Používatelia';
+  static const String auditCategorySchedule = 'Rozvrh';
+  static const String auditCategoryMessages = 'Správy';
+  static const String auditCategoryPayments = 'Platby';
+  static const String auditCategoryProfile = 'Profil';
+  static const String auditAllActions = 'Všetky akcie';
+  static const String auditActionCreated = 'Vytvorenie';
+  static const String auditActionUpdated = 'Úprava';
+  static const String auditActionCancelled = 'Zrušenie';
+  static const String auditActionDeactivated = 'Deaktivácia';
+  static const String auditActionActivated = 'Aktivácia';
+  static const String auditActionAssigned = 'Priradenie';
+  static const String auditActionPurchased = 'Nákup';
+  static const String auditActionPaymentSucceeded = 'Platba úspešná';
+  static const String auditActionPaymentFailed = 'Platba zlyhala';
+  static const String auditActionAttendanceMarked = 'Dochádzka';
+  static const String auditActionQrChecked = 'QR kontrola';
+  static const String auditAllActorRoles = 'Všetky role';
 
   static String allocatedReservationsCancelled(int count) {
     if (count == 1) {

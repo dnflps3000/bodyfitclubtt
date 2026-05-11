@@ -11,7 +11,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  
+
   flutter_localizations:
     sdk: flutter
 
@@ -19,8 +19,6 @@ dependencies:
   firebase_core: ^4.7.0
   firebase_auth: ^6.4.0
   cloud_firestore: ^6.3.0
-  flutter_launcher_icons: ^0.14.4
-  flutter_native_splash: ^2.4.7
   google_sign_in: ^7.2.0
   flutter_facebook_auth: ^7.1.6
   shared_preferences: ^2.5.3
@@ -39,26 +37,34 @@ dev_dependencies:
     sdk: flutter
 
   flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.4
+  flutter_native_splash: ^2.4.7
 
 flutter:
-
   uses-material-design: true
 
   assets:
-    - assets/icon.png
-    - assets/splash.png
+    - assets/app_icon_foreground.png
+    - assets/splash_logo.png
     - assets/auth/google.png
     - assets/auth/facebook.png
 
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: "assets/icon.png"
-  adaptive_icon_background: "#E2A9F1"
-  adaptive_icon_foreground: "assets/icon.png"
+  image_path: "assets/app_icon_foreground.png"
+  adaptive_icon_background: "#DDA5F0"
+  adaptive_icon_foreground: "assets/app_icon_foreground.png"
 
 flutter_native_splash:
-  color: "#E2A9F1"
-  image: assets/splash.png
+  # Rovnaká farba ako brand_background v android/app/src/main/res/values/colors.xml
+  color: "#DDA5F0"
+  image: assets/native_splash_logo.png
   android: true
   ios: true
+  web: false
+
+  android_12:
+    # Rovnaká farba ako brand_background v android/app/src/main/res/values/colors.xml
+    color: "#DDA5F0"
+    image: assets/native_splash_logo.png
