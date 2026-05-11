@@ -102,12 +102,20 @@ class _AddTrainingSessionScreenState extends State<AddTrainingSessionScreen> {
 
   Future<void> _pickDate() async {
     final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final latestAllowedDate = today.add(const Duration(days: 14));
+
+    final initialDate = _selectedDate == null
+        ? today
+        : _selectedDate!.isAfter(latestAllowedDate)
+        ? latestAllowedDate
+        : _selectedDate!;
 
     final pickedDate = await showDatePicker(
       context: context,
-      initialDate: _selectedDate ?? now,
-      firstDate: DateTime(now.year, now.month, now.day),
-      lastDate: DateTime(now.year + 2),
+      initialDate: initialDate,
+      firstDate: today,
+      lastDate: latestAllowedDate,
       locale: const Locale('sk', 'SK'),
       helpText: AppTexts.selectDate,
       cancelText: AppTexts.cancel,
@@ -240,9 +248,15 @@ class _AddTrainingSessionScreenState extends State<AddTrainingSessionScreen> {
     } catch (error) {
       if (!mounted) return;
 
-      final message = error.toString().contains('training-session-overlap')
-          ? AppTexts.trainingSessionOverlap
-          : AppTexts.saveError;
+      String message = AppTexts.saveError;
+
+      if (error.toString().contains('training-session-overlap')) {
+        message = AppTexts.trainingSessionOverlap;
+      } else if (error.toString().contains(
+        'training-session-too-far-in-future',
+      )) {
+        message = AppTexts.trainingSessionTooFarInFuture;
+      }
 
       ScaffoldMessenger.of(
         context,

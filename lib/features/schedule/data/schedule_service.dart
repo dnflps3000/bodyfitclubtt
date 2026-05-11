@@ -263,6 +263,17 @@ class ScheduleService {
   }) async {
     final endTime = startTime.add(Duration(minutes: durationMinutes));
 
+    final now = DateTime.now();
+    final latestAllowedDate = DateTime(
+      now.year,
+      now.month,
+      now.day,
+    ).add(const Duration(days: 14, hours: 23, minutes: 59));
+
+    if (startTime.isAfter(latestAllowedDate)) {
+      throw Exception('training-session-too-far-in-future');
+    }
+
     final currentUserRef = _firestore.collection('users').doc(currentUser.uid);
     final trainingTypeRef = _firestore
         .collection('trainingTypes')
@@ -295,6 +306,16 @@ class ScheduleService {
       'createdAt': FieldValue.serverTimestamp(),
       'updatedAt': FieldValue.serverTimestamp(),
     });
+
+    await _createScheduleSystemMessage(
+      currentUser: currentUser,
+      sourceAction: 'training_session_created',
+      text: AppTexts.scheduleMessageTrainingSessionCreated(
+        trainingName: trainingType.name,
+        date: _formatDate(startTime),
+        time: _formatTime(startTime),
+      ),
+    );
   }
 
   Future<void> createScheduleTemplate({
@@ -330,6 +351,7 @@ class ScheduleService {
     if (existingScheduleTemplate.exists) {
       throw Exception('schedule-template-already-exists');
     }
+
     await _checkScheduleTemplateOverlap(
       weekday: weekday,
       startHour: startHour,
@@ -360,6 +382,19 @@ class ScheduleService {
           'createdAt': FieldValue.serverTimestamp(),
           'updatedAt': FieldValue.serverTimestamp(),
         });
+
+    await _createScheduleSystemMessage(
+      currentUser: currentUser,
+      sourceAction: 'schedule_template_created',
+      text: AppTexts.scheduleMessageTemplateCreated(
+        trainingName: trainingType.name,
+        weekday: _weekdayLabel(weekday),
+        time: _formatTemplateTime(
+          startHour: startHour,
+          startMinute: startMinute,
+        ),
+      ),
+    );
   }
 
   Future<void> updateScheduleTemplate({
@@ -373,6 +408,10 @@ class ScheduleService {
     required int durationMinutes,
     required int capacity,
   }) async {
+    final oldWeekday = scheduleTemplate.weekday;
+    final oldStartHour = scheduleTemplate.startHour;
+    final oldStartMinute = scheduleTemplate.startMinute;
+
     await _checkScheduleTemplateOverlap(
       weekday: weekday,
       startHour: startHour,
@@ -402,12 +441,41 @@ class ScheduleService {
           'updatedBy': currentUser.uid,
           'updatedAt': FieldValue.serverTimestamp(),
         });
+
+    final oldSchedule =
+        '${_weekdayLabel(oldWeekday)} o ${_formatTemplateTime(startHour: oldStartHour, startMinute: oldStartMinute)}';
+
+    final newSchedule =
+        '${_weekdayLabel(weekday)} o ${_formatTemplateTime(startHour: startHour, startMinute: startMinute)}';
+
+    await _createScheduleSystemMessage(
+      currentUser: currentUser,
+      sourceAction: 'schedule_template_updated',
+      text: AppTexts.scheduleMessageTemplateUpdated(
+        trainingName: trainingType.name,
+        oldSchedule: oldSchedule,
+        newSchedule: newSchedule,
+      ),
+    );
   }
 
   Future<void> deactivateScheduleTemplate({
     required ScheduleTemplate scheduleTemplate,
     required User currentUser,
   }) async {
+    String trainingName = AppTexts.unknownTraining;
+
+    final trainingTypeSnapshot = await _firestore
+        .collection('trainingTypes')
+        .doc(scheduleTemplate.trainingTypeId)
+        .get();
+
+    if (trainingTypeSnapshot.exists) {
+      final trainingTypeData = trainingTypeSnapshot.data() ?? {};
+      trainingName =
+          trainingTypeData['name'] as String? ?? AppTexts.unknownTraining;
+    }
+
     await _firestore
         .collection('scheduleTemplates')
         .doc(scheduleTemplate.id)
@@ -417,6 +485,19 @@ class ScheduleService {
           'deactivatedAt': FieldValue.serverTimestamp(),
           'updatedAt': FieldValue.serverTimestamp(),
         });
+
+    await _createScheduleSystemMessage(
+      currentUser: currentUser,
+      sourceAction: 'schedule_template_deactivated',
+      text: AppTexts.scheduleMessageTemplateDeactivated(
+        trainingName: trainingName,
+        weekday: _weekdayLabel(scheduleTemplate.weekday),
+        time: _formatTemplateTime(
+          startHour: scheduleTemplate.startHour,
+          startMinute: scheduleTemplate.startMinute,
+        ),
+      ),
+    );
   }
 
   Future<void> _checkScheduleTemplateOverlap({
@@ -469,8 +550,20 @@ class ScheduleService {
   }) async {
     final sessionId = item.session.id;
     final endTime = startTime.add(Duration(minutes: durationMinutes));
+    final now = DateTime.now();
+    final latestAllowedDate = DateTime(
+      now.year,
+      now.month,
+      now.day,
+    ).add(const Duration(days: 14, hours: 23, minutes: 59));
+
+    if (startTime.isAfter(latestAllowedDate)) {
+      throw Exception('training-session-too-far-in-future');
+    }
     final sessionRef = _firestore.collection('trainingSessions').doc(sessionId);
     final trainerRef = _firestore.collection('users').doc(trainerId);
+
+    DateTime? oldTrainingStartTime;
 
     final editedSessionSnapshot = await sessionRef.get();
     final editedSessionData = editedSessionSnapshot.data() ?? {};
@@ -508,6 +601,8 @@ class ScheduleService {
           ?.toDate();
       final existingEndTime = (sessionData['endTime'] as Timestamp?)?.toDate();
       final reservedCount = sessionData['reservedCount'] as int? ?? 0;
+
+      oldTrainingStartTime = existingStartTime;
 
       if (existingStartTime == null || existingEndTime == null) {
         throw Exception('training-session-invalid-time');
@@ -675,6 +770,34 @@ class ScheduleService {
         'updatedAt': FieldValue.serverTimestamp(),
       });
     });
+
+    final oldStartTime = oldTrainingStartTime;
+
+    if (oldStartTime != null) {
+      final startTimeChanged =
+          oldStartTime.millisecondsSinceEpoch !=
+          startTime.millisecondsSinceEpoch;
+
+      await _createScheduleSystemMessage(
+        currentUser: currentUser,
+        sourceAction: startTimeChanged
+            ? 'training_session_time_changed'
+            : 'training_session_updated',
+        text: startTimeChanged
+            ? AppTexts.scheduleMessageTrainingSessionTimeChanged(
+                trainingName: item.trainingType.name,
+                oldDate: _formatDate(oldStartTime),
+                oldTime: _formatTime(oldStartTime),
+                newDate: _formatDate(startTime),
+                newTime: _formatTime(startTime),
+              )
+            : AppTexts.scheduleMessageTrainingSessionUpdated(
+                trainingName: item.trainingType.name,
+                date: _formatDate(startTime),
+                time: _formatTime(startTime),
+              ),
+      );
+    }
   }
 
   Future<void> cancelTrainingSessionWithReservations({
@@ -683,6 +806,9 @@ class ScheduleService {
     required String? role,
   }) async {
     final sessionRef = _firestore.collection('trainingSessions').doc(sessionId);
+
+    String cancelledTrainingName = AppTexts.unknownTraining;
+    DateTime? cancelledTrainingStartTime;
 
     final reservationsSnapshot = await _firestore
         .collection('reservations')
@@ -697,6 +823,24 @@ class ScheduleService {
       }
 
       final sessionData = sessionSnapshot.data() ?? {};
+      cancelledTrainingStartTime = (sessionData['startTime'] as Timestamp?)
+          ?.toDate();
+
+      final cancelledTrainingTypeId =
+          sessionData['trainingTypeId'] as String? ?? '';
+
+      if (cancelledTrainingTypeId.isNotEmpty) {
+        final trainingTypeSnapshot = await transaction.get(
+          _firestore.collection('trainingTypes').doc(cancelledTrainingTypeId),
+        );
+
+        if (trainingTypeSnapshot.exists) {
+          final trainingTypeData = trainingTypeSnapshot.data() ?? {};
+          cancelledTrainingName =
+              trainingTypeData['name'] as String? ?? AppTexts.unknownTraining;
+        }
+      }
+
       final sessionTrainerId = sessionData['trainerId'] as String? ?? '';
       final sessionStatus = sessionData['status'] as String? ?? '';
       final isActive = sessionData['isActive'] as bool? ?? false;
@@ -849,6 +993,18 @@ class ScheduleService {
         'updatedAt': FieldValue.serverTimestamp(),
       });
     });
+
+    if (cancelledTrainingStartTime != null) {
+      await _createScheduleSystemMessage(
+        currentUser: currentUser,
+        sourceAction: 'training_session_cancelled',
+        text: AppTexts.scheduleMessageTrainingSessionCancelled(
+          trainingName: cancelledTrainingName,
+          date: _formatDate(cancelledTrainingStartTime!),
+          time: _formatTime(cancelledTrainingStartTime!),
+        ),
+      );
+    }
   }
 
   Future<void> _checkTrainingSessionOverlap({
@@ -865,6 +1021,7 @@ class ScheduleService {
       if (ignoredSessionId != null && document.id == ignoredSessionId) {
         return false;
       }
+
       final data = document.data();
 
       final isActive = data['isActive'] as bool? ?? false;
@@ -996,6 +1153,58 @@ class ScheduleService {
     final minute = startMinute.toString().padLeft(2, '0');
 
     return '${trainingTypeId}_day${weekday}_$hour$minute';
+  }
+
+  Future<void> _createScheduleSystemMessage({
+    required User currentUser,
+    required String text,
+    required String sourceAction,
+  }) async {
+    await _firestore.collection('public_messages').add({
+      'text': text,
+      'authorId': currentUser.uid,
+      'authorName': AppTexts.appName,
+      'authorRole': '',
+      'type': 'system',
+      'source': 'schedule',
+      'sourceAction': sourceAction,
+      'createdBy': currentUser.uid,
+      'createdAt': FieldValue.serverTimestamp(),
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+  String _formatDate(DateTime dateTime) {
+    final day = dateTime.day.toString().padLeft(2, '0');
+    final month = dateTime.month.toString().padLeft(2, '0');
+    final year = dateTime.year.toString();
+
+    return '$day.$month.$year';
+  }
+
+  String _formatTime(DateTime dateTime) {
+    final hour = dateTime.hour.toString().padLeft(2, '0');
+    final minute = dateTime.minute.toString().padLeft(2, '0');
+
+    return '$hour:$minute';
+  }
+
+  String _formatTemplateTime({
+    required int startHour,
+    required int startMinute,
+  }) {
+    final hour = startHour.toString().padLeft(2, '0');
+    final minute = startMinute.toString().padLeft(2, '0');
+
+    return '$hour:$minute';
+  }
+
+  String _weekdayLabel(int weekday) {
+    if (weekday < 1 || weekday > AppTexts.weekdays.length) {
+      return '';
+    }
+
+    return AppTexts.weekdays[weekday - 1].toLowerCase();
   }
 }
 

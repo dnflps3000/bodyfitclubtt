@@ -174,6 +174,8 @@ class AppTexts {
   static const String unknownTrainer = 'Neznámy tréner';
   static const String unknownUser = 'Neznámy používateľ';
   static const String trainingSessionFinished = 'Prebehlo';
+  static const String trainingSessionTooFarInFuture =
+      'Termín je príliš ďaleko v budúcnosti. Manuálne môžete pridať cvičenie iba do obdobia zobrazeného v rozvrhu.';
   static const List<String> shortWeekdays = [
     'Po',
     'Ut',
@@ -183,6 +185,77 @@ class AppTexts {
     'So',
     'Ne',
   ];
+  static String scheduleMessageTrainingSessionCreated({
+    required String trainingName,
+    required String date,
+    required String time,
+  }) {
+    return 'Do rozvrhu bol pridaný nový tréning:\n'
+        '$trainingName – $date o $time.';
+  }
+
+  static String scheduleMessageTrainingSessionCancelled({
+    required String trainingName,
+    required String date,
+    required String time,
+  }) {
+    return 'Tréning bol zrušený:\n'
+        '$trainingName – $date o $time.\n'
+        'Aktívne rezervácie boli zrušené a alokované vstupy boli uvoľnené.';
+  }
+
+  static String scheduleMessageTrainingSessionTimeChanged({
+    required String trainingName,
+    required String oldDate,
+    required String oldTime,
+    required String newDate,
+    required String newTime,
+  }) {
+    return 'Termín tréningu bol zmenený:\n'
+        '$trainingName bol presunutý z $oldDate o $oldTime '
+        'na $newDate o $newTime.\n'
+        'Pôvodné rezervácie boli zrušené a alokované vstupy boli uvoľnené.';
+  }
+
+  static String scheduleMessageTrainingSessionUpdated({
+    required String trainingName,
+    required String date,
+    required String time,
+  }) {
+    return 'Termín tréningu bol upravený:\n'
+        '$trainingName – $date o $time.';
+  }
+
+  static String scheduleMessageTemplateCreated({
+    required String trainingName,
+    required String weekday,
+    required String time,
+  }) {
+    return 'Pravidelný týždenný rozvrh bol upravený:\n'
+        'Pribudol pravidelný tréning:\n'
+        '$trainingName – $weekday o $time.';
+  }
+
+  static String scheduleMessageTemplateUpdated({
+    required String trainingName,
+    required String oldSchedule,
+    required String newSchedule,
+  }) {
+    return 'Pravidelný týždenný rozvrh bol upravený:\n'
+        '$trainingName bol upravený.\n'
+        'Pôvodne: $oldSchedule.\n'
+        'Nový rozvrh: $newSchedule.';
+  }
+
+  static String scheduleMessageTemplateDeactivated({
+    required String trainingName,
+    required String weekday,
+    required String time,
+  }) {
+    return 'Pravidelný týždenný rozvrh bol upravený:\n'
+        'Z pravidelného rozvrhu bol odstránený tréning:\n'
+        '$trainingName – $weekday o $time.';
+  }
 
   // Správa
   static const String managementDescription =
@@ -234,8 +307,6 @@ class AppTexts {
       'Termín tréningu nemôže byť v minulosti.';
   static const String trainingSessionOverlap =
       'V tomto čase už je naplánovaný iný tréning.';
-  static const String trainingSessionHasReservations =
-      'Termín má rezervácie, preto ho nie je možné vymazať.';
   static const String capacityLowerThanReservations =
       'Kapacita nemôže byť nižšia ako počet existujúcich rezervácií.';
   static const String cancelTrainingSession = 'Zrušiť termín';
