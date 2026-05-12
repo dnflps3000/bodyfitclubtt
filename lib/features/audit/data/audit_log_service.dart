@@ -9,6 +9,86 @@ class AuditLogService {
 
   final FirebaseFirestore _firestore;
 
+  Future<Map<String, String>> loadUserAuditInfo(String userId) async {
+    if (userId.isEmpty) {
+      return {'name': '', 'email': '', 'role': ''};
+    }
+
+    final userSnapshot = await _firestore.collection('users').doc(userId).get();
+    final userData = userSnapshot.data() ?? {};
+
+    return {
+      'name': _resolveUserDisplayName(userId, userData),
+      'email': userData['email'] as String? ?? '',
+      'role': userData['role'] as String? ?? '',
+    };
+  }
+
+  String _resolveUserDisplayName(String userId, Map<String, dynamic> data) {
+    final publicName = data['publicName'] as String? ?? '';
+    final firstName = data['firstName'] as String? ?? '';
+    final lastName = data['lastName'] as String? ?? '';
+    final displayName = data['displayName'] as String? ?? '';
+    final email = data['email'] as String? ?? '';
+
+    if (publicName.trim().isNotEmpty) {
+      return publicName.trim();
+    }
+
+    final fullName = '$firstName $lastName'.trim();
+
+    if (fullName.isNotEmpty) {
+      return fullName;
+    }
+
+    if (displayName.trim().isNotEmpty) {
+      return displayName.trim();
+    }
+
+    if (email.trim().isNotEmpty) {
+      return email.trim();
+    }
+
+    return userId;
+  }
+
+  Future<void> createLogWithUsers({
+    required String category,
+    required String action,
+    required String targetType,
+    required String targetId,
+    required String targetUserId,
+    required String title,
+    required String description,
+    Map<String, dynamic> changes = const {},
+    User? actor,
+  }) async {
+    final currentActor = actor ?? FirebaseAuth.instance.currentUser;
+
+    final actorInfo = currentActor == null
+        ? {'name': '', 'email': '', 'role': ''}
+        : await loadUserAuditInfo(currentActor.uid);
+
+    final targetUserInfo = await loadUserAuditInfo(targetUserId);
+
+    await createLog(
+      category: category,
+      action: action,
+      targetType: targetType,
+      targetId: targetId,
+      title: title,
+      description: description,
+      targetUserId: targetUserId,
+      targetUserName: targetUserInfo['name'],
+      targetUserEmail: targetUserInfo['email'],
+      actor: currentActor,
+      actorName: actorInfo['name'],
+      actorEmail: actorInfo['email'],
+      actorRole: actorInfo['role'],
+      changes: changes,
+    );
+  }
+
   Future<void> createLog({
     required String category,
     required String action,
@@ -53,24 +133,9 @@ class AuditLogService {
     String actorRole = '',
     DateTime? dateFrom,
     DateTime? dateTo,
-    int limit = 100,
+    int limit = 500,
   }) async {
-    Query<Map<String, dynamic>> query = _firestore
-        .collection('auditLogs')
-        .orderBy('createdAt', descending: true)
-        .limit(limit);
-
-    if (category.isNotEmpty) {
-      query = query.where('category', isEqualTo: category);
-    }
-
-    if (action.isNotEmpty) {
-      query = query.where('action', isEqualTo: action);
-    }
-
-    if (actorRole.isNotEmpty) {
-      query = query.where('actorRole', isEqualTo: actorRole);
-    }
+    Query<Map<String, dynamic>> query = _firestore.collection('auditLogs');
 
     if (dateFrom != null) {
       query = query.where(
@@ -86,9 +151,23 @@ class AuditLogService {
       );
     }
 
+    query = query.orderBy('createdAt', descending: true).limit(limit);
+
     final snapshot = await query.get();
 
-    final logs = snapshot.docs.map(AuditLog.fromFirestore).toList();
+    var logs = snapshot.docs.map(AuditLog.fromFirestore).toList();
+
+    if (category.isNotEmpty) {
+      logs = logs.where((log) => log.category == category).toList();
+    }
+
+    if (action.isNotEmpty) {
+      logs = logs.where((log) => log.action == action).toList();
+    }
+
+    if (actorRole.isNotEmpty) {
+      logs = logs.where((log) => log.actorRole == actorRole).toList();
+    }
 
     final normalizedQuery = searchQuery.trim().toLowerCase();
 

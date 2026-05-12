@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_texts.dart';
+import '../../audit/data/audit_log_service.dart';
 import '../../memberships/domain/membership_plan.dart';
 import '../../memberships/data/membership_service.dart';
 import '../data/payment_service.dart';
@@ -22,12 +23,44 @@ class PaymentScreen extends StatefulWidget {
 class _PaymentScreenState extends State<PaymentScreen> {
   final MembershipService _membershipService = MembershipService();
   final PaymentService _paymentService = PaymentService();
+  final AuditLogService _auditLogService = AuditLogService();
 
   MembershipPlan? _selectedPlan;
   bool _isPaying = false;
 
   String _formatPrice(MembershipPlan plan) {
     return '${plan.price.toStringAsFixed(2)} ${plan.currency}';
+  }
+
+  Future<void> _createPaymentAuditLog({
+    required User currentUser,
+    required MembershipPlan plan,
+    required String action,
+    required String title,
+    required String description,
+    String paymentIntentId = '',
+    String? errorMessage,
+  }) async {
+    await _auditLogService.createLogWithUsers(
+      category: 'payment',
+      action: action,
+      targetType: 'payment',
+      targetId: paymentIntentId,
+      targetUserId: currentUser.uid,
+      actor: currentUser,
+      title: title,
+      description: description,
+      changes: {
+        'planId': {'oldValue': null, 'newValue': plan.id},
+        'planName': {'oldValue': null, 'newValue': plan.name},
+        'price': {'oldValue': null, 'newValue': plan.price},
+        'currency': {'oldValue': null, 'newValue': plan.currency},
+        if (paymentIntentId.isNotEmpty)
+          'paymentIntentId': {'oldValue': null, 'newValue': paymentIntentId},
+        if (errorMessage != null)
+          'error': {'oldValue': null, 'newValue': errorMessage},
+      },
+    );
   }
 
   Future<void> _payForSelectedPlan() async {
@@ -43,7 +76,26 @@ class _PaymentScreenState extends State<PaymentScreen> {
     });
 
     try {
-      await _paymentService.makePayment(plan: selectedPlan);
+      await _createPaymentAuditLog(
+        currentUser: currentUser,
+        plan: selectedPlan,
+        action: 'payment_started',
+        title: AppTexts.auditPaymentStartedTitle,
+        description: AppTexts.auditPaymentStartedDescription,
+      );
+
+      final paymentResult = await _paymentService.makePayment(
+        plan: selectedPlan,
+      );
+
+      await _createPaymentAuditLog(
+        currentUser: currentUser,
+        plan: selectedPlan,
+        action: 'payment_succeeded',
+        title: AppTexts.auditPaymentSucceededTitle,
+        description: AppTexts.auditPaymentSucceededDescription,
+        paymentIntentId: paymentResult.paymentIntentId,
+      );
 
       await _membershipService.createMembershipAfterPayment(
         plan: selectedPlan,
@@ -57,7 +109,16 @@ class _PaymentScreenState extends State<PaymentScreen> {
       ).showSnackBar(const SnackBar(content: Text(AppTexts.paymentSuccessful)));
 
       Navigator.pop(context);
-    } catch (e) {
+    } catch (error) {
+      await _createPaymentAuditLog(
+        currentUser: currentUser,
+        plan: selectedPlan,
+        action: 'payment_failed',
+        title: AppTexts.auditPaymentFailedTitle,
+        description: AppTexts.auditPaymentFailedDescription,
+        errorMessage: error.toString(),
+      );
+
       if (!mounted) return;
 
       ScaffoldMessenger.of(

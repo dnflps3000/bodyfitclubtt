@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_roles.dart';
 import '../../../core/theme/app_texts.dart';
+import '../../audit/data/audit_log_service.dart';
 import 'edit_public_message_screen.dart';
 
 class PublicMessagesScreen extends StatelessWidget {
@@ -101,6 +102,7 @@ class PublicMessagesScreen extends StatelessWidget {
   Future<void> _confirmDeleteMessage(
     BuildContext context,
     String messageId,
+    Map<String, dynamic> messageData,
   ) async {
     final confirmed = await showDialog<bool>(
       context: context,
@@ -127,10 +129,28 @@ class PublicMessagesScreen extends StatelessWidget {
     }
 
     try {
+      final currentUser = FirebaseAuth.instance.currentUser;
+      final oldText = messageData['text'] as String? ?? '';
+      final authorId = messageData['authorId'] as String? ?? '';
+
       await FirebaseFirestore.instance
           .collection('public_messages')
           .doc(messageId)
           .delete();
+
+      await AuditLogService().createLogWithUsers(
+        category: 'message',
+        action: 'public_message_deleted',
+        targetType: 'public_message',
+        targetId: messageId,
+        targetUserId: authorId,
+        actor: currentUser,
+        title: AppTexts.auditPublicMessageDeletedTitle,
+        description: AppTexts.auditPublicMessageDeletedDescription,
+        changes: {
+          'text': {'oldValue': oldText, 'newValue': null},
+        },
+      );
 
       if (!context.mounted) return;
 
@@ -272,7 +292,11 @@ class PublicMessagesScreen extends StatelessWidget {
                                       }
 
                                       if (value == 'delete') {
-                                        _confirmDeleteMessage(context, doc.id);
+                                        _confirmDeleteMessage(
+                                          context,
+                                          doc.id,
+                                          data,
+                                        );
                                       }
                                     },
                                   ),

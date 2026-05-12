@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_roles.dart';
 import '../../../core/theme/app_texts.dart';
+import '../../audit/data/audit_log_service.dart';
 import '../../memberships/presentation/memberships_management_screen.dart';
 
 class UsersManagementScreen extends StatefulWidget {
@@ -16,6 +18,7 @@ class UsersManagementScreen extends StatefulWidget {
 
 class _UsersManagementScreenState extends State<UsersManagementScreen> {
   final TextEditingController _searchController = TextEditingController();
+  final AuditLogService _auditLogService = AuditLogService();
 
   Timer? _searchDebounce;
   String _searchQuery = '';
@@ -109,6 +112,53 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
 
   bool _isManagerRole(String role) {
     return role == AppRoles.admin || role == AppRoles.trainer;
+  }
+
+  Map<String, dynamic> _userChanges({
+    required _ManagedUser oldUser,
+    required String firstName,
+    required String lastName,
+    required String publicName,
+    required String email,
+    required String role,
+  }) {
+    final changes = <String, dynamic>{};
+
+    void addChange(String key, Object? oldValue, Object? newValue) {
+      if (oldValue != newValue) {
+        changes[key] = {'oldValue': oldValue, 'newValue': newValue};
+      }
+    }
+
+    addChange('firstName', oldUser.firstName, firstName);
+    addChange('lastName', oldUser.lastName, lastName);
+    addChange('publicName', oldUser.publicName, publicName);
+    addChange('email', oldUser.email, email);
+    addChange('role', oldUser.role, role);
+
+    return changes;
+  }
+
+  Future<void> _createUserAuditLog({
+    required _ManagedUser user,
+    required String action,
+    required String title,
+    required String description,
+    Map<String, dynamic> changes = const {},
+  }) async {
+    final currentUser = FirebaseAuth.instance.currentUser;
+
+    await _auditLogService.createLogWithUsers(
+      category: 'user',
+      action: action,
+      targetType: 'user',
+      targetId: user.id,
+      targetUserId: user.id,
+      actor: currentUser,
+      title: title,
+      description: description,
+      changes: changes,
+    );
   }
 
   Future<void> _ensureUserCanLoseManagerRole({
@@ -299,12 +349,32 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
         'updatedAt': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
 
+      await _createUserAuditLog(
+        user: user,
+        action: 'user_deactivated',
+        title: AppTexts.auditUserDeactivatedTitle,
+        description: AppTexts.auditUserDeactivatedDescription,
+        changes: {
+          'isActive': {'oldValue': true, 'newValue': false},
+        },
+      );
+
       if (!mounted) return;
 
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text(AppTexts.userDeactivated)));
     } catch (error) {
+      await _createUserAuditLog(
+        user: user,
+        action: 'user_deactivation_blocked',
+        title: AppTexts.auditUserDeactivationBlockedTitle,
+        description: AppTexts.auditUserDeactivationBlockedDescription,
+        changes: {
+          'reason': {'oldValue': null, 'newValue': error.toString()},
+        },
+      );
+
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -313,10 +383,71 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
     }
   }
 
+  Future<void> _confirmReactivateUser(_ManagedUser user) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text(AppTexts.reactivateUser),
+          content: Text(
+            '${AppTexts.reactivateUserQuestion}\n\n'
+            '${user.displayLabel}',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: const Text(AppTexts.cancel),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: const Text(AppTexts.reactivateUser),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed != true) {
+      return;
+    }
+
+    try {
+      await FirebaseFirestore.instance.collection('users').doc(user.id).set({
+        'isActive': true,
+        'reactivatedBy': widget.currentUserId,
+        'reactivatedAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+
+      await _createUserAuditLog(
+        user: user,
+        action: 'user_reactivated',
+        title: AppTexts.auditUserReactivatedTitle,
+        description: AppTexts.auditUserReactivatedDescription,
+        changes: {
+          'isActive': {'oldValue': false, 'newValue': true},
+        },
+      );
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text(AppTexts.userReactivated)));
+    } catch (_) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text(AppTexts.userUpdateError)));
+    }
+  }
+
   Future<void> _showEditUserDialog(_ManagedUser user) async {
     var firstName = user.firstName;
     var lastName = user.lastName;
     var publicName = user.publicName;
+    var email = user.email;
     var selectedRole = user.role;
     var isSaving = false;
 
@@ -331,6 +462,16 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
               final trimmedFirstName = firstName.trim();
               final trimmedLastName = lastName.trim();
               final trimmedPublicName = publicName.trim();
+              final trimmedEmail = email.trim().toLowerCase();
+
+              if (trimmedEmail.isNotEmpty &&
+                  (!trimmedEmail.contains('@') ||
+                      !trimmedEmail.contains('.'))) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text(AppTexts.invalidEmailFormat)),
+                );
+                return;
+              }
 
               if (isCurrentUser && selectedRole != user.role) {
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -377,6 +518,14 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
                   updates['publicName'] = trimmedPublicName;
                 }
 
+                if (trimmedEmail != user.email.trim().toLowerCase()) {
+                  updates['email'] = trimmedEmail;
+                  updates['emailSource'] = 'admin';
+                  updates['emailVerified'] = false;
+                  updates['emailUpdatedBy'] = widget.currentUserId;
+                  updates['emailUpdatedAt'] = FieldValue.serverTimestamp();
+                }
+
                 if (displayName.isNotEmpty) {
                   updates['displayName'] = displayName;
                 }
@@ -385,6 +534,46 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
                     .collection('users')
                     .doc(user.id)
                     .set(updates, SetOptions(merge: true));
+
+                final effectivePublicName = trimmedPublicName.isNotEmpty
+                    ? trimmedPublicName
+                    : user.publicName.trim();
+
+                final changes = _userChanges(
+                  oldUser: user,
+                  firstName: effectiveFirstName,
+                  lastName: effectiveLastName,
+                  publicName: effectivePublicName,
+                  email: trimmedEmail,
+                  role: selectedRole,
+                );
+
+                if (changes.isNotEmpty) {
+                  final emailChanged =
+                      trimmedEmail != user.email.trim().toLowerCase();
+
+                  final onlyEmailChanged = emailChanged && changes.length == 1;
+
+                  await _createUserAuditLog(
+                    user: user,
+                    action: selectedRole != user.role
+                        ? 'user_role_changed'
+                        : onlyEmailChanged
+                        ? 'user_email_updated'
+                        : 'user_updated',
+                    title: selectedRole != user.role
+                        ? AppTexts.auditUserRoleChangedTitle
+                        : onlyEmailChanged
+                        ? AppTexts.auditUserEmailUpdatedTitle
+                        : AppTexts.auditUserUpdatedTitle,
+                    description: selectedRole != user.role
+                        ? AppTexts.auditUserRoleChangedDescription
+                        : onlyEmailChanged
+                        ? AppTexts.auditUserEmailUpdatedDescription
+                        : AppTexts.auditUserUpdatedDescription,
+                    changes: changes,
+                  );
+                }
 
                 if (!dialogContext.mounted) return;
 
@@ -444,6 +633,18 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
                       ),
                       onChanged: (value) {
                         publicName = value;
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      initialValue: email,
+                      enabled: !isSaving,
+                      keyboardType: TextInputType.emailAddress,
+                      decoration: const InputDecoration(
+                        labelText: AppTexts.email,
+                      ),
+                      onChanged: (value) {
+                        email = value;
                       },
                     ),
                     const SizedBox(height: 12),
@@ -603,17 +804,22 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                if (user.isActive)
-                  IconButton(
-                    tooltip: AppTexts.editUser,
-                    icon: const Icon(Icons.edit_outlined),
-                    onPressed: () => _showEditUserDialog(user),
-                  ),
+                IconButton(
+                  tooltip: AppTexts.editUser,
+                  icon: const Icon(Icons.edit_outlined),
+                  onPressed: () => _showEditUserDialog(user),
+                ),
                 if (!isCurrentUser && user.isActive)
                   IconButton(
                     tooltip: AppTexts.deactivateUser,
                     icon: const Icon(Icons.person_off_outlined),
                     onPressed: () => _confirmDeactivateUser(user),
+                  ),
+                if (!isCurrentUser && !user.isActive)
+                  IconButton(
+                    tooltip: AppTexts.reactivateUser,
+                    icon: const Icon(Icons.person_add_alt_1_outlined),
+                    onPressed: () => _confirmReactivateUser(user),
                   ),
               ],
             ),

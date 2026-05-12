@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_roles.dart';
 import '../../../core/theme/app_texts.dart';
+import '../../audit/data/audit_log_service.dart';
 
 class EditPublicMessageScreen extends StatefulWidget {
   const EditPublicMessageScreen({super.key, this.messageId, this.initialText});
@@ -17,6 +18,7 @@ class EditPublicMessageScreen extends StatefulWidget {
 
 class _EditPublicMessageScreenState extends State<EditPublicMessageScreen> {
   late final TextEditingController _textController;
+  final AuditLogService _auditLogService = AuditLogService();
   bool _isSaving = false;
 
   bool get _isEdit => widget.messageId != null;
@@ -85,25 +87,58 @@ class _EditPublicMessageScreenState extends State<EditPublicMessageScreen> {
       }
 
       if (_isEdit) {
-        await FirebaseFirestore.instance
+        final messageRef = FirebaseFirestore.instance
             .collection('public_messages')
-            .doc(widget.messageId)
-            .update({
-              'text': text,
-              'updatedAt': FieldValue.serverTimestamp(),
-              'updatedBy': user.uid,
-              'updatedByName': name,
-              'updatedByRole': role,
-            });
-      } else {
-        await FirebaseFirestore.instance.collection('public_messages').add({
+            .doc(widget.messageId);
+
+        final oldText = widget.initialText ?? '';
+
+        await messageRef.update({
           'text': text,
-          'authorId': user.uid,
-          'authorName': name,
-          'authorRole': role,
-          'createdAt': FieldValue.serverTimestamp(),
           'updatedAt': FieldValue.serverTimestamp(),
+          'updatedBy': user.uid,
+          'updatedByName': name,
+          'updatedByRole': role,
         });
+
+        await _auditLogService.createLogWithUsers(
+          category: 'message',
+          action: 'public_message_updated',
+          targetType: 'public_message',
+          targetId: widget.messageId ?? '',
+          targetUserId: user.uid,
+          actor: user,
+          title: AppTexts.auditPublicMessageUpdatedTitle,
+          description: AppTexts.auditPublicMessageUpdatedDescription,
+          changes: {
+            'text': {'oldValue': oldText, 'newValue': text},
+          },
+        );
+      } else {
+        final messageRef = await FirebaseFirestore.instance
+            .collection('public_messages')
+            .add({
+              'text': text,
+              'authorId': user.uid,
+              'authorName': name,
+              'authorRole': role,
+              'createdAt': FieldValue.serverTimestamp(),
+              'updatedAt': FieldValue.serverTimestamp(),
+            });
+
+        await _auditLogService.createLogWithUsers(
+          category: 'message',
+          action: 'public_message_created',
+          targetType: 'public_message',
+          targetId: messageRef.id,
+          targetUserId: user.uid,
+          actor: user,
+          title: AppTexts.auditPublicMessageCreatedTitle,
+          description: AppTexts.auditPublicMessageCreatedDescription,
+          changes: {
+            'text': {'oldValue': null, 'newValue': text},
+          },
+        );
       }
 
       if (!mounted) return;

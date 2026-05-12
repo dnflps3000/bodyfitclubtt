@@ -2,6 +2,8 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'features/auth/presentation/complete_email_screen.dart';
 import 'firebase_options.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/app_texts.dart';
@@ -130,12 +132,23 @@ class ActiveUserGate extends StatefulWidget {
 }
 
 class _ActiveUserGateState extends State<ActiveUserGate> {
-  late Future<void> _activeCheckFuture;
+  late Future<Map<String, dynamic>> _userGateFuture;
+
+  Future<Map<String, dynamic>> _loadUserGateData() async {
+    await widget.authService.ensureUserIsActive(widget.user);
+
+    final userDocument = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(widget.user.uid)
+        .get();
+
+    return userDocument.data() ?? {};
+  }
 
   @override
   void initState() {
     super.initState();
-    _activeCheckFuture = widget.authService.ensureUserIsActive(widget.user);
+    _userGateFuture = _loadUserGateData();
   }
 
   @override
@@ -143,14 +156,14 @@ class _ActiveUserGateState extends State<ActiveUserGate> {
     super.didUpdateWidget(oldWidget);
 
     if (oldWidget.user.uid != widget.user.uid) {
-      _activeCheckFuture = widget.authService.ensureUserIsActive(widget.user);
+      _userGateFuture = _loadUserGateData();
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<void>(
-      future: _activeCheckFuture,
+    return FutureBuilder<Map<String, dynamic>>(
+      future: _userGateFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Scaffold(
@@ -172,9 +185,29 @@ class _ActiveUserGateState extends State<ActiveUserGate> {
           );
         }
 
+        final userData = snapshot.data ?? {};
+
+        final firestoreEmail = userData['email'] as String? ?? '';
+        final authEmail = widget.user.email?.trim() ?? '';
+
+        final needsEmail =
+            firestoreEmail.trim().isEmpty && authEmail.trim().isEmpty;
+
+        if (needsEmail) {
+          return CompleteEmailScreen(
+            onCompleted: () {
+              setState(() {
+                _userGateFuture = _loadUserGateData();
+              });
+            },
+          );
+        }
+
+        final firestoreDisplayName = userData['displayName'] as String? ?? '';
         final needsProfile =
-            widget.user.displayName == null ||
-            widget.user.displayName!.trim().isEmpty;
+            firestoreDisplayName.trim().isEmpty &&
+            (widget.user.displayName == null ||
+                widget.user.displayName!.trim().isEmpty);
 
         if (needsProfile) {
           return const CompleteProfileScreen();

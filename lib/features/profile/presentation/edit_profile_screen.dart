@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:image_cropper/image_cropper.dart';
 import '../../../core/theme/app_texts.dart';
+import '../../audit/data/audit_log_service.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({
@@ -32,6 +33,7 @@ class EditProfileScreen extends StatefulWidget {
 class _EditProfileScreenState extends State<EditProfileScreen> {
   final _formKey = GlobalKey<FormState>();
   final _imagePicker = ImagePicker();
+  final AuditLogService _auditLogService = AuditLogService();
 
   late final TextEditingController _firstNameController;
   late final TextEditingController _lastNameController;
@@ -59,6 +61,44 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _lastNameController.dispose();
     _publicNameController.dispose();
     super.dispose();
+  }
+
+  Map<String, dynamic> _profileChanges({
+    required String? newFirstName,
+    required String? newLastName,
+    required String? newPublicName,
+    required String? newDisplayName,
+  }) {
+    final changes = <String, dynamic>{};
+
+    void addChange(String key, Object? oldValue, Object? newValue) {
+      if (newValue != null && oldValue != newValue) {
+        changes[key] = {'oldValue': oldValue, 'newValue': newValue};
+      }
+    }
+
+    addChange('firstName', widget.initialFirstName, newFirstName);
+    addChange('lastName', widget.initialLastName, newLastName);
+    addChange('publicName', widget.initialPublicName, newPublicName);
+    addChange('displayName', widget.user.displayName, newDisplayName);
+
+    return changes;
+  }
+
+  bool _isCurrentPhotoManuallyUpdated() {
+    final currentPhotoUrl = _photoUrl;
+
+    if (currentPhotoUrl == null || currentPhotoUrl.isEmpty) {
+      return false;
+    }
+
+    final providerPhotoUrl = widget.providerPhotoUrl;
+
+    if (providerPhotoUrl == null || providerPhotoUrl.isEmpty) {
+      return true;
+    }
+
+    return currentPhotoUrl != providerPhotoUrl;
   }
 
   Future<void> _saveProfile() async {
@@ -122,6 +162,27 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           .collection('users')
           .doc(widget.user.uid)
           .set(updates, SetOptions(merge: true));
+
+      final changes = _profileChanges(
+        newFirstName: updates['firstName'] as String?,
+        newLastName: updates['lastName'] as String?,
+        newPublicName: updates['publicName'] as String?,
+        newDisplayName: updates['displayName'] as String?,
+      );
+
+      if (changes.isNotEmpty) {
+        await _auditLogService.createLogWithUsers(
+          category: 'profile',
+          action: 'profile_updated',
+          targetType: 'user',
+          targetId: widget.user.uid,
+          targetUserId: widget.user.uid,
+          actor: widget.user,
+          title: AppTexts.auditProfileUpdatedTitle,
+          description: AppTexts.auditProfileUpdatedDescription,
+          changes: changes,
+        );
+      }
 
       if (!mounted) return;
 
@@ -253,6 +314,24 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           'updatedAt': FieldValue.serverTimestamp(),
         }, SetOptions(merge: true));
 
+    await _auditLogService.createLogWithUsers(
+      category: 'profile',
+      action: 'profile_photo_updated',
+      targetType: 'user',
+      targetId: widget.user.uid,
+      targetUserId: widget.user.uid,
+      actor: widget.user,
+      title: AppTexts.auditProfilePhotoUpdatedTitle,
+      description: AppTexts.auditProfilePhotoUpdatedDescription,
+      changes: {
+        'photoURL': {'oldValue': _photoUrl, 'newValue': downloadUrl},
+        'photoUpdatedManually': {
+          'oldValue': _isCurrentPhotoManuallyUpdated(),
+          'newValue': true,
+        },
+      },
+    );
+
     if (!mounted) return;
 
     setState(() {
@@ -375,6 +454,24 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             'photoUpdatedManually': false,
             'updatedAt': FieldValue.serverTimestamp(),
           }, SetOptions(merge: true));
+
+      await _auditLogService.createLogWithUsers(
+        category: 'profile',
+        action: 'profile_photo_removed',
+        targetType: 'user',
+        targetId: widget.user.uid,
+        targetUserId: widget.user.uid,
+        actor: widget.user,
+        title: AppTexts.auditProfilePhotoRemovedTitle,
+        description: AppTexts.auditProfilePhotoRemovedDescription,
+        changes: {
+          'photoURL': {'oldValue': _photoUrl, 'newValue': fallbackPhotoUrl},
+          'photoUpdatedManually': {
+            'oldValue': _isCurrentPhotoManuallyUpdated(),
+            'newValue': false,
+          },
+        },
+      );
 
       if (!mounted) return;
 

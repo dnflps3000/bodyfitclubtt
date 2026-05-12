@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../../../core/theme/app_texts.dart';
+import '../../audit/data/audit_log_service.dart';
 import '../../schedule/domain/training_session.dart';
 import '../domain/reservation.dart';
 
@@ -10,6 +12,7 @@ class ReservationService {
     : _firestore = firestore ?? FirebaseFirestore.instance;
 
   final FirebaseFirestore _firestore;
+  final AuditLogService _auditLogService = AuditLogService();
 
   String _dateId(DateTime dateTime) {
     final year = dateTime.year.toString();
@@ -296,6 +299,22 @@ class ReservationService {
         'updatedAt': FieldValue.serverTimestamp(),
       });
     });
+
+    await _auditLogService.createLogWithUsers(
+      category: 'reservation',
+      action: 'created',
+      targetType: 'reservation',
+      targetId: reservationId,
+      targetUserId: currentUser.uid,
+      actor: currentUser,
+      title: AppTexts.auditReservationCreatedTitle,
+      description: AppTexts.auditReservationCreatedDescription,
+      changes: {
+        'trainingSessionId': {'oldValue': null, 'newValue': session.id},
+        'membershipId': {'oldValue': null, 'newValue': membershipRef.id},
+        'entryStatus': {'oldValue': null, 'newValue': 'reserved'},
+      },
+    );
   }
 
   Future<void> cancelReservation({
@@ -309,6 +328,10 @@ class ReservationService {
     final sessionRef = _firestore
         .collection('trainingSessions')
         .doc(trainingSessionId);
+
+    String reservationUserId = '';
+    String reservationMembershipId = '';
+    String oldEntryStatus = '';
 
     await _firestore.runTransaction((transaction) async {
       final reservationSnapshot = await transaction.get(reservationRef);
@@ -333,6 +356,11 @@ class ReservationService {
 
       final reservationData = reservationSnapshot.data() ?? {};
       final sessionData = sessionSnapshot.data() ?? {};
+
+      reservationUserId = reservationData['userId'] as String? ?? '';
+      reservationMembershipId =
+          reservationData['membershipId'] as String? ?? '';
+      oldEntryStatus = reservationData['entryStatus'] as String? ?? '';
 
       final reservationTrainingSessionId =
           reservationData['trainingSessionId'] as String? ?? '';
@@ -384,6 +412,31 @@ class ReservationService {
         'reservedCount': newReservedCount,
         'updatedAt': FieldValue.serverTimestamp(),
       });
+
+      final currentUser = FirebaseAuth.instance.currentUser;
+
+      await _auditLogService.createLogWithUsers(
+        category: 'reservation',
+        action: 'cancelled',
+        targetType: 'reservation',
+        targetId: reservationId,
+        targetUserId: reservationUserId,
+        actor: currentUser,
+        title: AppTexts.auditReservationCancelledTitle,
+        description: AppTexts.auditReservationCancelledDescription,
+        changes: {
+          'trainingSessionId': {
+            'oldValue': trainingSessionId,
+            'newValue': trainingSessionId,
+          },
+          'membershipId': {
+            'oldValue': reservationMembershipId,
+            'newValue': reservationMembershipId,
+          },
+          'status': {'oldValue': 'active', 'newValue': 'cancelled'},
+          'entryStatus': {'oldValue': oldEntryStatus, 'newValue': 'released'},
+        },
+      );
     });
   }
 
@@ -400,6 +453,10 @@ class ReservationService {
     final sessionRef = _firestore
         .collection('trainingSessions')
         .doc(trainingSessionId);
+
+    String reservationUserId = '';
+    String reservationMembershipId = '';
+    String oldEntryStatus = '';
 
     await _firestore.runTransaction((transaction) async {
       final reservationSnapshot = await transaction.get(reservationRef);
@@ -462,6 +519,11 @@ class ReservationService {
 
       final reservationData = reservationSnapshot.data() ?? {};
 
+      reservationUserId = reservationData['userId'] as String? ?? '';
+      reservationMembershipId =
+          reservationData['membershipId'] as String? ?? '';
+      oldEntryStatus = reservationData['entryStatus'] as String? ?? '';
+
       final reservationTrainingSessionId =
           reservationData['trainingSessionId'] as String? ?? '';
 
@@ -521,6 +583,41 @@ class ReservationService {
       transaction.update(sessionRef, {
         'updatedAt': FieldValue.serverTimestamp(),
       });
+
+      final currentUser = FirebaseAuth.instance.currentUser;
+
+      await _auditLogService.createLogWithUsers(
+        category: 'attendance',
+        action: attended
+            ? 'attendance_marked_attended'
+            : 'attendance_marked_no_show',
+        targetType: 'reservation',
+        targetId: reservationId,
+        targetUserId: reservationUserId,
+        actor: currentUser,
+        title: attended
+            ? AppTexts.auditAttendanceAttendedTitle
+            : AppTexts.auditAttendanceNoShowTitle,
+        description: attended
+            ? AppTexts.auditAttendanceAttendedDescription
+            : AppTexts.auditAttendanceNoShowDescription,
+        changes: {
+          'trainingSessionId': {
+            'oldValue': trainingSessionId,
+            'newValue': trainingSessionId,
+          },
+          'membershipId': {
+            'oldValue': reservationMembershipId,
+            'newValue': reservationMembershipId,
+          },
+          'status': {
+            'oldValue': 'active',
+            'newValue': attended ? 'attended' : 'no_show',
+          },
+          'entryStatus': {'oldValue': oldEntryStatus, 'newValue': 'used'},
+          'attended': {'oldValue': null, 'newValue': attended},
+        },
+      );
     });
   }
 }

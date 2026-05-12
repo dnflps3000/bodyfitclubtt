@@ -82,6 +82,7 @@ export const createPaymentIntent = onRequest(
 
       res.status(200).send({
         clientSecret: paymentIntent.client_secret,
+        paymentIntentId: paymentIntent.id,
       });
     } catch (error) {
       console.error("CREATE PAYMENT INTENT ERROR:", error);

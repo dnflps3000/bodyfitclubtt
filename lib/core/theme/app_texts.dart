@@ -95,6 +95,12 @@ class AppTexts {
   static const String profileSaveError = 'Profil sa nepodarilo uložiť.';
   static const String emailNotProvided = 'E-mail nebol poskytnutý';
   static const String loggedInUser = 'Prihlásený používateľ';
+  static const String completeEmailTitle = 'Doplnenie e-mailu';
+  static const String completeEmailDescription =
+      'Pre používanie aplikácie potrebujeme vašu e-mailovú adresu. '
+      'Použijeme ju ako kontaktný e-mail k vášmu účtu.';
+  static const String emailSaved = 'E-mail bol uložený.';
+  static const String emailSaveError = 'E-mail sa nepodarilo uložiť.';
 
   // Profilová fotka
   static const String changeProfilePhoto = 'Zmeniť profilovú fotku';
@@ -268,6 +274,10 @@ class AppTexts {
   static const String usersManagementComingSoon =
       'Správa používateľov bude doplnená neskôr.';
   static const String scheduleTemplatesManagement = 'Správa šablón rozvrhu';
+  static const String reactivateUser = 'Aktivovať používateľa';
+  static const String reactivateUserQuestion =
+      'Naozaj chcete znovu aktivovať tohto používateľa?';
+  static const String userReactivated = 'Používateľ bol znovu aktivovaný.';
 
   // Správa typov cvičení
   static const String trainingTypesManagement = 'Správa typov cvičení';
@@ -586,6 +596,206 @@ class AppTexts {
   static const String auditActionAttendanceMarked = 'Dochádzka';
   static const String auditActionQrChecked = 'QR kontrola';
   static const String auditAllActorRoles = 'Všetky role';
+  static const String auditReservationCreatedTitle = 'Vytvorenie rezervácie';
+  static const String auditReservationCreatedDescription =
+      'Používateľ vytvoril rezerváciu na tréning.';
+  static const String auditReservationCancelledTitle = 'Zrušenie rezervácie';
+  static const String auditReservationCancelledDescription =
+      'Rezervácia používateľa bola zrušená.';
+  static const String auditAttendanceAttendedTitle = 'Označená účasť';
+  static const String auditAttendanceAttendedDescription =
+      'Používateľ bol označený ako prítomný na tréningu.';
+  static const String auditAttendanceNoShowTitle = 'Označená neúčasť';
+  static const String auditAttendanceNoShowDescription =
+      'Používateľ bol označený ako neprítomný na tréningu.';
+  static const String auditTrainingTypeCreatedTitle =
+      'Vytvorenie typu cvičenia';
+  static const String auditTrainingTypeUpdatedTitle = 'Úprava typu cvičenia';
+  static const String auditTrainingTypeDeactivatedTitle =
+      'Deaktivácia typu cvičenia';
+  static const String auditTrainingSessionCreatedTitle = 'Vytvorenie termínu';
+  static const String auditTrainingSessionUpdatedTitle = 'Úprava termínu';
+  static const String auditTrainingSessionTimeChangedTitle =
+      'Zmena času termínu';
+  static const String auditTrainingSessionCancelledTitle = 'Zrušenie termínu';
+  static const String auditScheduleTemplateCreatedTitle =
+      'Vytvorenie šablóny rozvrhu';
+  static const String auditScheduleTemplateUpdatedTitle =
+      'Úprava šablóny rozvrhu';
+  static const String auditScheduleTemplateDeactivatedTitle =
+      'Deaktivácia šablóny rozvrhu';
+  static String auditTrainingTypeCreatedDescription(String trainingName) {
+    return 'Bol vytvorený typ cvičenia $trainingName.';
+  }
+
+  static String auditTrainingTypeUpdatedDescription(String trainingName) {
+    return 'Bol upravený typ cvičenia $trainingName.';
+  }
+
+  static String auditTrainingTypeDeactivatedDescription(String trainingName) {
+    return 'Bol deaktivovaný typ cvičenia $trainingName.';
+  }
+
+  static String auditTrainingSessionCreatedDescription(String trainingName) {
+    return 'Bol vytvorený konkrétny termín cvičenia $trainingName.';
+  }
+
+  static String auditTrainingSessionUpdatedDescription(String trainingName) {
+    return 'Bol upravený konkrétny termín cvičenia $trainingName.';
+  }
+
+  static String auditTrainingSessionTimeChangedDescription(
+    String trainingName,
+  ) {
+    return 'Bol zmenený čas konkrétneho termínu cvičenia $trainingName.';
+  }
+
+  static String auditTrainingSessionCancelledDescription(String trainingName) {
+    return 'Bol zrušený konkrétny termín cvičenia $trainingName.';
+  }
+
+  static String auditScheduleTemplateCreatedDescription(String trainingName) {
+    return 'Bola vytvorená šablóna pravidelného rozvrhu pre cvičenie $trainingName.';
+  }
+
+  static String auditScheduleTemplateUpdatedDescription(String trainingName) {
+    return 'Bola upravená šablóna pravidelného rozvrhu pre cvičenie $trainingName.';
+  }
+
+  static String auditScheduleTemplateDeactivatedDescription(
+    String trainingName,
+  ) {
+    return 'Bola deaktivovaná šablóna pravidelného rozvrhu pre cvičenie $trainingName.';
+  }
+
+  static const String auditUserUpdatedTitle = 'Úprava používateľa';
+  static const String auditUserUpdatedDescription =
+      'Administrátor upravil údaje používateľa.';
+  static const String auditUserRoleChangedTitle = 'Zmena roly používateľa';
+  static const String auditUserRoleChangedDescription =
+      'Administrátor zmenil rolu používateľa.';
+  static const String auditUserDeactivatedTitle = 'Deaktivácia používateľa';
+  static const String auditUserDeactivatedDescription =
+      'Administrátor deaktivoval používateľa.';
+  static const String auditUserDeactivationBlockedTitle =
+      'Neúspešná deaktivácia používateľa';
+  static const String auditUserDeactivationBlockedDescription =
+      'Deaktivácia používateľa bola zablokovaná kontrolou aktívnych väzieb.';
+  static const String auditPublicMessageCreatedTitle = 'Vytvorenie novinky';
+  static const String auditPublicMessageCreatedDescription =
+      'Bola vytvorená verejná novinka.';
+  static const String auditPublicMessageUpdatedTitle = 'Úprava novinky';
+  static const String auditPublicMessageUpdatedDescription =
+      'Bola upravená verejná novinka.';
+  static const String auditPublicMessageDeletedTitle = 'Vymazanie novinky';
+  static const String auditPublicMessageDeletedDescription =
+      'Verejná novinka bola vymazaná.';
+  static const String auditProfileCompletedTitle = 'Doplnenie profilu';
+  static const String auditProfileCompletedDescription =
+      'Používateľ doplnil základné údaje profilu.';
+  static const String auditProfileUpdatedTitle = 'Úprava profilu';
+  static const String auditProfileUpdatedDescription =
+      'Používateľ upravil údaje profilu.';
+  static const String auditProfilePhotoUpdatedTitle = 'Úprava profilovej fotky';
+  static const String auditProfilePhotoUpdatedDescription =
+      'Používateľ upravil profilovú fotku.';
+  static const String auditProfilePhotoRemovedTitle =
+      'Odstránenie profilovej fotky';
+  static const String auditProfilePhotoRemovedDescription =
+      'Používateľ odstránil manuálne nastavenú profilovú fotku.';
+  static const String auditPaymentStartedTitle = 'Spustenie platby';
+  static const String auditPaymentStartedDescription =
+      'Používateľ spustil platbu za permanentku.';
+  static const String auditPaymentSucceededTitle = 'Úspešná platba';
+  static const String auditPaymentSucceededDescription =
+      'Platba za permanentku bola úspešne dokončená.';
+  static const String auditPaymentFailedTitle = 'Neúspešná platba';
+  static const String auditPaymentFailedDescription =
+      'Platba za permanentku zlyhala alebo bola zrušená.';
+  static const String auditMembershipUpdatedTitle = 'Úprava permanentky';
+  static const String auditMembershipUpdatedDescription =
+      'Administrátor upravil permanentku používateľa.';
+  static const String auditMembershipStatusChangedTitle =
+      'Zmena stavu permanentky';
+  static const String auditMembershipStatusChangedDescription =
+      'Administrátor zmenil stav permanentky používateľa.';
+  static const String auditMembershipEntriesChangedTitle =
+      'Zmena počtu vstupov permanentky';
+  static const String auditMembershipEntriesChangedDescription =
+      'Administrátor zmenil počet zostávajúcich vstupov permanentky.';
+  static const String auditMembershipReservationCancelledTitle =
+      'Zrušenie alokovanej rezervácie';
+  static const String auditMembershipReservationCancelledDescription =
+      'Administrátor zrušil alokovanú rezerváciu naviazanú na permanentku.';
+  static const String auditMembershipAllReservationsCancelledTitle =
+      'Zrušenie všetkých alokovaných rezervácií';
+  static const String auditMembershipAllReservationsCancelledDescription =
+      'Administrátor zrušil všetky alokované rezervácie naviazané na permanentku.';
+  static const String auditMembershipAssignedTitle = 'Priradenie permanentky';
+  static const String auditMembershipAssignedDescription =
+      'Používateľovi bola manuálne priradená permanentka.';
+  static const String auditMembershipPurchasedTitle = 'Nákup permanentky';
+  static const String auditMembershipPurchasedDescription =
+      'Používateľ si zakúpil permanentku.';
+  static const String auditActionMembershipAssigned = 'Priradenie permanentky';
+  static const String auditActionMembershipPurchased = 'Nákup permanentky';
+  static const String auditActionMembershipUpdated = 'Úprava permanentky';
+  static const String auditActionMembershipStatusChanged =
+      'Zmena stavu permanentky';
+  static const String auditActionMembershipEntriesChanged =
+      'Zmena vstupov permanentky';
+  static const String auditActionMembershipReservationCancelled =
+      'Zrušenie jednej alokovanej rezervácie';
+  static const String auditActionMembershipAllReservationsCancelled =
+      'Zrušenie všetkých alokovaných rezervácií';
+  static const String auditActionReservationCreated = 'Vytvorenie rezervácie';
+  static const String auditActionReservationCancelled = 'Zrušenie rezervácie';
+  static const String auditActionAttendanceAttended = 'Označená účasť';
+  static const String auditActionAttendanceNoShow = 'Označená neúčasť';
+  static const String auditActionTrainingTypeCreated =
+      'Vytvorenie typu cvičenia';
+  static const String auditActionTrainingTypeUpdated = 'Úprava typu cvičenia';
+  static const String auditActionTrainingTypeDeactivated =
+      'Deaktivácia typu cvičenia';
+  static const String auditActionTrainingSessionCreated = 'Vytvorenie termínu';
+  static const String auditActionTrainingSessionUpdated = 'Úprava termínu';
+  static const String auditActionTrainingSessionTimeChanged =
+      'Zmena času termínu';
+  static const String auditActionTrainingSessionCancelled = 'Zrušenie termínu';
+  static const String auditActionScheduleTemplateCreated = 'Vytvorenie šablóny';
+  static const String auditActionScheduleTemplateUpdated = 'Úprava šablóny';
+  static const String auditActionScheduleTemplateDeactivated =
+      'Deaktivácia šablóny';
+  static const String auditActionUserUpdated = 'Úprava používateľa';
+  static const String auditActionUserRoleChanged = 'Zmena roly';
+  static const String auditActionUserDeactivationBlocked =
+      'Blokovaná deaktivácia';
+  static const String auditActionUserDeactivated = 'Deaktivácia používateľa';
+  static const String auditActionPublicMessageCreated = 'Vytvorenie novinky';
+  static const String auditActionPublicMessageUpdated = 'Úprava novinky';
+  static const String auditActionPublicMessageDeleted = 'Vymazanie novinky';
+  static const String auditActionProfileCompleted = 'Doplnenie profilu';
+  static const String auditActionProfileUpdated = 'Úprava profilu';
+  static const String auditActionProfilePhotoUpdated =
+      'Úprava profilovej fotky';
+  static const String auditActionProfilePhotoRemoved =
+      'Odstránenie profilovej fotky';
+  static const String auditActionPaymentStarted = 'Spustenie platby';
+  static const String auditUserEmailCompletedTitle = 'Doplnenie e-mailu';
+  static const String auditUserEmailCompletedDescription =
+      'Používateľ doplnil chýbajúci e-mail k účtu.';
+
+  static const String auditUserEmailUpdatedTitle = 'Úprava e-mailu používateľa';
+  static const String auditUserEmailUpdatedDescription =
+      'Administrátor upravil kontaktný e-mail používateľa.';
+
+  static const String auditUserReactivatedTitle = 'Aktivácia používateľa';
+  static const String auditUserReactivatedDescription =
+      'Administrátor znovu aktivoval používateľa.';
+  static const String auditActionUserEmailCompleted = 'Doplnenie e-mailu';
+  static const String auditActionUserEmailUpdated =
+      'Úprava e-mailu používateľa';
+  static const String auditActionUserReactivated = 'Aktivácia používateľa';
 
   static String allocatedReservationsCancelled(int count) {
     if (count == 1) {

@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../../../core/theme/app_texts.dart';
+import '../../audit/data/audit_log_service.dart';
 import '../domain/membership.dart';
 import '../domain/membership_plan.dart';
 
@@ -9,6 +11,7 @@ class MembershipService {
     : _firestore = firestore ?? FirebaseFirestore.instance;
 
   final FirebaseFirestore _firestore;
+  final AuditLogService _auditLogService = AuditLogService();
 
   Stream<List<MembershipPlan>> watchActiveMembershipPlans() {
     return _firestore
@@ -80,7 +83,7 @@ class MembershipService {
     final planRef = _firestore.collection('membershipPlans').doc(plan.id);
     final createdByRef = _firestore.collection('users').doc(currentUser.uid);
 
-    await _firestore.collection('memberships').add({
+    final membershipRef = await _firestore.collection('memberships').add({
       'userId': userId,
       'userRef': userRef,
       'planId': plan.id,
@@ -101,6 +104,22 @@ class MembershipService {
       'createdAt': FieldValue.serverTimestamp(),
       'updatedAt': FieldValue.serverTimestamp(),
     });
+
+    await _auditLogService.createLogWithUsers(
+      category: 'membership',
+      action: 'assigned',
+      targetType: 'membership',
+      targetId: membershipRef.id,
+      targetUserId: userId,
+      actor: currentUser,
+      title: AppTexts.auditMembershipAssignedTitle,
+      description: AppTexts.auditMembershipAssignedDescription,
+      changes: {
+        'planName': {'oldValue': null, 'newValue': plan.name},
+        'entriesTotal': {'oldValue': null, 'newValue': plan.entriesTotal},
+        'paymentStatus': {'oldValue': null, 'newValue': 'manual'},
+      },
+    );
   }
 
   Future<void> createMembershipAfterPayment({
@@ -113,7 +132,7 @@ class MembershipService {
     final userRef = _firestore.collection('users').doc(currentUser.uid);
     final planRef = _firestore.collection('membershipPlans').doc(plan.id);
 
-    await _firestore.collection('memberships').add({
+    final membershipRef = await _firestore.collection('memberships').add({
       'userId': currentUser.uid,
       'userRef': userRef,
       'planId': plan.id,
@@ -134,6 +153,22 @@ class MembershipService {
       'createdAt': FieldValue.serverTimestamp(),
       'updatedAt': FieldValue.serverTimestamp(),
     });
+
+    await _auditLogService.createLogWithUsers(
+      category: 'membership',
+      action: 'purchased',
+      targetType: 'membership',
+      targetId: membershipRef.id,
+      targetUserId: currentUser.uid,
+      actor: currentUser,
+      title: AppTexts.auditMembershipPurchasedTitle,
+      description: AppTexts.auditMembershipPurchasedDescription,
+      changes: {
+        'planName': {'oldValue': null, 'newValue': plan.name},
+        'entriesTotal': {'oldValue': null, 'newValue': plan.entriesTotal},
+        'paymentStatus': {'oldValue': null, 'newValue': 'paid'},
+      },
+    );
   }
 
   Stream<List<Membership>> watchMyMemberships() {
@@ -202,6 +237,32 @@ class MembershipService {
     });
   }
 
+  Map<String, dynamic> _membershipAdminChanges({
+    required Membership membership,
+    required int? newEntriesRemaining,
+    required String newStatus,
+  }) {
+    final changes = <String, dynamic>{};
+
+    void addChange(String key, Object? oldValue, Object? newValue) {
+      if (oldValue != newValue) {
+        changes[key] = {'oldValue': oldValue, 'newValue': newValue};
+      }
+    }
+
+    addChange('status', membership.status, newStatus);
+
+    if (membership.entriesTotal != null && newEntriesRemaining != null) {
+      addChange(
+        'entriesRemaining',
+        membership.entriesRemaining,
+        newEntriesRemaining,
+      );
+    }
+
+    return changes;
+  }
+
   Future<void> updateMembershipByAdmin({
     required Membership membership,
     required int? entriesRemaining,
@@ -222,6 +283,46 @@ class MembershipService {
         .collection('memberships')
         .doc(membership.id)
         .set(updates, SetOptions(merge: true));
+
+    final changes = _membershipAdminChanges(
+      membership: membership,
+      newEntriesRemaining: entriesRemaining,
+      newStatus: status,
+    );
+
+    if (changes.isNotEmpty) {
+      final statusChanged = membership.status != status;
+      final entriesChanged =
+          membership.entriesTotal != null &&
+          entriesRemaining != null &&
+          membership.entriesRemaining != entriesRemaining;
+
+      String action = 'membership_updated';
+      String title = AppTexts.auditMembershipUpdatedTitle;
+      String description = AppTexts.auditMembershipUpdatedDescription;
+
+      if (statusChanged && !entriesChanged) {
+        action = 'membership_status_changed';
+        title = AppTexts.auditMembershipStatusChangedTitle;
+        description = AppTexts.auditMembershipStatusChangedDescription;
+      } else if (!statusChanged && entriesChanged) {
+        action = 'membership_entries_changed';
+        title = AppTexts.auditMembershipEntriesChangedTitle;
+        description = AppTexts.auditMembershipEntriesChangedDescription;
+      }
+
+      await _auditLogService.createLogWithUsers(
+        category: 'membership',
+        action: action,
+        targetType: 'membership',
+        targetId: membership.id,
+        targetUserId: membership.userId,
+        actor: currentUser,
+        title: title,
+        description: description,
+        changes: changes,
+      );
+    }
   }
 
   Future<int> cancelReservedReservationsForMembership({
@@ -314,6 +415,30 @@ class MembershipService {
       cancelledCount++;
     }
 
+    if (cancelledCount > 0) {
+      await _auditLogService.createLogWithUsers(
+        category: 'membership',
+        action: 'membership_all_reservations_cancelled',
+        targetType: 'membership',
+        targetId: membership.id,
+        targetUserId: membership.userId,
+        actor: currentUser,
+        title: AppTexts.auditMembershipAllReservationsCancelledTitle,
+        description:
+            AppTexts.auditMembershipAllReservationsCancelledDescription,
+        changes: {
+          'cancelledReservationsCount': {
+            'oldValue': 0,
+            'newValue': cancelledCount,
+          },
+          'entriesReserved': {
+            'oldValue': membership.entriesReserved ?? 0,
+            'newValue': 0,
+          },
+        },
+      );
+    }
+
     return cancelledCount;
   }
 
@@ -395,6 +520,33 @@ class MembershipService {
         'updatedAt': FieldValue.serverTimestamp(),
       });
     });
+
+    await _auditLogService.createLogWithUsers(
+      category: 'membership',
+      action: 'membership_reservation_cancelled',
+      targetType: 'membership',
+      targetId: membership.id,
+      targetUserId: membership.userId,
+      actor: currentUser,
+      title: AppTexts.auditMembershipReservationCancelledTitle,
+      description: AppTexts.auditMembershipReservationCancelledDescription,
+      changes: {
+        'reservationId': {
+          'oldValue': reservation.reservationId,
+          'newValue': null,
+        },
+        'trainingSessionId': {
+          'oldValue': reservation.trainingSessionId,
+          'newValue': reservation.trainingSessionId,
+        },
+        'entriesReserved': {
+          'oldValue': membership.entriesReserved ?? 0,
+          'newValue': (membership.entriesReserved ?? 0) > 0
+              ? (membership.entriesReserved ?? 0) - 1
+              : 0,
+        },
+      },
+    );
   }
 
   Future<MembershipUsageSummary> loadMembershipUsage(

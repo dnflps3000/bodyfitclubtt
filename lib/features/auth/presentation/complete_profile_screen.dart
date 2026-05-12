@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../core/theme/app_texts.dart';
+import '../../audit/data/audit_log_service.dart';
 
 class CompleteProfileScreen extends StatefulWidget {
   const CompleteProfileScreen({super.key});
@@ -13,6 +14,7 @@ class CompleteProfileScreen extends StatefulWidget {
 class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
   final _firstNameController = TextEditingController();
   final _lastNameController = TextEditingController();
+  final AuditLogService _auditLogService = AuditLogService();
 
   bool _loading = false;
 
@@ -41,6 +43,23 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
       'publicName': firstName,
       'updatedAt': FieldValue.serverTimestamp(),
     }, SetOptions(merge: true));
+
+    await _auditLogService.createLogWithUsers(
+      category: 'profile',
+      action: 'profile_completed',
+      targetType: 'user',
+      targetId: user.uid,
+      targetUserId: user.uid,
+      actor: user,
+      title: AppTexts.auditProfileCompletedTitle,
+      description: AppTexts.auditProfileCompletedDescription,
+      changes: {
+        'firstName': {'oldValue': null, 'newValue': firstName},
+        'lastName': {'oldValue': null, 'newValue': lastName},
+        'displayName': {'oldValue': null, 'newValue': displayName},
+        'publicName': {'oldValue': null, 'newValue': firstName},
+      },
+    );
 
     if (!mounted) return;
 

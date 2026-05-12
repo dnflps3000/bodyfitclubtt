@@ -209,33 +209,144 @@ class _AuditLogsScreenState extends State<AuditLogsScreen> {
           decoration: const InputDecoration(labelText: AppTexts.auditAction),
           items: const [
             DropdownMenuItem(value: '', child: Text(AppTexts.auditAllActions)),
-            DropdownMenuItem(
-              value: 'created',
-              child: Text(AppTexts.auditActionCreated),
-            ),
-            DropdownMenuItem(
-              value: 'updated',
-              child: Text(AppTexts.auditActionUpdated),
-            ),
-            DropdownMenuItem(
-              value: 'cancelled',
-              child: Text(AppTexts.auditActionCancelled),
-            ),
-            DropdownMenuItem(
-              value: 'deactivated',
-              child: Text(AppTexts.auditActionDeactivated),
-            ),
-            DropdownMenuItem(
-              value: 'activated',
-              child: Text(AppTexts.auditActionActivated),
-            ),
+
             DropdownMenuItem(
               value: 'assigned',
-              child: Text(AppTexts.auditActionAssigned),
+              child: Text(AppTexts.auditActionMembershipAssigned),
             ),
             DropdownMenuItem(
               value: 'purchased',
-              child: Text(AppTexts.auditActionPurchased),
+              child: Text(AppTexts.auditActionMembershipPurchased),
+            ),
+            DropdownMenuItem(
+              value: 'membership_updated',
+              child: Text(AppTexts.auditActionMembershipUpdated),
+            ),
+            DropdownMenuItem(
+              value: 'membership_status_changed',
+              child: Text(AppTexts.auditActionMembershipStatusChanged),
+            ),
+            DropdownMenuItem(
+              value: 'membership_entries_changed',
+              child: Text(AppTexts.auditActionMembershipEntriesChanged),
+            ),
+            DropdownMenuItem(
+              value: 'membership_reservation_cancelled',
+              child: Text(AppTexts.auditActionMembershipReservationCancelled),
+            ),
+            DropdownMenuItem(
+              value: 'membership_all_reservations_cancelled',
+              child: Text(
+                AppTexts.auditActionMembershipAllReservationsCancelled,
+              ),
+            ),
+
+            DropdownMenuItem(
+              value: 'created',
+              child: Text(AppTexts.auditActionReservationCreated),
+            ),
+            DropdownMenuItem(
+              value: 'cancelled',
+              child: Text(AppTexts.auditActionReservationCancelled),
+            ),
+            DropdownMenuItem(
+              value: 'attendance_marked_attended',
+              child: Text(AppTexts.auditActionAttendanceAttended),
+            ),
+            DropdownMenuItem(
+              value: 'attendance_marked_no_show',
+              child: Text(AppTexts.auditActionAttendanceNoShow),
+            ),
+
+            DropdownMenuItem(
+              value: 'training_type_created',
+              child: Text(AppTexts.auditActionTrainingTypeCreated),
+            ),
+            DropdownMenuItem(
+              value: 'training_type_updated',
+              child: Text(AppTexts.auditActionTrainingTypeUpdated),
+            ),
+            DropdownMenuItem(
+              value: 'training_type_deactivated',
+              child: Text(AppTexts.auditActionTrainingTypeDeactivated),
+            ),
+            DropdownMenuItem(
+              value: 'training_session_created',
+              child: Text(AppTexts.auditActionTrainingSessionCreated),
+            ),
+            DropdownMenuItem(
+              value: 'training_session_updated',
+              child: Text(AppTexts.auditActionTrainingSessionUpdated),
+            ),
+            DropdownMenuItem(
+              value: 'training_session_time_changed',
+              child: Text(AppTexts.auditActionTrainingSessionTimeChanged),
+            ),
+            DropdownMenuItem(
+              value: 'training_session_cancelled',
+              child: Text(AppTexts.auditActionTrainingSessionCancelled),
+            ),
+            DropdownMenuItem(
+              value: 'schedule_template_created',
+              child: Text(AppTexts.auditActionScheduleTemplateCreated),
+            ),
+            DropdownMenuItem(
+              value: 'schedule_template_updated',
+              child: Text(AppTexts.auditActionScheduleTemplateUpdated),
+            ),
+            DropdownMenuItem(
+              value: 'schedule_template_deactivated',
+              child: Text(AppTexts.auditActionScheduleTemplateDeactivated),
+            ),
+
+            DropdownMenuItem(
+              value: 'user_updated',
+              child: Text(AppTexts.auditActionUserUpdated),
+            ),
+            DropdownMenuItem(
+              value: 'user_role_changed',
+              child: Text(AppTexts.auditActionUserRoleChanged),
+            ),
+            DropdownMenuItem(
+              value: 'user_deactivation_blocked',
+              child: Text(AppTexts.auditActionUserDeactivationBlocked),
+            ),
+            DropdownMenuItem(
+              value: 'user_deactivated',
+              child: Text(AppTexts.auditActionUserDeactivated),
+            ),
+
+            DropdownMenuItem(
+              value: 'public_message_created',
+              child: Text(AppTexts.auditActionPublicMessageCreated),
+            ),
+            DropdownMenuItem(
+              value: 'public_message_updated',
+              child: Text(AppTexts.auditActionPublicMessageUpdated),
+            ),
+            DropdownMenuItem(
+              value: 'public_message_deleted',
+              child: Text(AppTexts.auditActionPublicMessageDeleted),
+            ),
+            DropdownMenuItem(
+              value: 'profile_completed',
+              child: Text(AppTexts.auditActionProfileCompleted),
+            ),
+            DropdownMenuItem(
+              value: 'profile_updated',
+              child: Text(AppTexts.auditActionProfileUpdated),
+            ),
+            DropdownMenuItem(
+              value: 'profile_photo_updated',
+              child: Text(AppTexts.auditActionProfilePhotoUpdated),
+            ),
+            DropdownMenuItem(
+              value: 'profile_photo_removed',
+              child: Text(AppTexts.auditActionProfilePhotoRemoved),
+            ),
+            DropdownMenuItem(
+              value: 'payment_started',
+              child: Text(AppTexts.auditActionPaymentStarted),
             ),
             DropdownMenuItem(
               value: 'payment_succeeded',
@@ -246,12 +357,16 @@ class _AuditLogsScreenState extends State<AuditLogsScreen> {
               child: Text(AppTexts.auditActionPaymentFailed),
             ),
             DropdownMenuItem(
-              value: 'attendance_marked',
-              child: Text(AppTexts.auditActionAttendanceMarked),
+              value: 'user_email_completed',
+              child: Text(AppTexts.auditActionUserEmailCompleted),
             ),
             DropdownMenuItem(
-              value: 'qr_checked',
-              child: Text(AppTexts.auditActionQrChecked),
+              value: 'user_email_updated',
+              child: Text(AppTexts.auditActionUserEmailUpdated),
+            ),
+            DropdownMenuItem(
+              value: 'user_reactivated',
+              child: Text(AppTexts.auditActionUserReactivated),
             ),
           ],
           onChanged: (value) {
@@ -350,6 +465,10 @@ class _AuditLogsScreenState extends State<AuditLogsScreen> {
         future: _logsFuture,
         builder: (context, snapshot) {
           final logs = snapshot.data ?? [];
+          final hasStatusRow =
+              snapshot.connectionState == ConnectionState.waiting ||
+              snapshot.hasError ||
+              logs.isEmpty;
 
           return ListView.separated(
             padding: EdgeInsets.fromLTRB(
@@ -358,28 +477,31 @@ class _AuditLogsScreenState extends State<AuditLogsScreen> {
               16,
               32 + MediaQuery.of(context).padding.bottom,
             ),
-            itemCount: logs.length + 1,
+            itemCount: logs.length + 1 + (hasStatusRow ? 1 : 0),
             separatorBuilder: (context, index) => const SizedBox(height: 8),
             itemBuilder: (context, index) {
               if (index == 0) {
                 return _buildFilters();
               }
 
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Padding(
-                  padding: EdgeInsets.all(24),
-                  child: Center(child: CircularProgressIndicator()),
-                );
-              }
+              if (hasStatusRow && index == 1) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Padding(
+                    padding: EdgeInsets.all(24),
+                    child: Center(child: CircularProgressIndicator()),
+                  );
+                }
 
-              if (snapshot.hasError) {
-                return const Padding(
-                  padding: EdgeInsets.all(24),
-                  child: Text(AppTexts.auditLogsLoadError),
-                );
-              }
+                if (snapshot.hasError) {
+                  return const Padding(
+                    padding: EdgeInsets.all(24),
+                    child: Text(
+                      AppTexts.auditLogsLoadError,
+                      textAlign: TextAlign.center,
+                    ),
+                  );
+                }
 
-              if (logs.isEmpty) {
                 return const Padding(
                   padding: EdgeInsets.all(24),
                   child: Text(
@@ -389,7 +511,9 @@ class _AuditLogsScreenState extends State<AuditLogsScreen> {
                 );
               }
 
-              return _buildLogCard(logs[index - 1]);
+              final logIndex = hasStatusRow ? index - 2 : index - 1;
+
+              return _buildLogCard(logs[logIndex]);
             },
           );
         },

@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../../core/constants/app_roles.dart';
 import '../../../core/theme/app_texts.dart';
+import '../../audit/data/audit_log_service.dart';
 import '../domain/schedule_item.dart';
 import '../domain/schedule_template.dart';
 import '../domain/training_session.dart';
@@ -14,6 +15,7 @@ class ScheduleService {
     : _firestore = firestore ?? FirebaseFirestore.instance;
 
   final FirebaseFirestore _firestore;
+  final AuditLogService _auditLogService = AuditLogService();
 
   Stream<List<ScheduleItem>> watchScheduleItems() {
     return _firestore
@@ -166,6 +168,23 @@ class ScheduleService {
       'createdAt': FieldValue.serverTimestamp(),
       'updatedAt': FieldValue.serverTimestamp(),
     });
+
+    await _createScheduleAuditLog(
+      currentUser: currentUser,
+      action: 'training_type_created',
+      targetType: 'training_type',
+      targetId: trainingTypeId,
+      title: AppTexts.auditTrainingTypeCreatedTitle,
+      description: AppTexts.auditTrainingTypeCreatedDescription(name),
+      changes: {
+        'name': {'oldValue': null, 'newValue': name},
+        'defaultDurationMinutes': {
+          'oldValue': null,
+          'newValue': defaultDurationMinutes,
+        },
+        'defaultCapacity': {'oldValue': null, 'newValue': defaultCapacity},
+      },
+    );
   }
 
   Future<void> updateTrainingType({
@@ -206,6 +225,30 @@ class ScheduleService {
       'updatedBy': currentUser.uid,
       'updatedAt': FieldValue.serverTimestamp(),
     });
+
+    await _createScheduleAuditLog(
+      currentUser: currentUser,
+      action: 'training_type_updated',
+      targetType: 'training_type',
+      targetId: trainingType.id,
+      title: AppTexts.auditTrainingTypeUpdatedTitle,
+      description: AppTexts.auditTrainingTypeUpdatedDescription(name),
+      changes: {
+        'name': {'oldValue': trainingType.name, 'newValue': name},
+        'description': {
+          'oldValue': trainingType.description,
+          'newValue': description,
+        },
+        'defaultDurationMinutes': {
+          'oldValue': trainingType.defaultDurationMinutes,
+          'newValue': defaultDurationMinutes,
+        },
+        'defaultCapacity': {
+          'oldValue': trainingType.defaultCapacity,
+          'newValue': defaultCapacity,
+        },
+      },
+    );
   }
 
   Future<void> deactivateTrainingType({
@@ -251,6 +294,20 @@ class ScheduleService {
       'deactivatedAt': FieldValue.serverTimestamp(),
       'updatedAt': FieldValue.serverTimestamp(),
     });
+
+    await _createScheduleAuditLog(
+      currentUser: currentUser,
+      action: 'training_type_deactivated',
+      targetType: 'training_type',
+      targetId: trainingType.id,
+      title: AppTexts.auditTrainingTypeDeactivatedTitle,
+      description: AppTexts.auditTrainingTypeDeactivatedDescription(
+        trainingType.name,
+      ),
+      changes: {
+        'isActive': {'oldValue': true, 'newValue': false},
+      },
+    );
   }
 
   Future<void> createTrainingSession({
@@ -287,7 +344,7 @@ class ScheduleService {
       endTime: endTime,
     );
 
-    await _firestore.collection('trainingSessions').add({
+    final sessionRef = await _firestore.collection('trainingSessions').add({
       'trainingTypeId': trainingType.id,
       'trainingTypeRef': trainingTypeRef,
       'trainerId': trainerId,
@@ -315,6 +372,27 @@ class ScheduleService {
         date: _formatDate(startTime),
         time: _formatTime(startTime),
       ),
+    );
+
+    await _createScheduleAuditLog(
+      currentUser: currentUser,
+      action: 'training_session_created',
+      targetType: 'training_session',
+      targetId: sessionRef.id,
+      title: AppTexts.auditTrainingSessionCreatedTitle,
+      description: AppTexts.auditTrainingSessionCreatedDescription(
+        trainingType.name,
+      ),
+      changes: {
+        'trainingTypeId': {'oldValue': null, 'newValue': trainingType.id},
+        'trainerId': {'oldValue': null, 'newValue': trainerId},
+        'startTime': {
+          'oldValue': null,
+          'newValue': startTime.toIso8601String(),
+        },
+        'endTime': {'oldValue': null, 'newValue': endTime.toIso8601String()},
+        'capacity': {'oldValue': null, 'newValue': capacity},
+      },
     );
   }
 
@@ -395,6 +473,26 @@ class ScheduleService {
         ),
       ),
     );
+
+    await _createScheduleAuditLog(
+      currentUser: currentUser,
+      action: 'schedule_template_created',
+      targetType: 'schedule_template',
+      targetId: scheduleTemplateId,
+      title: AppTexts.auditScheduleTemplateCreatedTitle,
+      description: AppTexts.auditScheduleTemplateCreatedDescription(
+        trainingType.name,
+      ),
+      changes: {
+        'trainingTypeId': {'oldValue': null, 'newValue': trainingType.id},
+        'trainerId': {'oldValue': null, 'newValue': trainerId},
+        'weekday': {'oldValue': null, 'newValue': weekday},
+        'startHour': {'oldValue': null, 'newValue': startHour},
+        'startMinute': {'oldValue': null, 'newValue': startMinute},
+        'durationMinutes': {'oldValue': null, 'newValue': durationMinutes},
+        'capacity': {'oldValue': null, 'newValue': capacity},
+      },
+    );
   }
 
   Future<void> updateScheduleTemplate({
@@ -457,6 +555,44 @@ class ScheduleService {
         newSchedule: newSchedule,
       ),
     );
+
+    await _createScheduleAuditLog(
+      currentUser: currentUser,
+      action: 'schedule_template_updated',
+      targetType: 'schedule_template',
+      targetId: scheduleTemplate.id,
+      title: AppTexts.auditScheduleTemplateUpdatedTitle,
+      description: AppTexts.auditScheduleTemplateUpdatedDescription(
+        trainingType.name,
+      ),
+      changes: {
+        'trainingTypeId': {
+          'oldValue': scheduleTemplate.trainingTypeId,
+          'newValue': trainingType.id,
+        },
+        'trainerId': {
+          'oldValue': scheduleTemplate.trainerId,
+          'newValue': trainerId,
+        },
+        'weekday': {'oldValue': scheduleTemplate.weekday, 'newValue': weekday},
+        'startHour': {
+          'oldValue': scheduleTemplate.startHour,
+          'newValue': startHour,
+        },
+        'startMinute': {
+          'oldValue': scheduleTemplate.startMinute,
+          'newValue': startMinute,
+        },
+        'durationMinutes': {
+          'oldValue': scheduleTemplate.durationMinutes,
+          'newValue': durationMinutes,
+        },
+        'capacity': {
+          'oldValue': scheduleTemplate.capacity,
+          'newValue': capacity,
+        },
+      },
+    );
   }
 
   Future<void> deactivateScheduleTemplate({
@@ -497,6 +633,20 @@ class ScheduleService {
           startMinute: scheduleTemplate.startMinute,
         ),
       ),
+    );
+
+    await _createScheduleAuditLog(
+      currentUser: currentUser,
+      action: 'schedule_template_deactivated',
+      targetType: 'schedule_template',
+      targetId: scheduleTemplate.id,
+      title: AppTexts.auditScheduleTemplateDeactivatedTitle,
+      description: AppTexts.auditScheduleTemplateDeactivatedDescription(
+        trainingName,
+      ),
+      changes: {
+        'isActive': {'oldValue': true, 'newValue': false},
+      },
     );
   }
 
@@ -564,6 +714,8 @@ class ScheduleService {
     final trainerRef = _firestore.collection('users').doc(trainerId);
 
     DateTime? oldTrainingStartTime;
+    int? oldCapacity;
+    String? oldTrainerId;
 
     final editedSessionSnapshot = await sessionRef.get();
     final editedSessionData = editedSessionSnapshot.data() ?? {};
@@ -602,6 +754,8 @@ class ScheduleService {
       final existingEndTime = (sessionData['endTime'] as Timestamp?)?.toDate();
       final reservedCount = sessionData['reservedCount'] as int? ?? 0;
 
+      oldCapacity = sessionData['capacity'] as int?;
+      oldTrainerId = sessionData['trainerId'] as String?;
       oldTrainingStartTime = existingStartTime;
 
       if (existingStartTime == null || existingEndTime == null) {
@@ -796,6 +950,33 @@ class ScheduleService {
                 date: _formatDate(startTime),
                 time: _formatTime(startTime),
               ),
+      );
+
+      await _createScheduleAuditLog(
+        currentUser: currentUser,
+        action: startTimeChanged
+            ? 'training_session_time_changed'
+            : 'training_session_updated',
+        targetType: 'training_session',
+        targetId: sessionId,
+        title: startTimeChanged
+            ? AppTexts.auditTrainingSessionTimeChangedTitle
+            : AppTexts.auditTrainingSessionUpdatedTitle,
+        description: startTimeChanged
+            ? AppTexts.auditTrainingSessionTimeChangedDescription(
+                item.trainingType.name,
+              )
+            : AppTexts.auditTrainingSessionUpdatedDescription(
+                item.trainingType.name,
+              ),
+        changes: {
+          'trainerId': {'oldValue': oldTrainerId, 'newValue': trainerId},
+          'startTime': {
+            'oldValue': oldStartTime.toIso8601String(),
+            'newValue': startTime.toIso8601String(),
+          },
+          'capacity': {'oldValue': oldCapacity, 'newValue': capacity},
+        },
       );
     }
   }
@@ -1004,6 +1185,21 @@ class ScheduleService {
           time: _formatTime(cancelledTrainingStartTime!),
         ),
       );
+
+      await _createScheduleAuditLog(
+        currentUser: currentUser,
+        action: 'training_session_cancelled',
+        targetType: 'training_session',
+        targetId: sessionId,
+        title: AppTexts.auditTrainingSessionCancelledTitle,
+        description: AppTexts.auditTrainingSessionCancelledDescription(
+          cancelledTrainingName,
+        ),
+        changes: {
+          'status': {'oldValue': 'scheduled', 'newValue': 'cancelled'},
+          'isActive': {'oldValue': true, 'newValue': false},
+        },
+      );
     }
   }
 
@@ -1205,6 +1401,28 @@ class ScheduleService {
     }
 
     return AppTexts.weekdays[weekday - 1].toLowerCase();
+  }
+
+  Future<void> _createScheduleAuditLog({
+    required User currentUser,
+    required String action,
+    required String targetType,
+    required String targetId,
+    required String title,
+    required String description,
+    Map<String, dynamic> changes = const {},
+  }) async {
+    await _auditLogService.createLogWithUsers(
+      category: 'schedule',
+      action: action,
+      targetType: targetType,
+      targetId: targetId,
+      targetUserId: '',
+      actor: currentUser,
+      title: title,
+      description: description,
+      changes: changes,
+    );
   }
 }
 

@@ -52,15 +52,26 @@ class AuthService {
         ? displayName.split(' ').first
         : null;
 
+    final authEmail = user.email?.trim() ?? '';
+    final existingEmail = existingData?['email'] as String? ?? '';
+
     final Map<String, dynamic> data = {
       'uid': user.uid,
-      'email': user.email,
       'displayName': user.displayName,
       'providerPhotoURL': providerPhotoURL,
       'providers': providerIds,
-      'emailVerified': user.emailVerified,
       'updatedAt': FieldValue.serverTimestamp(),
     };
+
+    if (authEmail.isNotEmpty) {
+      data['email'] = authEmail;
+      data['emailSource'] = 'auth';
+      data['emailVerified'] = user.emailVerified;
+    } else if (existingEmail.trim().isEmpty) {
+      data['email'] = '';
+      data['emailSource'] = 'missing';
+      data['emailVerified'] = false;
+    }
 
     if (!photoUpdatedManually) {
       data['photoURL'] = providerPhotoURL;
