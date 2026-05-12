@@ -51,6 +51,48 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         reservationData['trainingSessionId'] as String? ?? '';
     final userId = reservationData['userId'] as String? ?? '';
 
+    final denormalizedTrainingName =
+        reservationData['trainingName'] as String? ?? '';
+    final denormalizedUserName = reservationData['userName'] as String? ?? '';
+    final denormalizedUserEmail = reservationData['userEmail'] as String? ?? '';
+    final denormalizedTrainerId = reservationData['trainerId'] as String? ?? '';
+    final denormalizedStartTime =
+        (reservationData['trainingStartTime'] as Timestamp?)?.toDate();
+    final denormalizedEndTime =
+        (reservationData['trainingEndTime'] as Timestamp?)?.toDate();
+
+    if (trainingSessionId.isNotEmpty &&
+        denormalizedTrainingName.isNotEmpty &&
+        denormalizedUserName.isNotEmpty &&
+        denormalizedStartTime != null &&
+        denormalizedEndTime != null) {
+      if (widget.trainerId != null &&
+          denormalizedTrainerId != widget.trainerId) {
+        return null;
+      }
+
+      final now = DateTime.now();
+      final todayStart = DateTime(now.year, now.month, now.day);
+
+      if (denormalizedEndTime.isBefore(todayStart)) {
+        return null;
+      }
+
+      if (!_isSameDate(denormalizedStartTime, _selectedDate)) {
+        return null;
+      }
+
+      return _AttendanceReservation(
+        reservationId: reservationDocument.id,
+        trainingSessionId: trainingSessionId,
+        userName: denormalizedUserName,
+        userEmail: denormalizedUserEmail,
+        trainingName: denormalizedTrainingName,
+        startTime: denormalizedStartTime,
+        endTime: denormalizedEndTime,
+      );
+    }
+
     if (trainingSessionId.isEmpty || userId.isEmpty) {
       return null;
     }
@@ -129,15 +171,13 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   Future<List<_AttendanceReservation>> _loadAttendanceReservations(
     List<QueryDocumentSnapshot<Map<String, dynamic>>> reservationDocuments,
   ) async {
-    final reservations = <_AttendanceReservation>[];
+    final loadedReservations = await Future.wait(
+      reservationDocuments.map(_loadAttendanceReservation),
+    );
 
-    for (final reservationDocument in reservationDocuments) {
-      final reservation = await _loadAttendanceReservation(reservationDocument);
-
-      if (reservation != null) {
-        reservations.add(reservation);
-      }
-    }
+    final reservations = loadedReservations
+        .whereType<_AttendanceReservation>()
+        .toList();
 
     reservations.sort((a, b) => a.startTime.compareTo(b.startTime));
 
@@ -292,10 +332,36 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final reservationsStream = FirebaseFirestore.instance
+    final selectedDateStart = DateTime(
+      _selectedDate.year,
+      _selectedDate.month,
+      _selectedDate.day,
+    );
+
+    final selectedDateEnd = selectedDateStart.add(const Duration(days: 1));
+
+    Query<Map<String, dynamic>> reservationsQuery = FirebaseFirestore.instance
         .collection('reservations')
         .where('status', isEqualTo: 'active')
         .where('entryStatus', isEqualTo: 'reserved')
+        .where(
+          'trainingStartTime',
+          isGreaterThanOrEqualTo: Timestamp.fromDate(selectedDateStart),
+        )
+        .where(
+          'trainingStartTime',
+          isLessThan: Timestamp.fromDate(selectedDateEnd),
+        );
+
+    if (widget.trainerId != null) {
+      reservationsQuery = reservationsQuery.where(
+        'trainerId',
+        isEqualTo: widget.trainerId,
+      );
+    }
+
+    final reservationsStream = reservationsQuery
+        .orderBy('trainingStartTime')
         .snapshots();
 
     return Scaffold(

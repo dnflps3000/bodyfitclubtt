@@ -104,6 +104,34 @@ class ReservationsTab extends StatelessWidget {
     final reservationData = reservationDocument.data();
     final sessionId = reservationData['trainingSessionId'] as String? ?? '';
 
+    final denormalizedTrainingName =
+        reservationData['trainingName'] as String? ?? '';
+    final denormalizedTrainerName =
+        reservationData['trainerName'] as String? ?? '';
+    final denormalizedStartTime =
+        (reservationData['trainingStartTime'] as Timestamp?)?.toDate();
+    final denormalizedEndTime =
+        (reservationData['trainingEndTime'] as Timestamp?)?.toDate();
+
+    if (sessionId.isNotEmpty &&
+        denormalizedTrainingName.isNotEmpty &&
+        denormalizedTrainerName.isNotEmpty &&
+        denormalizedStartTime != null &&
+        denormalizedEndTime != null) {
+      if (denormalizedEndTime.isBefore(DateTime.now())) {
+        return null;
+      }
+
+      return _ReservationDetail(
+        reservationId: reservationDocument.id,
+        trainingSessionId: sessionId,
+        trainingName: denormalizedTrainingName,
+        trainerName: denormalizedTrainerName,
+        startTime: denormalizedStartTime,
+        endTime: denormalizedEndTime,
+      );
+    }
+
     if (sessionId.isEmpty) {
       return null;
     }
@@ -172,15 +200,11 @@ class ReservationsTab extends StatelessWidget {
   Future<List<_ReservationDetail>> _loadReservationDetails(
     List<QueryDocumentSnapshot<Map<String, dynamic>>> reservationDocuments,
   ) async {
-    final details = <_ReservationDetail>[];
+    final loadedDetails = await Future.wait(
+      reservationDocuments.map(_loadReservationDetail),
+    );
 
-    for (final reservationDocument in reservationDocuments) {
-      final detail = await _loadReservationDetail(reservationDocument);
-
-      if (detail != null) {
-        details.add(detail);
-      }
-    }
+    final details = loadedDetails.whereType<_ReservationDetail>().toList();
 
     details.sort((a, b) => a.startTime.compareTo(b.startTime));
 

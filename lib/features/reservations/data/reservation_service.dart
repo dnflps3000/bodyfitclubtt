@@ -22,6 +22,34 @@ class ReservationService {
     return '$year-$month-$day';
   }
 
+  String _displayNameFromUserData(Map<String, dynamic> data) {
+    final publicName = data['publicName'] as String? ?? '';
+    final firstName = data['firstName'] as String? ?? '';
+    final lastName = data['lastName'] as String? ?? '';
+    final displayName = data['displayName'] as String? ?? '';
+    final email = data['email'] as String? ?? '';
+
+    if (publicName.trim().isNotEmpty) {
+      return publicName.trim();
+    }
+
+    final fullName = '$firstName $lastName'.trim();
+
+    if (fullName.isNotEmpty) {
+      return fullName;
+    }
+
+    if (displayName.trim().isNotEmpty) {
+      return displayName.trim();
+    }
+
+    if (email.trim().isNotEmpty) {
+      return email.trim();
+    }
+
+    return AppTexts.unknownUser;
+  }
+
   // ignore: unused_element
   bool _isTrainerQrScanAllowed({
     required DateTime sessionStartTime,
@@ -192,6 +220,12 @@ class ReservationService {
 
     final userRef = _firestore.collection('users').doc(currentUser.uid);
 
+    final trainingTypeRef = _firestore
+        .collection('trainingTypes')
+        .doc(session.trainingTypeId);
+
+    final trainerRef = _firestore.collection('users').doc(session.trainerId);
+
     final membershipRef = await _findUsableMembershipRef(
       userId: currentUser.uid,
       sessionStartTime: session.startTime,
@@ -210,6 +244,9 @@ class ReservationService {
       final sessionSnapshot = await transaction.get(sessionRef);
       final reservationSnapshot = await transaction.get(reservationRef);
       final membershipSnapshot = await transaction.get(membershipRef);
+      final trainingTypeSnapshot = await transaction.get(trainingTypeRef);
+      final trainerSnapshot = await transaction.get(trainerRef);
+      final userSnapshot = await transaction.get(userRef);
 
       if (!sessionSnapshot.exists) {
         throw Exception('training-session-not-found');
@@ -221,13 +258,18 @@ class ReservationService {
       final capacity = sessionData['capacity'] as int? ?? 0;
       final reservedCount = sessionData['reservedCount'] as int? ?? 0;
       final startTime = (sessionData['startTime'] as Timestamp?)?.toDate();
+      final endTime = (sessionData['endTime'] as Timestamp?)?.toDate();
       final trainerId = sessionData['trainerId'] as String? ?? '';
 
       if (trainerId == currentUser.uid) {
         throw Exception('trainer-cannot-reserve-own-session');
       }
 
-      if (startTime == null || !startTime.isAfter(DateTime.now())) {
+      if (startTime == null || endTime == null) {
+        throw Exception('training-session-invalid-time');
+      }
+
+      if (!startTime.isAfter(DateTime.now())) {
         throw Exception('training-session-already-started');
       }
 
@@ -254,6 +296,18 @@ class ReservationService {
       }
 
       final membershipData = membershipSnapshot.data() ?? {};
+
+      final trainingTypeData = trainingTypeSnapshot.data() ?? {};
+      final trainerData = trainerSnapshot.data() ?? {};
+      final userData = userSnapshot.data() ?? {};
+
+      final trainingName =
+          trainingTypeData['name'] as String? ?? AppTexts.unknownTraining;
+
+      final trainerName = _displayNameFromUserData(trainerData);
+      final userName = _displayNameFromUserData(userData);
+      final userEmail = userData['email'] as String? ?? '';
+      final membershipPlanName = membershipData['planName'] as String? ?? '';
 
       final membershipStatus = membershipData['status'] as String? ?? '';
       final membershipEntriesTotal = membershipData['entriesTotal'] as int?;
@@ -283,13 +337,27 @@ class ReservationService {
       transaction.set(reservationRef, {
         'userId': currentUser.uid,
         'userRef': userRef,
+        'userName': userName,
+        'userEmail': userEmail,
+
         'trainingSessionId': session.id,
         'trainingSessionRef': sessionRef,
+        'trainingName': trainingName,
+        'trainingStartTime': Timestamp.fromDate(startTime),
+        'trainingEndTime': Timestamp.fromDate(endTime),
+
+        'trainerId': trainerId,
+        'trainerRef': trainerRef,
+        'trainerName': trainerName,
+
         'status': 'active',
         'createdAt': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp(),
+
         'membershipId': membershipRef.id,
         'membershipRef': membershipRef,
+        'membershipPlanName': membershipPlanName,
+
         'entryStatus': 'reserved',
         'reservationDateId': _dateId(startTime),
       }, SetOptions(merge: true));
@@ -412,32 +480,32 @@ class ReservationService {
         'reservedCount': newReservedCount,
         'updatedAt': FieldValue.serverTimestamp(),
       });
-
-      final currentUser = FirebaseAuth.instance.currentUser;
-
-      await _auditLogService.createLogWithUsers(
-        category: 'reservation',
-        action: 'cancelled',
-        targetType: 'reservation',
-        targetId: reservationId,
-        targetUserId: reservationUserId,
-        actor: currentUser,
-        title: AppTexts.auditReservationCancelledTitle,
-        description: AppTexts.auditReservationCancelledDescription,
-        changes: {
-          'trainingSessionId': {
-            'oldValue': trainingSessionId,
-            'newValue': trainingSessionId,
-          },
-          'membershipId': {
-            'oldValue': reservationMembershipId,
-            'newValue': reservationMembershipId,
-          },
-          'status': {'oldValue': 'active', 'newValue': 'cancelled'},
-          'entryStatus': {'oldValue': oldEntryStatus, 'newValue': 'released'},
-        },
-      );
     });
+
+    final currentUser = FirebaseAuth.instance.currentUser;
+
+    await _auditLogService.createLogWithUsers(
+      category: 'reservation',
+      action: 'cancelled',
+      targetType: 'reservation',
+      targetId: reservationId,
+      targetUserId: reservationUserId,
+      actor: currentUser,
+      title: AppTexts.auditReservationCancelledTitle,
+      description: AppTexts.auditReservationCancelledDescription,
+      changes: {
+        'trainingSessionId': {
+          'oldValue': trainingSessionId,
+          'newValue': trainingSessionId,
+        },
+        'membershipId': {
+          'oldValue': reservationMembershipId,
+          'newValue': reservationMembershipId,
+        },
+        'status': {'oldValue': 'active', 'newValue': 'cancelled'},
+        'entryStatus': {'oldValue': oldEntryStatus, 'newValue': 'released'},
+      },
+    );
   }
 
   Future<void> markReservationAttendance({
@@ -583,41 +651,41 @@ class ReservationService {
       transaction.update(sessionRef, {
         'updatedAt': FieldValue.serverTimestamp(),
       });
-
-      final currentUser = FirebaseAuth.instance.currentUser;
-
-      await _auditLogService.createLogWithUsers(
-        category: 'attendance',
-        action: attended
-            ? 'attendance_marked_attended'
-            : 'attendance_marked_no_show',
-        targetType: 'reservation',
-        targetId: reservationId,
-        targetUserId: reservationUserId,
-        actor: currentUser,
-        title: attended
-            ? AppTexts.auditAttendanceAttendedTitle
-            : AppTexts.auditAttendanceNoShowTitle,
-        description: attended
-            ? AppTexts.auditAttendanceAttendedDescription
-            : AppTexts.auditAttendanceNoShowDescription,
-        changes: {
-          'trainingSessionId': {
-            'oldValue': trainingSessionId,
-            'newValue': trainingSessionId,
-          },
-          'membershipId': {
-            'oldValue': reservationMembershipId,
-            'newValue': reservationMembershipId,
-          },
-          'status': {
-            'oldValue': 'active',
-            'newValue': attended ? 'attended' : 'no_show',
-          },
-          'entryStatus': {'oldValue': oldEntryStatus, 'newValue': 'used'},
-          'attended': {'oldValue': null, 'newValue': attended},
-        },
-      );
     });
+
+    final currentUser = FirebaseAuth.instance.currentUser;
+
+    await _auditLogService.createLogWithUsers(
+      category: 'attendance',
+      action: attended
+          ? 'attendance_marked_attended'
+          : 'attendance_marked_no_show',
+      targetType: 'reservation',
+      targetId: reservationId,
+      targetUserId: reservationUserId,
+      actor: currentUser,
+      title: attended
+          ? AppTexts.auditAttendanceAttendedTitle
+          : AppTexts.auditAttendanceNoShowTitle,
+      description: attended
+          ? AppTexts.auditAttendanceAttendedDescription
+          : AppTexts.auditAttendanceNoShowDescription,
+      changes: {
+        'trainingSessionId': {
+          'oldValue': trainingSessionId,
+          'newValue': trainingSessionId,
+        },
+        'membershipId': {
+          'oldValue': reservationMembershipId,
+          'newValue': reservationMembershipId,
+        },
+        'status': {
+          'oldValue': 'active',
+          'newValue': attended ? 'attended' : 'no_show',
+        },
+        'entryStatus': {'oldValue': oldEntryStatus, 'newValue': 'used'},
+        'attended': {'oldValue': null, 'newValue': attended},
+      },
+    );
   }
 }
