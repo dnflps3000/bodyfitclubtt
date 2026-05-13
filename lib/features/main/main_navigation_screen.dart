@@ -50,6 +50,16 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             _selectedIndex = 1;
           });
         },
+        onOpenReservations: () {
+          setState(() {
+            _selectedIndex = 2;
+          });
+        },
+        onOpenMemberships: () {
+          setState(() {
+            _selectedIndex = 3;
+          });
+        },
       ),
       ScheduleTab(key: ValueKey('schedule-tab-$_scheduleTabVersion')),
       const ReservationsTab(),

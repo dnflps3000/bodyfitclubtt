@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_texts.dart';
+import '../../../core/constants/membership_constants.dart';
+import '../../payment/presentation/payment_screen.dart';
 import '../data/membership_service.dart';
 import '../domain/membership.dart';
 import 'membership_detail_screen.dart';
@@ -51,10 +53,6 @@ class MyMembershipsScreen extends StatelessWidget {
 
           final memberships = snapshot.data ?? [];
 
-          if (memberships.isEmpty) {
-            return const Center(child: Text(AppTexts.noMemberships));
-          }
-
           return ListView.separated(
             padding: EdgeInsets.fromLTRB(
               16,
@@ -62,10 +60,59 @@ class MyMembershipsScreen extends StatelessWidget {
               16,
               24 + MediaQuery.of(context).padding.bottom,
             ),
-            itemCount: memberships.length,
+            itemCount: memberships.length + 1,
             separatorBuilder: (context, index) => const SizedBox(height: 8),
             itemBuilder: (context, index) {
-              final membership = memberships[index];
+              if (index == 0) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    FilledButton.icon(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const PaymentScreen(
+                              purchaseCategory:
+                                  MembershipPurchaseCategories.membership,
+                            ),
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.card_membership),
+                      label: const Text(AppTexts.buyMembership),
+                    ),
+                    const SizedBox(height: 8),
+                    OutlinedButton.icon(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const PaymentScreen(
+                              purchaseCategory:
+                                  MembershipPurchaseCategories.singleEntry,
+                              preselectedPlanId: MembershipPlanIds.singleEntry,
+                            ),
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.confirmation_number_outlined),
+                      label: const Text(AppTexts.buySingleEntry),
+                    ),
+                    if (memberships.isEmpty) ...[
+                      const SizedBox(height: 16),
+                      const Card(
+                        child: Padding(
+                          padding: EdgeInsets.all(16),
+                          child: Text(AppTexts.noMemberships),
+                        ),
+                      ),
+                    ],
+                  ],
+                );
+              }
+
+              final membership = memberships[index - 1];
               final isCurrent =
                   membership.isActive &&
                   membership.isValidNow &&

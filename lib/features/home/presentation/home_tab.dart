@@ -2,19 +2,24 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_roles.dart';
-import '../../../core/constants/membership_constants.dart';
 import '../../../core/theme/app_texts.dart';
 import '../../memberships/data/membership_service.dart';
 import '../../memberships/domain/membership.dart';
-import '../../payment/presentation/payment_screen.dart';
 import '../../reservations/presentation/attendance_qr_scanner_screen.dart';
 import '../../reservations/presentation/reservation_qr_screen.dart';
 import '../../messages/presentation/latest_public_message_card.dart';
 
 class HomeTab extends StatelessWidget {
-  const HomeTab({super.key, required this.onOpenSchedule});
+  const HomeTab({
+    super.key,
+    required this.onOpenSchedule,
+    this.onOpenReservations,
+    this.onOpenMemberships,
+  });
 
   final VoidCallback onOpenSchedule;
+  final VoidCallback? onOpenReservations;
+  final VoidCallback? onOpenMemberships;
 
   TextStyle? _homeCardTitleStyle(BuildContext context) {
     return Theme.of(context).textTheme.titleLarge;
@@ -41,19 +46,17 @@ class HomeTab extends StatelessWidget {
             if (role == AppRoles.admin || role == AppRoles.trainer) ...[
               _buildQrScannerButton(context, role),
               const SizedBox(height: 12),
-              _buildTodayTrainingsCard(),
+              _buildNearestTrainingsCard(),
               const SizedBox(height: 12),
               _buildNewsCard(),
             ] else ...[
-              _buildTodayReservationCard(context),
+              _buildNearestReservationsCard(context),
               const SizedBox(height: 12),
-              _buildNearestTrainingCard(),
+              _buildNearestTrainingsCard(),
               const SizedBox(height: 12),
               _buildMembershipSummaryCard(),
               const SizedBox(height: 12),
               _buildNewsCard(),
-              const SizedBox(height: 20),
-              _buildPaymentButtons(context),
             ],
           ],
         );
@@ -69,9 +72,9 @@ class HomeTab extends StatelessWidget {
     );
   }
 
-  Widget _buildTodayTrainingsCard() {
+  Widget _buildNearestTrainingsCard() {
     return FutureBuilder<List<_HomeTrainingSession>>(
-      future: _loadTodayTrainingSessions(),
+      future: _loadNearestTrainingSessions(),
       builder: (context, snapshot) {
         final sessions = snapshot.data ?? [];
 
@@ -80,7 +83,7 @@ class HomeTab extends StatelessWidget {
             child: ListTile(
               leading: const Icon(Icons.event_available),
               title: Text(
-                AppTexts.todaysTrainings,
+                AppTexts.nearestTrainings,
                 style: _homeCardTitleStyle(context),
               ),
               subtitle: const Text(AppTexts.loading),
@@ -93,11 +96,10 @@ class HomeTab extends StatelessWidget {
             child: ListTile(
               leading: const Icon(Icons.event_available),
               title: Text(
-                AppTexts.todaysTrainings,
+                AppTexts.nearestTrainings,
                 style: _homeCardTitleStyle(context),
               ),
-              subtitle: const Text(AppTexts.noTodaysTrainings),
-              trailing: const Icon(Icons.chevron_right),
+              subtitle: const Text(AppTexts.noNearestTraining),
               onTap: onOpenSchedule,
             ),
           );
@@ -118,11 +120,10 @@ class HomeTab extends StatelessWidget {
                       const SizedBox(width: 16),
                       Expanded(
                         child: Text(
-                          AppTexts.todaysTrainings,
+                          AppTexts.nearestTrainings,
                           style: Theme.of(context).textTheme.titleLarge,
                         ),
                       ),
-                      const Icon(Icons.chevron_right),
                     ],
                   ),
                   const SizedBox(height: 12),
@@ -131,7 +132,7 @@ class HomeTab extends StatelessWidget {
                       padding: const EdgeInsets.only(bottom: 6),
                       child: Text(
                         '${session.trainingName} - '
-                        '${_formatTime(session.startTime)}'
+                        '${_formatNearestTrainingTime(session.startTime)}'
                         ' · ${session.reservedCount}/${session.capacity}',
                       ),
                     ),
@@ -144,18 +145,18 @@ class HomeTab extends StatelessWidget {
     );
   }
 
-  Widget _buildTodayReservationCard(BuildContext context) {
-    return FutureBuilder<_HomeReservation?>(
-      future: _loadTodayReservation(),
+  Widget _buildNearestReservationsCard(BuildContext context) {
+    return FutureBuilder<List<_HomeReservation>>(
+      future: _loadNearestReservations(),
       builder: (context, snapshot) {
-        final reservation = snapshot.data;
+        final reservations = snapshot.data ?? [];
 
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Card(
             child: ListTile(
               leading: const Icon(Icons.event_available),
               title: Text(
-                AppTexts.todayReservations,
+                AppTexts.nearestReservations,
                 style: _homeCardTitleStyle(context),
               ),
               subtitle: const Text(AppTexts.loading),
@@ -163,99 +164,67 @@ class HomeTab extends StatelessWidget {
           );
         }
 
-        if (reservation == null) {
+        if (reservations.isEmpty) {
           return Card(
             child: ListTile(
               leading: const Icon(Icons.event_available),
               title: Text(
-                AppTexts.todayReservations,
+                AppTexts.nearestReservations,
                 style: _homeCardTitleStyle(context),
               ),
-              subtitle: const Text(AppTexts.noTodayReservations),
+              subtitle: const Text(AppTexts.noNearestReservations),
+              onTap: onOpenReservations,
             ),
           );
         }
 
+        final nearestReservation = reservations.first;
+
         return Card(
-          child: ListTile(
-            leading: const Icon(Icons.event_available),
-            title: Text(
-              AppTexts.todayReservations,
-              style: _homeCardTitleStyle(context),
-            ),
-            subtitle: Text(
-              '${reservation.trainingName} - '
-              '${_formatTime(reservation.startTime)}\n'
-              '${AppTexts.tapToShowQrCode}',
-            ),
-            trailing: const Icon(Icons.qr_code),
-            isThreeLine: true,
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => ReservationQrScreen(
-                    reservationId: reservation.reservationId,
-                    trainingSessionId: reservation.trainingSessionId,
-                    trainingName: reservation.trainingName,
-                    startTime: reservation.startTime,
-                    endTime: reservation.endTime,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(12),
+            onTap: onOpenReservations,
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Icon(Icons.event_available),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Text(
+                          AppTexts.nearestReservations,
+                          style: Theme.of(context).textTheme.titleLarge,
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-              );
-            },
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildNearestTrainingCard() {
-    return FutureBuilder<_HomeTrainingSession?>(
-      future: _loadNearestTrainingSession(),
-      builder: (context, snapshot) {
-        final session = snapshot.data;
-
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Card(
-            child: ListTile(
-              leading: const Icon(Icons.calendar_month_outlined),
-              title: Text(
-                AppTexts.nearestTraining,
-                style: _homeCardTitleStyle(context),
+                  const SizedBox(height: 8),
+                  for (final reservation in reservations)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 4),
+                      child: Text(
+                        '${reservation.trainingName} - '
+                        '${_formatNearestTrainingTime(reservation.startTime)}',
+                      ),
+                    ),
+                  const SizedBox(height: 12),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        _openReservationQrCode(context, nearestReservation);
+                      },
+                      icon: const Icon(Icons.qr_code),
+                      label: const Text(AppTexts.showReservationQrCode),
+                    ),
+                  ),
+                ],
               ),
-              subtitle: const Text(AppTexts.loading),
             ),
-          );
-        }
-
-        if (session == null) {
-          return Card(
-            child: ListTile(
-              leading: const Icon(Icons.calendar_month_outlined),
-              title: Text(
-                AppTexts.nearestTraining,
-                style: _homeCardTitleStyle(context),
-              ),
-              subtitle: const Text(AppTexts.noNearestTraining),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: onOpenSchedule,
-            ),
-          );
-        }
-
-        return Card(
-          child: ListTile(
-            leading: const Icon(Icons.calendar_month_outlined),
-            title: Text(
-              AppTexts.nearestTraining,
-              style: _homeCardTitleStyle(context),
-            ),
-            subtitle: Text(
-              '${session.trainingName} - '
-              '${_formatNearestTrainingTime(session.startTime)}',
-            ),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: onOpenSchedule,
           ),
         );
       },
@@ -303,6 +272,7 @@ class HomeTab extends StatelessWidget {
                 style: _homeCardTitleStyle(context),
               ),
               subtitle: const Text(AppTexts.noActiveMembership),
+              onTap: onOpenMemberships,
             ),
           );
         }
@@ -356,6 +326,7 @@ class HomeTab extends StatelessWidget {
             ),
             subtitle: Text(subtitleParts.join('\n')),
             isThreeLine: subtitleParts.length > 2,
+            onTap: onOpenMemberships,
           ),
         );
       },
@@ -366,157 +337,61 @@ class HomeTab extends StatelessWidget {
     return const LatestPublicMessageCard();
   }
 
-  Widget _buildPaymentButtons(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        FilledButton.icon(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => const PaymentScreen(
-                  purchaseCategory: MembershipPurchaseCategories.membership,
-                ),
-              ),
-            );
-          },
-          icon: const Icon(Icons.card_membership),
-          label: const Text(AppTexts.buyMembership),
-        ),
-        const SizedBox(height: 8),
-        OutlinedButton.icon(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => const PaymentScreen(
-                  purchaseCategory: MembershipPurchaseCategories.singleEntry,
-                  preselectedPlanId: MembershipPlanIds.singleEntry,
-                ),
-              ),
-            );
-          },
-          icon: const Icon(Icons.confirmation_number_outlined),
-          label: const Text(AppTexts.buySingleEntry),
-        ),
-      ],
-    );
-  }
-
-  Future<_HomeReservation?> _loadTodayReservation() async {
+  Future<List<_HomeReservation>> _loadNearestReservations() async {
     final currentUser = FirebaseAuth.instance.currentUser;
 
     if (currentUser == null) {
-      return null;
+      return [];
     }
 
     final now = DateTime.now();
-    final todayStart = DateTime(now.year, now.month, now.day);
-    final tomorrowStart = todayStart.add(const Duration(days: 1));
+    final firestore = FirebaseFirestore.instance;
 
-    final reservationSnapshot = await FirebaseFirestore.instance
+    final reservationSnapshot = await firestore
         .collection('reservations')
         .where('userId', isEqualTo: currentUser.uid)
         .where('status', isEqualTo: 'active')
         .where('entryStatus', isEqualTo: 'reserved')
         .where(
           'trainingStartTime',
-          isGreaterThanOrEqualTo: Timestamp.fromDate(todayStart),
-        )
-        .where(
-          'trainingStartTime',
-          isLessThan: Timestamp.fromDate(tomorrowStart),
+          isGreaterThanOrEqualTo: Timestamp.fromDate(now),
         )
         .orderBy('trainingStartTime')
-        .limit(1)
+        .limit(3)
         .get();
 
-    if (reservationSnapshot.docs.isEmpty) {
-      return null;
-    }
+    return reservationSnapshot.docs.map((document) {
+      final data = document.data();
 
-    final reservationDocument = reservationSnapshot.docs.first;
-    final reservationData = reservationDocument.data();
+      final startTime =
+          (data['trainingStartTime'] as Timestamp?)?.toDate() ?? DateTime.now();
 
-    final trainingSessionId =
-        reservationData['trainingSessionId'] as String? ?? '';
+      final endTime =
+          (data['trainingEndTime'] as Timestamp?)?.toDate() ?? startTime;
 
-    final trainingName =
-        reservationData['trainingName'] as String? ?? AppTexts.unknownTraining;
-
-    final startTime = (reservationData['trainingStartTime'] as Timestamp?)
-        ?.toDate();
-
-    final endTime = (reservationData['trainingEndTime'] as Timestamp?)
-        ?.toDate();
-
-    if (trainingSessionId.isEmpty || startTime == null || endTime == null) {
-      return null;
-    }
-
-    if (endTime.isBefore(now)) {
-      return null;
-    }
-
-    return _HomeReservation(
-      reservationId: reservationDocument.id,
-      trainingSessionId: trainingSessionId,
-      trainingName: trainingName,
-      startTime: startTime,
-      endTime: endTime,
-    );
+      return _HomeReservation(
+        reservationId: document.id,
+        trainingSessionId: data['trainingSessionId'] as String? ?? '',
+        trainingName:
+            data['trainingName'] as String? ?? AppTexts.unknownTraining,
+        startTime: startTime,
+        endTime: endTime,
+      );
+    }).toList();
   }
 
-  Future<_HomeTrainingSession?> _loadNearestTrainingSession() async {
+  Future<List<_HomeTrainingSession>> _loadNearestTrainingSessions() async {
     final now = DateTime.now();
+    final endDate = now.add(const Duration(days: 14));
 
     final sessionSnapshot = await FirebaseFirestore.instance
         .collection('trainingSessions')
         .where('isActive', isEqualTo: true)
         .where('status', isEqualTo: 'scheduled')
         .where('startTime', isGreaterThanOrEqualTo: Timestamp.fromDate(now))
+        .where('startTime', isLessThan: Timestamp.fromDate(endDate))
         .orderBy('startTime')
-        .limit(1)
-        .get();
-
-    if (sessionSnapshot.docs.isEmpty) {
-      return null;
-    }
-
-    final sessionData = sessionSnapshot.docs.first.data();
-
-    final startTime = (sessionData['startTime'] as Timestamp?)?.toDate();
-
-    if (startTime == null) {
-      return null;
-    }
-
-    return _HomeTrainingSession(
-      trainingName:
-          sessionData['trainingName'] as String? ?? AppTexts.unknownTraining,
-      startTime: startTime,
-      capacity: sessionData['capacity'] as int? ?? 0,
-      reservedCount: sessionData['reservedCount'] as int? ?? 0,
-    );
-  }
-
-  Future<List<_HomeTrainingSession>> _loadTodayTrainingSessions() async {
-    final now = DateTime.now();
-    final todayStart = DateTime(now.year, now.month, now.day);
-    final tomorrowStart = todayStart.add(const Duration(days: 1));
-
-    final sessionSnapshot = await FirebaseFirestore.instance
-        .collection('trainingSessions')
-        .where('isActive', isEqualTo: true)
-        .where('status', isEqualTo: 'scheduled')
-        .where(
-          'startTime',
-          isGreaterThanOrEqualTo: Timestamp.fromDate(todayStart),
-        )
-        .where('startTime', isLessThan: Timestamp.fromDate(tomorrowStart))
-        .orderBy('startTime')
-        .limit(20)
+        .limit(3)
         .get();
 
     return sessionSnapshot.docs.map((sessionDocument) {
@@ -565,6 +440,23 @@ class HomeTab extends StatelessWidget {
     final month = dateTime.month.toString().padLeft(2, '0');
 
     return '$day.$month. ${_formatTime(dateTime)}';
+  }
+
+  void _openReservationQrCode(
+    BuildContext context,
+    _HomeReservation reservation,
+  ) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => ReservationQrScreen(
+          reservationId: reservation.reservationId,
+          trainingSessionId: reservation.trainingSessionId,
+          trainingName: reservation.trainingName,
+          startTime: reservation.startTime,
+          endTime: reservation.endTime,
+        ),
+      ),
+    );
   }
 
   Future<void> _openAttendanceQrScanner(

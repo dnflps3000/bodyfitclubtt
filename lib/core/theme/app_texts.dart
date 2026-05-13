@@ -132,6 +132,10 @@ class AppTexts {
   static const String reservedEntriesSummary = 'Alokované vstupy';
   static const String dailyMembershipsSummary = 'Denné permanentky';
   static const String tapToShowQrCode = 'Kliknutím zobrazíte QR kód.';
+  static const String nearestReservations = 'Najbližšie rezervácie';
+  static const String noNearestReservations =
+      'Nemáte žiadne najbližšie rezervácie.';
+  static const String showReservationQrCode = 'Zobraziť QR kód';
 
   // Novinky / verejné správy
   static const String news = 'Novinky';

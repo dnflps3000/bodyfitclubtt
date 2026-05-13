@@ -54,7 +54,6 @@ class PublicHomeScreen extends StatelessWidget {
                 style: _homeCardTitleStyle(context),
               ),
               subtitle: const Text(AppTexts.trainingsLoadError),
-              trailing: const Icon(Icons.chevron_right),
               onTap: onOpenSchedule,
             ),
           );
@@ -96,7 +95,6 @@ class PublicHomeScreen extends StatelessWidget {
                 style: _homeCardTitleStyle(context),
               ),
               subtitle: const Text(AppTexts.noNearestTraining),
-              trailing: const Icon(Icons.chevron_right),
               onTap: onOpenSchedule,
             ),
           );
