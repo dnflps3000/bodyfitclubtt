@@ -67,6 +67,8 @@ class _EditTrainingSessionScreenState extends State<EditTrainingSessionScreen> {
     return FirebaseFirestore.instance
         .collection('users')
         .where('role', whereIn: [AppRoles.trainer, AppRoles.admin])
+        .orderBy('publicName')
+        .limit(100)
         .snapshots()
         .map((snapshot) {
           final trainers = snapshot.docs

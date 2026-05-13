@@ -209,6 +209,7 @@ class PublicMessagesScreen extends StatelessWidget {
             stream: FirebaseFirestore.instance
                 .collection('public_messages')
                 .orderBy('createdAt', descending: true)
+                .limit(50)
                 .snapshots(),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
