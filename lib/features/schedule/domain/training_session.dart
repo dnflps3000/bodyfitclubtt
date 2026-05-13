@@ -13,6 +13,11 @@ class TrainingSession {
     required this.reservedCount,
     required this.status,
     required this.isActive,
+    required this.trainingName,
+    required this.trainingDescription,
+    required this.trainerName,
+    required this.trainerRole,
+    required this.durationMinutes,
   });
 
   final String id;
@@ -25,27 +30,53 @@ class TrainingSession {
   final String status;
   final bool isActive;
 
+  final String trainingName;
+  final String trainingDescription;
+  final String trainerName;
+  final String trainerRole;
+  final int durationMinutes;
+
   int get freeSpots => capacity - reservedCount;
 
   bool get hasFreeSpots => freeSpots > 0;
 
   bool get isScheduled => status == 'scheduled';
 
+  bool get hasDenormalizedScheduleData {
+    return trainingName.trim().isNotEmpty && trainerName.trim().isNotEmpty;
+  }
+
   factory TrainingSession.fromFirestore(
     DocumentSnapshot<Map<String, dynamic>> document,
   ) {
     final data = document.data() ?? {};
 
+    final startTime = (data['startTime'] as Timestamp?)?.toDate();
+    final endTime = (data['endTime'] as Timestamp?)?.toDate();
+
+    final resolvedStartTime = startTime ?? DateTime.now();
+    final resolvedEndTime = endTime ?? resolvedStartTime;
+
+    final storedDurationMinutes = data['durationMinutes'] as int?;
+    final calculatedDurationMinutes = resolvedEndTime
+        .difference(resolvedStartTime)
+        .inMinutes;
+
     return TrainingSession(
       id: document.id,
       trainingTypeId: data['trainingTypeId'] as String? ?? '',
       trainerId: data['trainerId'] as String? ?? '',
-      startTime: (data['startTime'] as Timestamp?)?.toDate() ?? DateTime.now(),
-      endTime: (data['endTime'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      startTime: resolvedStartTime,
+      endTime: resolvedEndTime,
       capacity: data['capacity'] as int? ?? 0,
       reservedCount: data['reservedCount'] as int? ?? 0,
       status: data['status'] as String? ?? 'scheduled',
       isActive: data['isActive'] as bool? ?? true,
+      trainingName: data['trainingName'] as String? ?? '',
+      trainingDescription: data['trainingDescription'] as String? ?? '',
+      trainerName: data['trainerName'] as String? ?? '',
+      trainerRole: data['trainerRole'] as String? ?? '',
+      durationMinutes: storedDurationMinutes ?? calculatedDurationMinutes,
     );
   }
 }

@@ -17,61 +17,163 @@ class ScheduleService {
   final FirebaseFirestore _firestore;
   final AuditLogService _auditLogService = AuditLogService();
 
-  Stream<List<ScheduleItem>> watchScheduleItems() {
+  DateTime _startOfToday() {
+    final now = DateTime.now();
+    return DateTime(now.year, now.month, now.day);
+  }
+
+  DateTime _defaultScheduleEndDate() {
+    return _startOfToday().add(const Duration(days: 14));
+  }
+
+  String _resolveUserDisplayName(Map<String, dynamic>? data) {
+    if (data == null) {
+      return AppTexts.unknownTrainer;
+    }
+
+    final publicName = data['publicName'] as String? ?? '';
+    final firstName = data['firstName'] as String? ?? '';
+    final lastName = data['lastName'] as String? ?? '';
+    final displayName = data['displayName'] as String? ?? '';
+    final email = data['email'] as String? ?? '';
+
+    if (publicName.trim().isNotEmpty) {
+      return publicName.trim();
+    }
+
+    final fullName = '$firstName $lastName'.trim();
+
+    if (fullName.isNotEmpty) {
+      return fullName;
+    }
+
+    if (firstName.trim().isNotEmpty) {
+      return firstName.trim();
+    }
+
+    if (displayName.trim().isNotEmpty) {
+      return displayName.trim();
+    }
+
+    if (email.trim().isNotEmpty) {
+      return email.trim();
+    }
+
+    return AppTexts.unknownTrainer;
+  }
+
+  String _trainerDisplayName({
+    required String trainerBaseName,
+    required String trainerRole,
+  }) {
+    if (trainerRole == AppRoles.admin) {
+      return '${AppTexts.roleAdmin} - $trainerBaseName';
+    }
+
+    return trainerBaseName;
+  }
+
+  TrainingType _trainingTypeFromSession(TrainingSession session) {
+    return TrainingType(
+      id: session.trainingTypeId,
+      name: session.trainingName,
+      description: session.trainingDescription,
+      defaultDurationMinutes: session.durationMinutes,
+      defaultCapacity: session.capacity,
+      isActive: true,
+    );
+  }
+
+  Stream<List<ScheduleItem>> watchScheduleItems({
+    DateTime? from,
+    DateTime? to,
+  }) {
+    final scheduleStart = from ?? _startOfToday();
+    final scheduleEnd = to ?? _defaultScheduleEndDate();
+
     return _firestore
         .collection('trainingSessions')
+        .where(
+          'startTime',
+          isGreaterThanOrEqualTo: Timestamp.fromDate(scheduleStart),
+        )
+        .where('startTime', isLessThan: Timestamp.fromDate(scheduleEnd))
         .orderBy('startTime')
         .snapshots()
         .asyncMap((sessionsSnapshot) async {
-          final typesSnapshot = await _firestore
-              .collection('trainingTypes')
-              .get();
-          final usersSnapshot = await _firestore.collection('users').get();
+          final sessions = sessionsSnapshot.docs
+              .map(TrainingSession.fromFirestore)
+              .where((session) => session.isActive && session.isScheduled)
+              .toList();
 
-          final trainingTypesById = {
-            for (final document in typesSnapshot.docs)
-              document.id: TrainingType.fromFirestore(document),
-          };
+          final needsTrainingTypeFallback = sessions.any((session) {
+            return session.trainingName.trim().isEmpty;
+          });
 
-          final usersById = {
-            for (final document in usersSnapshot.docs)
-              document.id: document.data(),
-          };
+          final needsTrainerFallback = sessions.any((session) {
+            return session.trainerName.trim().isEmpty ||
+                session.trainerRole.trim().isEmpty;
+          });
+
+          final trainingTypesById = <String, TrainingType>{};
+          final usersById = <String, Map<String, dynamic>>{};
+
+          if (needsTrainingTypeFallback) {
+            final typesSnapshot = await _firestore
+                .collection('trainingTypes')
+                .get();
+
+            for (final document in typesSnapshot.docs) {
+              trainingTypesById[document.id] = TrainingType.fromFirestore(
+                document,
+              );
+            }
+          }
+
+          if (needsTrainerFallback) {
+            final usersSnapshot = await _firestore.collection('users').get();
+
+            for (final document in usersSnapshot.docs) {
+              usersById[document.id] = document.data();
+            }
+          }
 
           final items = <ScheduleItem>[];
 
-          for (final document in sessionsSnapshot.docs) {
-            final session = TrainingSession.fromFirestore(document);
+          for (final session in sessions) {
+            final hasDenormalizedTraining = session.trainingName
+                .trim()
+                .isNotEmpty;
 
-            if (!session.isActive || !session.isScheduled) {
-              continue;
-            }
-
-            final trainingType = trainingTypesById[session.trainingTypeId];
-            final trainerData = usersById[session.trainerId];
+            final trainingType = hasDenormalizedTraining
+                ? _trainingTypeFromSession(session)
+                : trainingTypesById[session.trainingTypeId];
 
             if (trainingType == null || !trainingType.isActive) {
               continue;
             }
 
-            final trainerRole = trainerData?['role'] as String? ?? '';
-            final trainerPublicName =
-                trainerData?['publicName'] as String? ?? '';
-            final trainerFirstName = trainerData?['firstName'] as String? ?? '';
-            final trainerDisplayName =
-                trainerData?['displayName'] as String? ?? '';
+            final hasDenormalizedTrainer = session.trainerName
+                .trim()
+                .isNotEmpty;
 
-            final trainerBaseName = trainerPublicName.isNotEmpty
-                ? trainerPublicName
-                : trainerFirstName.isNotEmpty
-                ? trainerFirstName
-                : trainerDisplayName.isNotEmpty
-                ? trainerDisplayName
-                : AppTexts.unknownTrainer;
+            String trainerName;
 
-            final trainerName = trainerRole == AppRoles.admin
-                ? '${AppTexts.roleAdmin} - $trainerBaseName'
-                : trainerBaseName;
+            if (hasDenormalizedTrainer) {
+              trainerName = _trainerDisplayName(
+                trainerBaseName: session.trainerName,
+                trainerRole: session.trainerRole,
+              );
+            } else {
+              final trainerData = usersById[session.trainerId];
+              final trainerRole = trainerData?['role'] as String? ?? '';
+              final trainerBaseName = _resolveUserDisplayName(trainerData);
+
+              trainerName = _trainerDisplayName(
+                trainerBaseName: trainerBaseName,
+                trainerRole: trainerRole,
+              );
+            }
 
             items.add(
               ScheduleItem(
@@ -337,6 +439,12 @@ class ScheduleService {
         .doc(trainingType.id);
     final trainerRef = _firestore.collection('users').doc(trainerId);
 
+    final trainerSnapshot = await trainerRef.get();
+    final trainerData = trainerSnapshot.data();
+
+    final trainerRole = trainerData?['role'] as String? ?? '';
+    final trainerName = _resolveUserDisplayName(trainerData);
+
     await _checkTrainingSessionOverlap(startTime: startTime, endTime: endTime);
 
     await _checkTrainingSessionTemplateOverlap(
@@ -347,12 +455,17 @@ class ScheduleService {
     final sessionRef = await _firestore.collection('trainingSessions').add({
       'trainingTypeId': trainingType.id,
       'trainingTypeRef': trainingTypeRef,
+      'trainingName': trainingType.name,
+      'trainingDescription': trainingType.description,
       'trainerId': trainerId,
       'trainerRef': trainerRef,
+      'trainerName': trainerName,
+      'trainerRole': trainerRole,
       'createdBy': currentUser.uid,
       'createdByRef': currentUserRef,
       'startTime': Timestamp.fromDate(startTime),
       'endTime': Timestamp.fromDate(endTime),
+      'durationMinutes': durationMinutes,
       'capacity': capacity,
       'reservedCount': 0,
       'status': 'scheduled',
@@ -410,6 +523,7 @@ class ScheduleService {
   }) async {
     final currentUserRef = _firestore.collection('users').doc(currentUser.uid);
     final trainerRef = _firestore.collection('users').doc(trainerId);
+
     final trainingTypeRef = _firestore
         .collection('trainingTypes')
         .doc(trainingType.id);
@@ -713,6 +827,12 @@ class ScheduleService {
     final sessionRef = _firestore.collection('trainingSessions').doc(sessionId);
     final trainerRef = _firestore.collection('users').doc(trainerId);
 
+    final trainerSnapshot = await trainerRef.get();
+    final trainerData = trainerSnapshot.data();
+
+    final trainerRole = trainerData?['role'] as String? ?? '';
+    final trainerName = _resolveUserDisplayName(trainerData);
+
     DateTime? oldTrainingStartTime;
     int? oldCapacity;
     String? oldTrainerId;
@@ -917,8 +1037,11 @@ class ScheduleService {
       transaction.update(sessionRef, {
         'trainerId': trainerId,
         'trainerRef': trainerRef,
+        'trainerName': trainerName,
+        'trainerRole': trainerRole,
         'startTime': Timestamp.fromDate(startTime),
         'endTime': Timestamp.fromDate(endTime),
+        'durationMinutes': durationMinutes,
         'capacity': capacity,
         'reservedCount': startTimeChanged ? 0 : reservedCount,
         'updatedAt': FieldValue.serverTimestamp(),

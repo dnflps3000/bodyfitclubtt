@@ -5,6 +5,7 @@ import {
   FieldValue,
   Timestamp,
   getFirestore,
+  type DocumentData,
 } from "firebase-admin/firestore";
 import Stripe from "stripe";
 import {onDocumentCreated} from "firebase-functions/v2/firestore";
@@ -106,6 +107,38 @@ type ScheduleTemplate = {
   validFrom?: Timestamp | null;
   validUntil?: Timestamp | null;
 };
+
+function resolveUserDisplayName(data: DocumentData): string {
+  const publicName = String(data.publicName ?? "").trim();
+  const firstName = String(data.firstName ?? "").trim();
+  const lastName = String(data.lastName ?? "").trim();
+  const displayName = String(data.displayName ?? "").trim();
+  const email = String(data.email ?? "").trim();
+
+  if (publicName) {
+    return publicName;
+  }
+
+  const fullName = `${firstName} ${lastName}`.trim();
+
+  if (fullName) {
+    return fullName;
+  }
+
+  if (firstName) {
+    return firstName;
+  }
+
+  if (displayName) {
+    return displayName;
+  }
+
+  if (email) {
+    return email;
+  }
+
+  return "Neznámy tréner";
+}
 
 /**
  * Vráti začiatok dňa pre zadaný dátum.
@@ -283,6 +316,41 @@ export const generateTrainingSessions = onSchedule(
       const template = templateDocument.data() as ScheduleTemplate;
       const templateId = templateDocument.id;
 
+      const trainingTypeRef = db
+        .collection("trainingTypes")
+        .doc(template.trainingTypeId);
+
+      const trainerRef = db
+        .collection("users")
+        .doc(template.trainerId);
+
+      const [trainingTypeSnapshot, trainerSnapshot] = await Promise.all([
+        trainingTypeRef.get(),
+        trainerRef.get(),
+      ]);
+
+      if (!trainingTypeSnapshot.exists) {
+        logger.warn(`Skipped template ${templateId}, training type not found.`);
+        skippedCount++;
+        continue;
+      }
+
+      const trainingTypeData = trainingTypeSnapshot.data() ?? {};
+
+      if (trainingTypeData.isActive !== true) {
+        logger.warn(
+          `Skipped template ${templateId}, training type is not active.`,
+        );
+        skippedCount++;
+        continue;
+      }
+
+      const trainerData = trainerSnapshot.data() ?? {};
+      const trainingName = String(trainingTypeData.name ?? "");
+      const trainingDescription = String(trainingTypeData.description ?? "");
+      const trainerName = resolveUserDisplayName(trainerData);
+      const trainerRole = String(trainerData.role ?? "");
+
       for (let index = 0; index < daysAhead; index++) {
         const currentDate = addDays(today, index);
 
@@ -334,14 +402,6 @@ export const generateTrainingSessions = onSchedule(
           continue;
         }
 
-        const trainingTypeRef = db
-          .collection("trainingTypes")
-          .doc(template.trainingTypeId);
-
-        const trainerRef = db
-          .collection("users")
-          .doc(template.trainerId);
-
         const templateRef = db
           .collection("scheduleTemplates")
           .doc(templateId);
@@ -349,12 +409,17 @@ export const generateTrainingSessions = onSchedule(
         await sessionRef.set({
           trainingTypeId: template.trainingTypeId,
           trainingTypeRef,
+          trainingName,
+          trainingDescription,
           trainerId: template.trainerId,
           trainerRef,
+          trainerName,
+          trainerRole,
           createdBy: template.trainerId,
           createdByRef: trainerRef,
           startTime: Timestamp.fromDate(startTime),
           endTime: Timestamp.fromDate(endTime),
+          durationMinutes: template.durationMinutes,
           capacity: template.capacity,
           reservedCount: 0,
           status: "scheduled",
