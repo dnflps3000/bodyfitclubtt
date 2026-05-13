@@ -42,26 +42,29 @@ class _MembershipsManagementScreenState
   }
 
   Stream<Map<String, _MembershipUserInfo>> _watchUsersMap() {
-    return FirebaseFirestore.instance.collection('users').snapshots().map((
-      snapshot,
-    ) {
-      final users = <String, _MembershipUserInfo>{};
+    return FirebaseFirestore.instance
+        .collection('users')
+        .orderBy('email')
+        .limit(200)
+        .snapshots()
+        .map((snapshot) {
+          final users = <String, _MembershipUserInfo>{};
 
-      for (final document in snapshot.docs) {
-        final data = document.data();
+          for (final document in snapshot.docs) {
+            final data = document.data();
 
-        users[document.id] = _MembershipUserInfo(
-          id: document.id,
-          email: data['email'] as String? ?? '',
-          firstName: data['firstName'] as String? ?? '',
-          lastName: data['lastName'] as String? ?? '',
-          publicName: data['publicName'] as String? ?? '',
-          displayName: data['displayName'] as String? ?? '',
-        );
-      }
+            users[document.id] = _MembershipUserInfo(
+              id: document.id,
+              email: data['email'] as String? ?? '',
+              firstName: data['firstName'] as String? ?? '',
+              lastName: data['lastName'] as String? ?? '',
+              publicName: data['publicName'] as String? ?? '',
+              displayName: data['displayName'] as String? ?? '',
+            );
+          }
 
-      return users;
-    });
+          return users;
+        });
   }
 
   String _membershipDisplayStatusKey(Membership membership) {

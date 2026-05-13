@@ -46,33 +46,36 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
   }
 
   Stream<List<_ManagedUser>> _watchUsers() {
-    return FirebaseFirestore.instance.collection('users').snapshots().map((
-      snapshot,
-    ) {
-      final users = snapshot.docs.map((document) {
-        final data = document.data();
+    return FirebaseFirestore.instance
+        .collection('users')
+        .orderBy('email')
+        .limit(200)
+        .snapshots()
+        .map((snapshot) {
+          final users = snapshot.docs.map((document) {
+            final data = document.data();
 
-        return _ManagedUser(
-          id: document.id,
-          email: data['email'] as String? ?? '',
-          firstName: data['firstName'] as String? ?? '',
-          lastName: data['lastName'] as String? ?? '',
-          publicName: data['publicName'] as String? ?? '',
-          displayName: data['displayName'] as String? ?? '',
-          role: data['role'] as String? ?? AppRoles.user,
-          photoUrl: data['photoURL'] as String?,
-          isActive: data['isActive'] as bool? ?? true,
-        );
-      }).toList();
+            return _ManagedUser(
+              id: document.id,
+              email: data['email'] as String? ?? '',
+              firstName: data['firstName'] as String? ?? '',
+              lastName: data['lastName'] as String? ?? '',
+              publicName: data['publicName'] as String? ?? '',
+              displayName: data['displayName'] as String? ?? '',
+              role: data['role'] as String? ?? AppRoles.user,
+              photoUrl: data['photoURL'] as String?,
+              isActive: data['isActive'] as bool? ?? true,
+            );
+          }).toList();
 
-      users.sort((a, b) {
-        return a.displayLabel.toLowerCase().compareTo(
-          b.displayLabel.toLowerCase(),
-        );
-      });
+          users.sort((a, b) {
+            return a.displayLabel.toLowerCase().compareTo(
+              b.displayLabel.toLowerCase(),
+            );
+          });
 
-      return users;
-    });
+          return users;
+        });
   }
 
   List<_ManagedUser> _filterUsers(List<_ManagedUser> users) {
@@ -776,7 +779,13 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
           children: [
             CircleAvatar(
               radius: 24,
-              backgroundImage: hasPhoto ? NetworkImage(user.photoUrl!) : null,
+              backgroundImage: hasPhoto
+                  ? ResizeImage(
+                      NetworkImage(user.photoUrl!),
+                      width: 96,
+                      height: 96,
+                    )
+                  : null,
               child: hasPhoto ? null : const Icon(Icons.person),
             ),
             const SizedBox(width: 16),

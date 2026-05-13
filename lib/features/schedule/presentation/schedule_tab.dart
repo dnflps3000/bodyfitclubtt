@@ -56,15 +56,16 @@ class _ScheduleTabState extends State<ScheduleTab> {
     return FirebaseFirestore.instance
         .collection('reservations')
         .where('userId', isEqualTo: currentUser.uid)
+        .where('status', isEqualTo: 'active')
+        .where('entryStatus', isEqualTo: 'reserved')
+        .where(
+          'trainingStartTime',
+          isGreaterThanOrEqualTo: Timestamp.fromDate(DateTime.now()),
+        )
+        .orderBy('trainingStartTime')
         .snapshots()
         .map((snapshot) {
           return snapshot.docs
-              .where((document) {
-                final data = document.data();
-                final status = data['status'] as String? ?? '';
-
-                return status != 'cancelled';
-              })
               .map((document) {
                 final data = document.data();
                 return data['trainingSessionId'] as String? ?? '';

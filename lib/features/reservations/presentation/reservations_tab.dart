@@ -5,9 +5,9 @@ import '../../../core/theme/app_texts.dart';
 import '../data/reservation_service.dart';
 import 'reservation_qr_screen.dart';
 
-/* Zobrazuje rezervácie aktuálne prihláseného používateľa.
-   Načíta jeho aktívne rezervácie z kolekcie reservations a ku každej dohľadá
-   príslušný tréningový termín, typ cvičenia a meno trénera. */
+/* Zobrazuje budúce aktívne rezervácie aktuálne prihláseného používateľa.
+   Primárne používa denormalizované údaje uložené priamo v rezervácii,
+   aby sa zbytočne nenačítavali ďalšie dokumenty tréningov a používateľov. */
 class ReservationsTab extends StatelessWidget {
   const ReservationsTab({super.key});
 
@@ -224,6 +224,12 @@ class ReservationsTab extends StatelessWidget {
           .collection('reservations')
           .where('userId', isEqualTo: currentUser.uid)
           .where('status', isEqualTo: 'active')
+          .where('entryStatus', isEqualTo: 'reserved')
+          .where(
+            'trainingStartTime',
+            isGreaterThanOrEqualTo: Timestamp.fromDate(DateTime.now()),
+          )
+          .orderBy('trainingStartTime')
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.hasError) {

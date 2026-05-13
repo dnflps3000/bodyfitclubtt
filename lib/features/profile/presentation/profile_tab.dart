@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -58,13 +59,24 @@ class ProfileTab extends StatelessWidget {
               radius: 42,
               child: ClipOval(
                 child: photoUrl != null && photoUrl.isNotEmpty
-                    ? Image.network(
-                        photoUrl,
+                    ? CachedNetworkImage(
+                        imageUrl: photoUrl,
                         width: 84,
                         height: 84,
                         fit: BoxFit.cover,
                         alignment: Alignment.center,
-                        errorBuilder: (context, error, stackTrace) {
+                        memCacheWidth: 168,
+                        memCacheHeight: 168,
+                        placeholder: (context, url) {
+                          return const Center(
+                            child: SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                          );
+                        },
+                        errorWidget: (context, url, error) {
                           return const Icon(Icons.person, size: 42);
                         },
                       )

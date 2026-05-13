@@ -211,30 +211,37 @@ class MembershipService {
   }
 
   Stream<List<Membership>> watchAllMemberships() {
-    return _firestore.collection('memberships').snapshots().map((snapshot) {
-      final memberships = snapshot.docs.map(Membership.fromFirestore).toList();
+    return _firestore
+        .collection('memberships')
+        .orderBy('validUntil', descending: true)
+        .limit(100)
+        .snapshots()
+        .map((snapshot) {
+          final memberships = snapshot.docs
+              .map(Membership.fromFirestore)
+              .toList();
 
-      memberships.sort((a, b) {
-        final firstValidUntil = a.validUntil;
-        final secondValidUntil = b.validUntil;
+          memberships.sort((a, b) {
+            final firstValidUntil = a.validUntil;
+            final secondValidUntil = b.validUntil;
 
-        if (firstValidUntil == null && secondValidUntil == null) {
-          return 0;
-        }
+            if (firstValidUntil == null && secondValidUntil == null) {
+              return 0;
+            }
 
-        if (firstValidUntil == null) {
-          return 1;
-        }
+            if (firstValidUntil == null) {
+              return 1;
+            }
 
-        if (secondValidUntil == null) {
-          return -1;
-        }
+            if (secondValidUntil == null) {
+              return -1;
+            }
 
-        return secondValidUntil.compareTo(firstValidUntil);
-      });
+            return secondValidUntil.compareTo(firstValidUntil);
+          });
 
-      return memberships;
-    });
+          return memberships;
+        });
   }
 
   Map<String, dynamic> _membershipAdminChanges({
@@ -555,6 +562,7 @@ class MembershipService {
     final reservationsSnapshot = await _firestore
         .collection('reservations')
         .where('membershipId', isEqualTo: membership.id)
+        .orderBy('trainingStartTime', descending: true)
         .get();
 
     final allocatedReservations = <MembershipUsageItem>[];
@@ -566,40 +574,17 @@ class MembershipService {
       final trainingSessionId =
           reservationData['trainingSessionId'] as String? ?? '';
 
-      if (trainingSessionId.isEmpty) {
-        continue;
-      }
+      final trainingName =
+          reservationData['trainingName'] as String? ??
+          AppTexts.unknownTraining;
 
-      final sessionDocument = await _firestore
-          .collection('trainingSessions')
-          .doc(trainingSessionId)
-          .get();
+      final startTime = (reservationData['trainingStartTime'] as Timestamp?)
+          ?.toDate();
 
-      final sessionData = sessionDocument.data();
+      final endTime = (reservationData['trainingEndTime'] as Timestamp?)
+          ?.toDate();
 
-      if (sessionData == null) {
-        continue;
-      }
-
-      final trainingTypeId = sessionData['trainingTypeId'] as String? ?? '';
-
-      String trainingName = 'Tréning';
-
-      if (trainingTypeId.isNotEmpty) {
-        final trainingTypeDocument = await _firestore
-            .collection('trainingTypes')
-            .doc(trainingTypeId)
-            .get();
-
-        final trainingTypeData = trainingTypeDocument.data();
-
-        trainingName = trainingTypeData?['name'] as String? ?? trainingName;
-      }
-
-      final startTime = (sessionData['startTime'] as Timestamp?)?.toDate();
-      final endTime = (sessionData['endTime'] as Timestamp?)?.toDate();
-
-      if (startTime == null || endTime == null) {
+      if (trainingSessionId.isEmpty || startTime == null || endTime == null) {
         continue;
       }
 
