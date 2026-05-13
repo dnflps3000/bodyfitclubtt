@@ -51,9 +51,9 @@ class _AddTrainingAttendanceScreenState
     final selectedMembership = _selectedMembership;
 
     if (selectedUser == null || selectedMembership == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text(AppTexts.fillAllFields)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text(AppTexts.fillAllFields)));
       return;
     }
 
@@ -115,6 +115,7 @@ class _AddTrainingAttendanceScreenState
 
     return DropdownButtonFormField<String>(
       initialValue: safeSelectedUserId,
+      isExpanded: true,
       decoration: const InputDecoration(
         labelText: AppTexts.selectAttendanceUser,
         border: OutlineInputBorder(),
@@ -126,6 +127,7 @@ class _AddTrainingAttendanceScreenState
             user.email.isEmpty
                 ? user.displayName
                 : '${user.displayName} • ${user.email}',
+            maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
         );
@@ -194,6 +196,7 @@ class _AddTrainingAttendanceScreenState
 
         return DropdownButtonFormField<String>(
           initialValue: safeSelectedMembershipId,
+          isExpanded: true,
           decoration: const InputDecoration(
             labelText: AppTexts.selectAttendanceMembership,
             border: OutlineInputBorder(),
@@ -203,6 +206,7 @@ class _AddTrainingAttendanceScreenState
               value: membership.id,
               child: Text(
                 membership.label,
+                maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
             );

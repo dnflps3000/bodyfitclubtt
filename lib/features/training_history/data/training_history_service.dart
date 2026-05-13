@@ -442,7 +442,18 @@ class TrainingHistoryService {
       }
 
       if (reservationSnapshot.exists) {
-        throw Exception('reservation-already-exists');
+        final existingReservationData = reservationSnapshot.data() ?? {};
+        final existingStatus =
+            existingReservationData['status'] as String? ?? '';
+        final existingEntryStatus =
+            existingReservationData['entryStatus'] as String? ?? '';
+
+        final canReuseReservation =
+            existingStatus == 'cancelled' || existingEntryStatus == 'released';
+
+        if (!canReuseReservation) {
+          throw Exception('reservation-already-exists');
+        }
       }
 
       final sessionData = sessionSnapshot.data() ?? {};
@@ -510,7 +521,7 @@ class TrainingHistoryService {
           ? null
           : _firestore.collection('users').doc(trainerId);
 
-      transaction.set(reservationRef, {
+      final reservationDataToSave = {
         'userId': user.id,
         'userRef': userRef,
         'userName': _displayNameFromUserData(userData),
@@ -524,7 +535,6 @@ class TrainingHistoryService {
         'trainingEndTime': Timestamp.fromDate(endTime),
 
         'trainerId': trainerId,
-        'trainerRef': ?trainerRef,
         'trainerName':
             sessionData['trainerName'] as String? ?? session.trainerName,
 
@@ -541,10 +551,26 @@ class TrainingHistoryService {
 
         'createdByAdmin': true,
         'createdByUserId': FirebaseAuth.instance.currentUser?.uid,
-        'createdAt': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp(),
         'reservationDateId': _dateId(startTime),
-      });
+      };
+
+      if (trainerRef != null) {
+        reservationDataToSave['trainerRef'] = trainerRef;
+      }
+
+      if (reservationSnapshot.exists) {
+        transaction.update(reservationRef, {
+          ...reservationDataToSave,
+          'cancelledAt': FieldValue.delete(),
+          'attendanceRevertedAt': FieldValue.delete(),
+        });
+      } else {
+        transaction.set(reservationRef, {
+          ...reservationDataToSave,
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+      }
 
       transaction.update(sessionRef, {
         'reservedCount': reservedCount + 1,
