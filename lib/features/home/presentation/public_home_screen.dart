@@ -1,7 +1,6 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_texts.dart';
-import '../../schedule/data/schedule_service.dart';
-import '../../schedule/domain/schedule_item.dart';
 import '../../messages/presentation/latest_public_message_card.dart';
 
 class PublicHomeScreen extends StatelessWidget {
@@ -26,8 +25,25 @@ class PublicHomeScreen extends StatelessWidget {
   }
 
   Widget _buildNearestTrainingsCard(BuildContext context) {
-    return StreamBuilder<List<ScheduleItem>>(
-      stream: ScheduleService().watchScheduleItems(),
+    final now = DateTime.now();
+    final scheduleEnd = DateTime(
+      now.year,
+      now.month,
+      now.day,
+    ).add(const Duration(days: 14));
+
+    final stream = FirebaseFirestore.instance
+        .collection('trainingSessions')
+        .where('isActive', isEqualTo: true)
+        .where('status', isEqualTo: 'scheduled')
+        .where('startTime', isGreaterThanOrEqualTo: Timestamp.fromDate(now))
+        .where('startTime', isLessThan: Timestamp.fromDate(scheduleEnd))
+        .orderBy('startTime')
+        .limit(3)
+        .snapshots();
+
+    return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+      stream: stream,
       builder: (context, snapshot) {
         if (snapshot.hasError) {
           return Card(
@@ -57,18 +73,21 @@ class PublicHomeScreen extends StatelessWidget {
           );
         }
 
-        final now = DateTime.now();
+        final trainings =
+            snapshot.data?.docs.map((document) {
+              final data = document.data();
 
-        final nearestItems =
-            (snapshot.data ?? []).where((item) {
-              return item.session.endTime.isAfter(now);
-            }).toList()..sort((a, b) {
-              return a.session.startTime.compareTo(b.session.startTime);
-            });
+              return _PublicHomeTraining(
+                trainingName:
+                    data['trainingName'] as String? ?? AppTexts.unknownTraining,
+                startTime:
+                    (data['startTime'] as Timestamp?)?.toDate() ??
+                    DateTime.now(),
+              );
+            }).toList() ??
+            [];
 
-        final visibleItems = nearestItems.take(3).toList();
-
-        if (visibleItems.isEmpty) {
+        if (trainings.isEmpty) {
           return Card(
             child: ListTile(
               leading: const Icon(Icons.calendar_month_outlined),
@@ -103,12 +122,12 @@ class PublicHomeScreen extends StatelessWidget {
                           style: Theme.of(context).textTheme.titleLarge,
                         ),
                         const SizedBox(height: 8),
-                        for (final item in visibleItems)
+                        for (final training in trainings)
                           Padding(
                             padding: const EdgeInsets.only(bottom: 4),
                             child: Text(
-                              '${item.trainingType.name} - '
-                              '${_formatPublicTrainingTime(item.session.startTime)}',
+                              '${training.trainingName} - '
+                              '${_formatPublicTrainingTime(training.startTime)}',
                             ),
                           ),
                       ],
@@ -159,4 +178,14 @@ class PublicHomeScreen extends StatelessWidget {
         first.month == second.month &&
         first.day == second.day;
   }
+}
+
+class _PublicHomeTraining {
+  const _PublicHomeTraining({
+    required this.trainingName,
+    required this.startTime,
+  });
+
+  final String trainingName;
+  final DateTime startTime;
 }

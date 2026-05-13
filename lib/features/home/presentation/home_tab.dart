@@ -411,176 +411,128 @@ class HomeTab extends StatelessWidget {
       return null;
     }
 
-    final firestore = FirebaseFirestore.instance;
+    final now = DateTime.now();
+    final todayStart = DateTime(now.year, now.month, now.day);
+    final tomorrowStart = todayStart.add(const Duration(days: 1));
 
-    final reservationSnapshot = await firestore
+    final reservationSnapshot = await FirebaseFirestore.instance
         .collection('reservations')
         .where('userId', isEqualTo: currentUser.uid)
         .where('status', isEqualTo: 'active')
         .where('entryStatus', isEqualTo: 'reserved')
+        .where(
+          'trainingStartTime',
+          isGreaterThanOrEqualTo: Timestamp.fromDate(todayStart),
+        )
+        .where(
+          'trainingStartTime',
+          isLessThan: Timestamp.fromDate(tomorrowStart),
+        )
+        .orderBy('trainingStartTime')
+        .limit(1)
         .get();
 
-    final now = DateTime.now();
-    final reservations = <_HomeReservation>[];
-
-    for (final reservationDocument in reservationSnapshot.docs) {
-      final reservationData = reservationDocument.data();
-      final trainingSessionId =
-          reservationData['trainingSessionId'] as String? ?? '';
-
-      if (trainingSessionId.isEmpty) {
-        continue;
-      }
-
-      final sessionDocument = await firestore
-          .collection('trainingSessions')
-          .doc(trainingSessionId)
-          .get();
-
-      final sessionData = sessionDocument.data();
-
-      if (sessionData == null) {
-        continue;
-      }
-
-      final startTime =
-          (sessionData['startTime'] as Timestamp?)?.toDate() ?? DateTime.now();
-
-      final endTime =
-          (sessionData['endTime'] as Timestamp?)?.toDate() ?? DateTime.now();
-
-      if (!_isSameDate(startTime, now) || endTime.isBefore(now)) {
-        continue;
-      }
-
-      final trainingTypeId = sessionData['trainingTypeId'] as String? ?? '';
-
-      final trainingTypeDocument = await firestore
-          .collection('trainingTypes')
-          .doc(trainingTypeId)
-          .get();
-
-      final trainingTypeData = trainingTypeDocument.data();
-
-      reservations.add(
-        _HomeReservation(
-          reservationId: reservationDocument.id,
-          trainingSessionId: trainingSessionId,
-          trainingName:
-              trainingTypeData?['name'] as String? ?? AppTexts.unknownTraining,
-          startTime: startTime,
-          endTime: endTime,
-        ),
-      );
-    }
-
-    reservations.sort((a, b) => a.startTime.compareTo(b.startTime));
-
-    if (reservations.isEmpty) {
+    if (reservationSnapshot.docs.isEmpty) {
       return null;
     }
 
-    return reservations.first;
+    final reservationDocument = reservationSnapshot.docs.first;
+    final reservationData = reservationDocument.data();
+
+    final trainingSessionId =
+        reservationData['trainingSessionId'] as String? ?? '';
+
+    final trainingName =
+        reservationData['trainingName'] as String? ?? AppTexts.unknownTraining;
+
+    final startTime = (reservationData['trainingStartTime'] as Timestamp?)
+        ?.toDate();
+
+    final endTime = (reservationData['trainingEndTime'] as Timestamp?)
+        ?.toDate();
+
+    if (trainingSessionId.isEmpty || startTime == null || endTime == null) {
+      return null;
+    }
+
+    if (endTime.isBefore(now)) {
+      return null;
+    }
+
+    return _HomeReservation(
+      reservationId: reservationDocument.id,
+      trainingSessionId: trainingSessionId,
+      trainingName: trainingName,
+      startTime: startTime,
+      endTime: endTime,
+    );
   }
 
   Future<_HomeTrainingSession?> _loadNearestTrainingSession() async {
-    final firestore = FirebaseFirestore.instance;
     final now = DateTime.now();
 
-    final sessionSnapshot = await firestore
+    final sessionSnapshot = await FirebaseFirestore.instance
         .collection('trainingSessions')
         .where('isActive', isEqualTo: true)
         .where('status', isEqualTo: 'scheduled')
+        .where('startTime', isGreaterThanOrEqualTo: Timestamp.fromDate(now))
+        .orderBy('startTime')
+        .limit(1)
         .get();
 
-    final sessions = <_HomeTrainingSession>[];
-
-    for (final sessionDocument in sessionSnapshot.docs) {
-      final sessionData = sessionDocument.data();
-
-      final startTime =
-          (sessionData['startTime'] as Timestamp?)?.toDate() ?? DateTime.now();
-
-      final endTime =
-          (sessionData['endTime'] as Timestamp?)?.toDate() ?? DateTime.now();
-
-      if (endTime.isBefore(now)) {
-        continue;
-      }
-
-      final trainingTypeId = sessionData['trainingTypeId'] as String? ?? '';
-
-      final trainingTypeDocument = await firestore
-          .collection('trainingTypes')
-          .doc(trainingTypeId)
-          .get();
-
-      final trainingTypeData = trainingTypeDocument.data();
-
-      sessions.add(
-        _HomeTrainingSession(
-          trainingName:
-              trainingTypeData?['name'] as String? ?? AppTexts.unknownTraining,
-          startTime: startTime,
-          capacity: sessionData['capacity'] as int? ?? 0,
-          reservedCount: sessionData['reservedCount'] as int? ?? 0,
-        ),
-      );
-    }
-
-    sessions.sort((a, b) => a.startTime.compareTo(b.startTime));
-
-    if (sessions.isEmpty) {
+    if (sessionSnapshot.docs.isEmpty) {
       return null;
     }
 
-    return sessions.first;
+    final sessionData = sessionSnapshot.docs.first.data();
+
+    final startTime = (sessionData['startTime'] as Timestamp?)?.toDate();
+
+    if (startTime == null) {
+      return null;
+    }
+
+    return _HomeTrainingSession(
+      trainingName:
+          sessionData['trainingName'] as String? ?? AppTexts.unknownTraining,
+      startTime: startTime,
+      capacity: sessionData['capacity'] as int? ?? 0,
+      reservedCount: sessionData['reservedCount'] as int? ?? 0,
+    );
   }
 
   Future<List<_HomeTrainingSession>> _loadTodayTrainingSessions() async {
-    final firestore = FirebaseFirestore.instance;
     final now = DateTime.now();
+    final todayStart = DateTime(now.year, now.month, now.day);
+    final tomorrowStart = todayStart.add(const Duration(days: 1));
 
-    final sessionSnapshot = await firestore
+    final sessionSnapshot = await FirebaseFirestore.instance
         .collection('trainingSessions')
         .where('isActive', isEqualTo: true)
         .where('status', isEqualTo: 'scheduled')
+        .where(
+          'startTime',
+          isGreaterThanOrEqualTo: Timestamp.fromDate(todayStart),
+        )
+        .where('startTime', isLessThan: Timestamp.fromDate(tomorrowStart))
+        .orderBy('startTime')
+        .limit(20)
         .get();
 
-    final sessions = <_HomeTrainingSession>[];
-
-    for (final sessionDocument in sessionSnapshot.docs) {
+    return sessionSnapshot.docs.map((sessionDocument) {
       final sessionData = sessionDocument.data();
 
       final startTime =
           (sessionData['startTime'] as Timestamp?)?.toDate() ?? DateTime.now();
 
-      if (!_isSameDate(startTime, now)) {
-        continue;
-      }
-
-      final trainingTypeId = sessionData['trainingTypeId'] as String? ?? '';
-
-      final trainingTypeDocument = await firestore
-          .collection('trainingTypes')
-          .doc(trainingTypeId)
-          .get();
-
-      final trainingTypeData = trainingTypeDocument.data();
-
-      sessions.add(
-        _HomeTrainingSession(
-          trainingName: trainingTypeData?['name'] as String? ?? 'Tréning',
-          startTime: startTime,
-          capacity: sessionData['capacity'] as int? ?? 0,
-          reservedCount: sessionData['reservedCount'] as int? ?? 0,
-        ),
+      return _HomeTrainingSession(
+        trainingName:
+            sessionData['trainingName'] as String? ?? AppTexts.unknownTraining,
+        startTime: startTime,
+        capacity: sessionData['capacity'] as int? ?? 0,
+        reservedCount: sessionData['reservedCount'] as int? ?? 0,
       );
-    }
-
-    sessions.sort((a, b) => a.startTime.compareTo(b.startTime));
-
-    return sessions;
+    }).toList();
   }
 
   bool _isSameDate(DateTime first, DateTime second) {
