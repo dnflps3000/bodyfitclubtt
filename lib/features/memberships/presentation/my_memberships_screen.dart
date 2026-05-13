@@ -130,7 +130,6 @@ class MyMembershipsScreen extends StatelessWidget {
                       '${AppTexts.entriesRemaining}: ${membership.entriesRemaining ?? '-'}',
                     ),
                     isThreeLine: true,
-                    trailing: const Icon(Icons.chevron_right),
                     onTap: () {
                       Navigator.of(context).push(
                         MaterialPageRoute(

@@ -111,7 +111,6 @@ class ProfileTab extends StatelessWidget {
                   ListTile(
                     leading: const Icon(Icons.edit_outlined),
                     title: const Text(AppTexts.editProfile),
-                    trailing: const Icon(Icons.chevron_right),
                     onTap: () {
                       Navigator.of(context).push(
                         MaterialPageRoute(
@@ -131,7 +130,6 @@ class ProfileTab extends StatelessWidget {
                   ListTile(
                     leading: const Icon(Icons.settings_outlined),
                     title: const Text(AppTexts.settings),
-                    trailing: const Icon(Icons.chevron_right),
                     onTap: () {
                       Navigator.of(context).push(
                         MaterialPageRoute(

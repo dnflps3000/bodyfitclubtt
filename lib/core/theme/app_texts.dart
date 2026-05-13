@@ -502,6 +502,65 @@ class AppTexts {
   static const String attendanceMarked = 'Dochádzka bola uložená.';
   static const String attendanceMarkError = 'Dochádzku sa nepodarilo uložiť.';
 
+  // História tréningov
+  static const String trainingHistory = 'História tréningov';
+  static const String trainingHistoryDetail = 'Detail tréningu';
+  static const String trainingHistoryLoadError =
+      'Históriu tréningov sa nepodarilo načítať.';
+  static const String trainingHistoryReservationsLoadError =
+      'Účasť na tréningu sa nepodarilo načítať.';
+  static const String noTrainingHistoryInSelectedPeriod =
+      'V zvolenom období nie sú žiadne tréningy.';
+  static const String noReservationsForTrainingHistory =
+      'Na tomto tréningu nie sú žiadne rezervácie.';
+  static const String fromDatePrefix = 'Od';
+  static const String toDatePrefix = 'Do';
+  static const String planned = 'Naplánované';
+  static const String cancelled = 'Zrušené';
+  static const String finished = 'Prebehlo';
+  static const String attendedStatus = 'Prišiel';
+  static const String noShowStatus = 'Neprišiel';
+  static const String reservedStatus = 'Rezervované';
+  static const String capacityLabel = 'Kapacita';
+  static const String attendedCountLabel = 'Prišli';
+  static const String noShowCountLabel = 'Neprišli';
+  static const String reservedCountLabel = 'Rezervované';
+  static const String cancelledCountLabel = 'Zrušené';
+  static const String membershipPrefix = 'Permanentka';
+  static const String statusPrefix = 'Stav';
+  static const String markedAtPrefix = 'Označené';
+  static const String markAsAttended = 'Označiť ako prišiel';
+  static const String markAsNoShow = 'Označiť ako neprišiel';
+  static const String revertAttendance = 'Zrušiť označenú účasť';
+  static const String revertNoShow = 'Zrušiť označenú neúčasť';
+  static const String markAsAttendedQuestion =
+      'Naozaj chcete označiť používateľa ako prítomného? Vstup z permanentky sa použije.';
+  static const String markAsNoShowQuestion =
+      'Naozaj chcete označiť používateľa ako neprítomného? Vstup z permanentky sa použije.';
+  static const String revertAttendanceQuestion =
+      'Naozaj chcete zrušiť označenú účasť? Použitý vstup sa vráti späť na permanentku.';
+  static const String revertNoShowQuestion =
+      'Naozaj chcete zrušiť označenú neúčasť? Použitý vstup sa vráti späť na permanentku.';
+  static const String attendanceActionDone = 'Zmena účasti bola uložená.';
+  static const String attendanceActionError =
+      'Zmenu účasti sa nepodarilo uložiť.';
+  static const String confirm = 'Potvrdiť';
+  static const String addTrainingAttendance = 'Pridať účastníka';
+  static const String selectAttendanceUser = 'Vyberte používateľa';
+  static const String selectAttendanceMembership = 'Vyberte permanentku';
+  static const String noUsersForAttendance =
+      'Nenašli sa žiadni aktívni používatelia.';
+  static const String noUsableMembershipsForAttendance =
+      'Používateľ nemá použiteľnú permanentku pre tento tréning.';
+  static const String addTrainingAttendanceQuestion =
+      'Naozaj chcete dodatočne pridať účasť používateľa na tomto tréningu? Vstup z permanentky sa použije.';
+  static const String trainingAttendanceAdded =
+      'Účastník bol pridaný do tréningu.';
+  static const String trainingAttendanceAddError =
+      'Účastníka sa nepodarilo pridať.';
+  static const String userAlreadyHasReservationForTraining =
+      'Používateľ už má na tento tréning vytvorený záznam.';
+
   // QR dochádzka
   static const String reservationQrCode = 'QR kód rezervácie';
   static const String showQrCode = 'QR kód';

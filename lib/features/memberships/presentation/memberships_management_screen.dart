@@ -292,7 +292,6 @@ class _MembershipsManagementScreenState
           '${entriesReserved > 0 ? '\n${AppTexts.entriesReserved}: $entriesReserved' : ''}',
         ),
         isThreeLine: true,
-        trailing: const Icon(Icons.chevron_right),
         onTap: () {
           Navigator.of(context).push(
             MaterialPageRoute(

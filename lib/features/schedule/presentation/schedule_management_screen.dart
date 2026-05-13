@@ -10,6 +10,7 @@ import '../../memberships/presentation/assign_membership_screen.dart';
 import '../../memberships/presentation/memberships_management_screen.dart';
 import '../../reservations/presentation/attendance_screen.dart';
 import '../../audit/presentation/audit_logs_screen.dart';
+import '../../training_history/presentation/training_history_screen.dart';
 
 /*Obrazovka pre admina a trénera, ktorá združuje správcovské akcie mimo 
   bežného používateľského zobrazenia.*/
@@ -89,6 +90,12 @@ class ScheduleManagementScreen extends StatelessWidget {
     );
   }
 
+  Future<void> _openTrainingHistoryScreen(BuildContext context) async {
+    await Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const TrainingHistoryScreen()));
+  }
+
   Widget _buildManagementButton({
     required BuildContext context,
     required IconData icon,
@@ -123,6 +130,16 @@ class ScheduleManagementScreen extends StatelessWidget {
             icon: Icons.fact_check,
             label: AppTexts.attendanceManagement,
             onPressed: () => _openAttendanceScreen(context),
+          ),
+          const SizedBox(height: 12),
+        ],
+
+        if (isAdmin) ...[
+          _buildManagementButton(
+            context: context,
+            icon: Icons.manage_history,
+            label: AppTexts.trainingHistory,
+            onPressed: () => _openTrainingHistoryScreen(context),
           ),
           const SizedBox(height: 12),
         ],
