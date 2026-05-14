@@ -1,8 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="brand_background">#DDA5F0</color>
 
-    <color name="ic_launcher_background">#DDA5F0</color>
-    <color name="notification_color">@color/brand_background</color>
-    <color name="splash_background">@color/brand_background</color>
+    <!-- hlavná brand farba -->
+    <color name="brand_background">#00E0D1</color>
+
+    <!-- launcher background -->
+    <color name="ic_launcher_background">#00E0D1</color>
+
+    <!-- farba notifikácií -->
+    <color name="notification_color">#00E0D1</color>
+
+    <!-- splash screen -->
+    <color name="splash_background">#00E0D1</color>
+
 </resources>

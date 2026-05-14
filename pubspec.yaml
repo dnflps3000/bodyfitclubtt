@@ -50,6 +50,17 @@ flutter:
     - assets/auth/google.png
     - assets/auth/facebook.png
 
+  fonts:
+  - family: Inter
+    fonts:
+      - asset: assets/fonts/Inter_24pt-Regular.ttf
+      - asset: assets/fonts/Inter_24pt-Medium.ttf
+        weight: 500
+      - asset: assets/fonts/Inter_24pt-SemiBold.ttf
+        weight: 600
+      - asset: assets/fonts/Inter_24pt-Bold.ttf
+        weight: 700
+
 flutter_launcher_icons:
   android: true
   ios: true

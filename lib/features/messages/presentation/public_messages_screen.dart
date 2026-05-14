@@ -262,7 +262,9 @@ class PublicMessagesScreen extends StatelessWidget {
                               Expanded(
                                 child: Text(
                                   authorLabel,
-                                  style: Theme.of(context).textTheme.titleSmall,
+                                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                                        fontWeight: FontWeight.w700,
+                                      ),
                                 ),
                               ),
                               if (canManage)
