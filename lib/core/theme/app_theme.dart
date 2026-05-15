@@ -12,7 +12,7 @@ class AppTheme {
     fontFamily: AppFonts.defaultFont,
 
     iconTheme: const IconThemeData(
-      color: AppColors.primary,
+      color: AppColors.accent,
     ),
 
     scaffoldBackgroundColor: AppColors.backgroundLight,
@@ -63,7 +63,7 @@ class AppTheme {
     ),
 
     listTileTheme: const ListTileThemeData(
-      iconColor: AppColors.primary,
+      iconColor: AppColors.accent,
       textColor: AppColors.textPrimaryLight,
       titleTextStyle: TextStyle(
         fontSize: 22,
@@ -80,7 +80,7 @@ class AppTheme {
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
         backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
+        foregroundColor: Colors.black,
         padding: const EdgeInsets.symmetric(
           horizontal: 22,
           vertical: 15,
@@ -174,7 +174,7 @@ class AppTheme {
     fontFamily: AppFonts.defaultFont,
 
     iconTheme: const IconThemeData(
-      color: AppColors.secondary,
+      color: AppColors.accent,
     ),
 
     scaffoldBackgroundColor: AppColors.backgroundDark,
@@ -225,7 +225,7 @@ class AppTheme {
     ),
 
     listTileTheme: const ListTileThemeData(
-      iconColor: AppColors.secondary,
+      iconColor: AppColors.accent,
       textColor: AppColors.textPrimaryDark,
       titleTextStyle: TextStyle(
         fontSize: 22,
@@ -256,7 +256,7 @@ class AppTheme {
 
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
-        foregroundColor: AppColors.secondary,
+        foregroundColor: AppColors.primary,
         side: const BorderSide(
           color: AppColors.secondary,
           width: 1.4,
