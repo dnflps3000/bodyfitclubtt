@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="brand_background">#DDA5F0</color>
 
-    <color name="ic_launcher_background">#DDA5F0</color>
-    <color name="notification_color">@color/brand_background</color>
-    <color name="splash_background">@color/brand_background</color>
+    <color name="brand_background">#DCEBFF</color>
+
+    <color name="ic_launcher_background">#DCEBFF</color>
+
+    <color name="notification_color">#DCEBFF</color>
+
+    <color name="splash_background">#DCEBFF</color>
+
 </resources>

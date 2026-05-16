@@ -72,10 +72,23 @@ class LatestPublicMessageCard extends StatelessWidget {
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
                     const SizedBox(height: 8),
-                    Text(
-                      subtitle,
+                    RichText(
                       maxLines: 3,
                       overflow: TextOverflow.ellipsis,
+                      text: TextSpan(
+                        style: Theme.of(context).textTheme.bodyMedium,
+                        children: [
+                          TextSpan(
+                            text: subtitle.split('\n').first,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          TextSpan(
+                            text: '\n${subtitle.split('\n').skip(1).join('\n')}',
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),

@@ -50,16 +50,27 @@ flutter:
     - assets/auth/google.png
     - assets/auth/facebook.png
 
+  fonts:
+  - family: Inter
+    fonts:
+      - asset: assets/fonts/Inter_24pt-Regular.ttf
+      - asset: assets/fonts/Inter_24pt-Medium.ttf
+        weight: 500
+      - asset: assets/fonts/Inter_24pt-SemiBold.ttf
+        weight: 600
+      - asset: assets/fonts/Inter_24pt-Bold.ttf
+        weight: 700
+
 flutter_launcher_icons:
   android: true
   ios: true
   image_path: "assets/app_icon_foreground.png"
-  adaptive_icon_background: "#DDA5F0"
+  adaptive_icon_background: "#DCEBFF"
   adaptive_icon_foreground: "assets/app_icon_foreground.png"
 
 flutter_native_splash:
   # Rovnaká farba ako brand_background v android/app/src/main/res/values/colors.xml
-  color: "#DDA5F0"
+  color: "#DCEBFF"
   image: assets/native_splash_logo.png
   android: true
   ios: true
@@ -67,5 +78,5 @@ flutter_native_splash:
 
   android_12:
     # Rovnaká farba ako brand_background v android/app/src/main/res/values/colors.xml
-    color: "#DDA5F0"
+    color: "#DCEBFF"
     image: assets/native_splash_logo.png
