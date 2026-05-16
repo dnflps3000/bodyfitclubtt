@@ -7,17 +7,17 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    function isOwner(userId) {
-      return signedIn() && request.auth.uid == userId;
+    function userPath(uid) {
+      return /databases/$(database)/documents/users/$(uid);
     }
 
-    function myUserDoc() {
-      return get(/databases/$(database)/documents/users/$(request.auth.uid));
+    function hasMyUserDoc() {
+      return signedIn() && exists(userPath(request.auth.uid));
     }
 
     function myRole() {
-      return signedIn() && myUserDoc().exists()
-        ? myUserDoc().data.role
+      return hasMyUserDoc()
+        ? get(userPath(request.auth.uid)).data.role
         : null;
     }
 
@@ -33,109 +33,59 @@ service cloud.firestore {
       return isAdmin() || isTrainer();
     }
 
-    function isUserDocOwner() {
+    function isOwner(userId) {
+      return signedIn() && request.auth.uid == userId;
+    }
+
+    function resourceBelongsToMe() {
       return signedIn() && resource.data.userId == request.auth.uid;
     }
 
-    function isNewUserDocOwner() {
+    function newResourceBelongsToMe() {
       return signedIn() && request.resource.data.userId == request.auth.uid;
     }
 
-    function onlyAllowedUserSelfFieldsChanged() {
-      return request.resource.data.diff(resource.data).affectedKeys()
-        .hasOnly([
-          'displayName',
-          'publicName',
-          'phone',
-          'photoUrl',
-          'pendingEmail',
-          'emailChangeRequestedAt',
-          'emailChangeSource',
-          'emailChangeCompletedAt',
-          'previousEmail',
-          'termsAcceptedAt',
-          'privacyAcceptedAt',
-          'updatedAt'
-        ]);
-    }
-
-    function onlyAllowedUserCreateFields() {
-      return request.resource.data.keys().hasOnly([
-        'uid',
-        'userId',
-        'email',
-        'displayName',
-        'publicName',
-        'phone',
-        'photoUrl',
-        'role',
-        'isActive',
-        'createdAt',
-        'updatedAt',
-        'termsAcceptedAt',
-        'privacyAcceptedAt',
-        'pendingEmail',
-        'emailChangeRequestedAt',
-        'emailChangeSource',
-        'emailChangeCompletedAt',
-        'previousEmail'
-      ]);
-    }
-
     match /users/{userId} {
-      allow read: if isOwner(userId) || isStaff();
+      allow read: if signedIn();
 
-      allow create: if isOwner(userId)
-        && onlyAllowedUserCreateFields()
-        && (!('role' in request.resource.data) || request.resource.data.role == 'user')
-        && (!('isActive' in request.resource.data) || request.resource.data.isActive == true);
+      allow create: if isOwner(userId);
 
-      allow update: if
-        (
-          isOwner(userId)
-          && onlyAllowedUserSelfFieldsChanged()
-          && request.resource.data.role == resource.data.role
-          && request.resource.data.isActive == resource.data.isActive
-        )
-        || isStaff();
+      allow update: if isOwner(userId) || isStaff();
 
       allow delete: if isAdmin();
     }
 
     match /memberships/{membershipId} {
-      allow read: if isStaff() || isUserDocOwner();
+      allow read: if signedIn();
 
-      allow create: if isStaff()
+      allow create: if signedIn();
+
+      allow update: if isStaff()
         || (
           signedIn()
-          && request.resource.data.userId == request.auth.uid
+          && resource.data.userId == request.auth.uid
+          && request.resource.data.userId == resource.data.userId
+          && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly([
+              'entriesReserved',
+              'reservedEntries',
+              'usedEntries',
+              'availableEntries',
+              'updatedAt',
+              'lastReservationAt',
+              'lastCancelledReservationAt'
+            ])
         );
-
-      allow update: if isStaff();
 
       allow delete: if isAdmin();
     }
 
     match /reservations/{reservationId} {
-      allow read: if isStaff() || isUserDocOwner();
+      allow read: if signedIn();
 
-      allow create: if signedIn()
-        && request.resource.data.userId == request.auth.uid;
+      allow create: if signedIn();
 
-      allow update: if isStaff()
-        || (
-          isUserDocOwner()
-          && request.resource.data.userId == resource.data.userId
-          && request.resource.data.diff(resource.data).affectedKeys()
-            .hasOnly([
-              'status',
-              'entryStatus',
-              'cancelledAt',
-              'cancelledBy',
-              'cancelledReason',
-              'updatedAt'
-            ])
-        );
+      allow update: if signedIn();
 
       allow delete: if isAdmin();
     }
@@ -143,7 +93,17 @@ service cloud.firestore {
     match /trainingSessions/{sessionId} {
       allow read: if true;
 
-      allow create, update: if isStaff();
+      allow create: if isStaff();
+
+      allow update: if isStaff()
+        || (
+          signedIn()
+          && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly([
+              'reservedCount',
+              'updatedAt'
+            ])
+        );
 
       allow delete: if isAdmin();
     }
@@ -181,14 +141,9 @@ service cloud.firestore {
     }
 
     match /accountDeletionRequests/{requestId} {
-      allow read: if isStaff()
-        || (
-          signedIn()
-          && resource.data.userId == request.auth.uid
-        );
+      allow read: if signedIn();
 
-      allow create: if signedIn()
-        && request.resource.data.userId == request.auth.uid;
+      allow create: if signedIn();
 
       allow update: if isStaff();
 
@@ -196,13 +151,11 @@ service cloud.firestore {
     }
 
     match /fcmTokens/{tokenId} {
-      allow read: if isAdmin();
+      allow read: if isStaff();
 
-      allow create, update: if signedIn()
-        && request.resource.data.userId == request.auth.uid;
+      allow create, update: if signedIn();
 
-      allow delete: if signedIn()
-        && resource.data.userId == request.auth.uid;
+      allow delete: if signedIn();
     }
 
     match /membershipPlans/{planId} {
@@ -212,25 +165,15 @@ service cloud.firestore {
     }
 
     match /payments/{paymentId} {
-      allow read: if isStaff()
-        || (
-          signedIn()
-          && resource.data.userId == request.auth.uid
-        );
+      allow read: if signedIn();
 
       allow create, update, delete: if false;
     }
 
     match /discount_requests/{requestId} {
-      allow read: if isStaff()
-        || (
-          signedIn()
-          && resource.data.userId == request.auth.uid
-        );
+      allow read: if signedIn();
 
-      allow create: if signedIn()
-        && request.resource.data.userId == request.auth.uid
-        && request.resource.data.status == 'pending';
+      allow create: if signedIn();
 
       allow update: if isStaff();
 
