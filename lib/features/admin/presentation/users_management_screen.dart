@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_roles.dart';
@@ -307,23 +308,64 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
     return AppTexts.userUpdateError;
   }
 
+  Future<void> _setUserDisabledStatus({
+    required _ManagedUser user,
+    required bool disabled,
+    String? reason,
+  }) async {
+    final callable = FirebaseFunctions.instanceFor(
+      region: 'europe-west1',
+    ).httpsCallable('setUserDisabledStatus');
+
+    await callable.call({
+      'uid': user.id,
+      'disabled': disabled,
+      if (reason != null && reason.trim().isNotEmpty) 'reason': reason.trim(),
+    });
+  }
+
   Future<void> _confirmDeactivateUser(_ManagedUser user) async {
+    final messenger = ScaffoldMessenger.of(context);
+    var reason = '';
+
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
+          scrollable: true,
           title: const Text(AppTexts.deactivateUser),
-          content: Text(
-            '${AppTexts.deactivateUserQuestion}\n\n'
-            '${user.displayLabel}',
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                '${AppTexts.deactivateUserQuestion}\n\n'
+                '${user.displayLabel}',
+              ),
+              const SizedBox(height: AppSpacing.cardGap),
+              TextField(
+                decoration: const InputDecoration(
+                  labelText: AppTexts.deactivationReason,
+                ),
+                maxLines: 2,
+                onChanged: (value) {
+                  reason = value;
+                },
+              ),
+            ],
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(false),
+              onPressed: () {
+                FocusScope.of(dialogContext).unfocus();
+                Navigator.of(dialogContext).pop(false);
+              },
               child: const Text(AppTexts.cancel),
             ),
             FilledButton(
-              onPressed: () => Navigator.of(dialogContext).pop(true),
+              onPressed: () {
+                FocusScope.of(dialogContext).unfocus();
+                Navigator.of(dialogContext).pop(true);
+              },
               child: const Text(AppTexts.deactivateUser),
             ),
           ],
@@ -346,12 +388,11 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
         return;
       }
 
-      await FirebaseFirestore.instance.collection('users').doc(user.id).set({
-        'isActive': false,
-        'deactivatedBy': widget.currentUserId,
-        'deactivatedAt': FieldValue.serverTimestamp(),
-        'updatedAt': FieldValue.serverTimestamp(),
-      }, SetOptions(merge: true));
+      await _setUserDisabledStatus(
+        user: user,
+        disabled: true,
+        reason: reason.trim(),
+      );
 
       await _createUserAuditLog(
         user: user,
@@ -365,9 +406,9 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
 
       if (!mounted) return;
 
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text(AppTexts.userDeactivated)));
+      messenger.showSnackBar(
+        const SnackBar(content: Text(AppTexts.userDeactivated)),
+      );
     } catch (error) {
       await _createUserAuditLog(
         user: user,
@@ -381,13 +422,14 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
 
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
+      messenger.showSnackBar(
         SnackBar(content: Text(_userManagementErrorMessage(error))),
       );
     }
   }
 
   Future<void> _confirmReactivateUser(_ManagedUser user) async {
+    final messenger = ScaffoldMessenger.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) {
@@ -416,12 +458,7 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
     }
 
     try {
-      await FirebaseFirestore.instance.collection('users').doc(user.id).set({
-        'isActive': true,
-        'reactivatedBy': widget.currentUserId,
-        'reactivatedAt': FieldValue.serverTimestamp(),
-        'updatedAt': FieldValue.serverTimestamp(),
-      }, SetOptions(merge: true));
+      await _setUserDisabledStatus(user: user, disabled: false);
 
       await _createUserAuditLog(
         user: user,
@@ -435,15 +472,15 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
 
       if (!mounted) return;
 
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text(AppTexts.userReactivated)));
+      messenger.showSnackBar(
+        const SnackBar(content: Text(AppTexts.userReactivated)),
+      );
     } catch (_) {
       if (!mounted) return;
 
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text(AppTexts.userUpdateError)));
+      messenger.showSnackBar(
+        const SnackBar(content: Text(AppTexts.userUpdateError)),
+      );
     }
   }
 

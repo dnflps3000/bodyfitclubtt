@@ -21,7 +21,7 @@ class AuthService {
     final isActive = data?['isActive'] as bool? ?? true;
 
     if (!isActive) {
-      await _auth.signOut();
+      await signOut();
       throw FirebaseAuthException(code: 'user-disabled-in-app');
     }
   }
@@ -33,6 +33,9 @@ class AuthService {
     String? firstName,
     String? lastName,
     String? photoURL,
+    String? termsVersion,
+    String? privacyVersion,
+    String? consentSource,
   }) async {
     final userDoc = _firestore.collection('users').doc(user.uid);
     final snapshot = await userDoc.get();
@@ -100,6 +103,22 @@ class AuthService {
       data['publicName'] = generatedPublicName;
     }
 
+    if (termsVersion != null &&
+        privacyVersion != null &&
+        consentSource != null) {
+      if (existingData?['termsAcceptedAt'] == null) {
+        data['termsAcceptedAt'] = FieldValue.serverTimestamp();
+      }
+
+      if (existingData?['privacyAcceptedAt'] == null) {
+        data['privacyAcceptedAt'] = FieldValue.serverTimestamp();
+      }
+
+      data['termsVersion'] = termsVersion;
+      data['privacyVersion'] = privacyVersion;
+      data['consentSource'] = consentSource;
+    }
+
     await userDoc.set(data, SetOptions(merge: true));
   }
 
@@ -107,6 +126,9 @@ class AuthService {
   Future<UserCredential> registerWithEmail({
     required String email,
     required String password,
+    required String termsVersion,
+    required String privacyVersion,
+    required String consentSource,
   }) async {
     final credential = await _auth.createUserWithEmailAndPassword(
       email: email,
@@ -115,7 +137,12 @@ class AuthService {
 
     final user = credential.user!;
 
-    await _saveUserProfile(user);
+    await _saveUserProfile(
+      user,
+      termsVersion: termsVersion,
+      privacyVersion: privacyVersion,
+      consentSource: consentSource,
+    );
 
     // Po registrácii pošleme overovací e-mail.
     await user.sendEmailVerification();
@@ -157,7 +184,11 @@ class AuthService {
   }
 
   // GOOGLE LOGIN
-  Future<UserCredential?> signInWithGoogle() async {
+  Future<UserCredential?> signInWithGoogle({
+    String? termsVersion,
+    String? privacyVersion,
+    String? consentSource,
+  }) async {
     final googleSignIn = GoogleSignIn.instance;
 
     await googleSignIn.initialize();
@@ -173,14 +204,23 @@ class AuthService {
 
     final user = userCredential.user!;
 
-    await _saveUserProfile(user);
+    await _saveUserProfile(
+      user,
+      termsVersion: termsVersion,
+      privacyVersion: privacyVersion,
+      consentSource: consentSource,
+    );
     await ensureUserIsActive(user);
 
     return userCredential;
   }
 
   // FACEBOOK LOGIN
-  Future<UserCredential?> signInWithFacebook() async {
+  Future<UserCredential?> signInWithFacebook({
+    String? termsVersion,
+    String? privacyVersion,
+    String? consentSource,
+  }) async {
     final result = await FacebookAuth.instance.login(
       // public_profile = meno + profilová fotka
       // email = e-mailová adresa, ak ju Facebook používateľ poskytne
@@ -212,7 +252,13 @@ class AuthService {
 
     final user = userCredential.user!;
 
-    await _saveUserProfile(user, photoURL: facebookPhotoUrl);
+    await _saveUserProfile(
+      user,
+      photoURL: facebookPhotoUrl,
+      termsVersion: termsVersion,
+      privacyVersion: privacyVersion,
+      consentSource: consentSource,
+    );
     await ensureUserIsActive(user);
 
     return userCredential;
@@ -220,8 +266,18 @@ class AuthService {
 
   // ODHLÁSENIE
   Future<void> signOut() async {
-    // Odhlásime iba Firebase session.
-    // Google účet nechávame v zariadení zapamätaný kvôli pohodlnejšiemu ďalšiemu loginu.
     await _auth.signOut();
+
+    try {
+      await GoogleSignIn.instance.signOut();
+    } catch (_) {
+      // Google session nemusí byť aktívna.
+    }
+
+    try {
+      await FacebookAuth.instance.logOut();
+    } catch (_) {
+      // Facebook session nemusí byť aktívna.
+    }
   }
 }

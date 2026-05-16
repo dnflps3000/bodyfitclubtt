@@ -10,7 +10,8 @@ import {
 import Stripe from "stripe";
 import {onDocumentCreated} from "firebase-functions/v2/firestore";
 import {getMessaging} from "firebase-admin/messaging";
-import {onRequest} from "firebase-functions/v2/https";
+import {getAuth} from "firebase-admin/auth";
+import {onCall, HttpsError, onRequest} from "firebase-functions/v2/https";
 
 initializeApp();
 
@@ -92,6 +93,83 @@ export const createPaymentIntent = onRequest(
         error: "Payment failed",
       });
     }
+  },
+);
+
+export const setUserDisabledStatus = onCall(
+  {region: "europe-west1"},
+  async (request) => {
+    if (!request.auth) {
+      throw new HttpsError(
+        "unauthenticated",
+        "Používateľ nie je prihlásený.",
+      );
+    }
+
+    const callerUid = request.auth.uid;
+    const targetUid = request.data?.uid as string | undefined;
+    const disabled = request.data?.disabled as boolean | undefined;
+    const reason = request.data?.reason as string | undefined;
+
+    if (!targetUid || typeof disabled !== "boolean") {
+      throw new HttpsError(
+        "invalid-argument",
+        "Chýba uid alebo disabled.",
+      );
+    }
+
+    if (callerUid === targetUid) {
+      throw new HttpsError(
+        "failed-precondition",
+        "Nemôžete deaktivovať vlastný účet.",
+      );
+    }
+
+    const callerSnapshot = await db.collection("users").doc(callerUid).get();
+    const callerData = callerSnapshot.data();
+    const callerRole = callerData?.role;
+    const callerIsActive = callerData?.isActive ?? true;
+
+    if (!callerSnapshot.exists || callerRole !== "admin" || !callerIsActive) {
+      throw new HttpsError(
+        "permission-denied",
+        "Na túto akciu nemáte oprávnenie.",
+      );
+    }
+
+    await getAuth().updateUser(targetUid, {
+      disabled,
+    });
+
+    if (disabled) {
+      await db.collection("users").doc(targetUid).set(
+        {
+          isActive: false,
+          deactivatedAt: FieldValue.serverTimestamp(),
+          deactivatedBy: callerUid,
+          deactivationReason:
+            reason?.trim() || "Deaktivované administrátorom.",
+          updatedAt: FieldValue.serverTimestamp(),
+        },
+        {merge: true},
+      );
+    } else {
+      await db.collection("users").doc(targetUid).set(
+        {
+          isActive: true,
+          reactivatedAt: FieldValue.serverTimestamp(),
+          reactivatedBy: callerUid,
+          updatedAt: FieldValue.serverTimestamp(),
+        },
+        {merge: true},
+      );
+    }
+
+    return {
+      success: true,
+      uid: targetUid,
+      disabled,
+    };
   },
 );
 

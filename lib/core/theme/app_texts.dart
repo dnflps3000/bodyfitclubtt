@@ -101,6 +101,19 @@ class AppTexts {
   static const String noAccountRegister = 'Nemáš účet? Registrovať';
   static const String hasAccountLogin = 'Už máš účet? Prihlásiť';
   static const String authError = 'Chyba prihlásenia';
+  static const String acceptTerms = 'Súhlasím s obchodnými podmienkami';
+  static const String acceptPrivacy = 'Súhlasím so spracovaním osobných údajov';
+  static const String termsConsentRequired =
+      'Pre registráciu je potrebné súhlasiť s obchodnými podmienkami.';
+  static const String privacyConsentRequired =
+      'Pre registráciu je potrebné súhlasiť so spracovaním osobných údajov.';
+  static const String openTerms = 'Otvoriť obchodné podmienky';
+  static const String openPrivacy = 'Otvoriť ochranu osobných údajov';
+  static const String termsVersion = '2026-05-16';
+  static const String privacyVersion = '2026-05-16';
+  static const String continueWithoutAccount = 'Pokračovať bez účtu';
+  static const String completeEmailOrLogout =
+      'Ak nechceš doplniť e-mail, môžeš pokračovať bez účtu a prihlásiť sa neskôr iným účtom.';
 
   // Validácia auth
   static const String fillEmailPassword = 'Vyplň e-mail aj heslo.';
@@ -642,6 +655,7 @@ class AppTexts {
   static const String changeRoleWarning =
       'Pri zmene roly používateľa sa môžu zmeniť jeho oprávnenia v aplikácii.';
   static const String deactivateUser = 'Deaktivovať používateľa';
+  static const String deactivationReason = 'Dôvod deaktivácie';
   static const String userDeactivated = 'Používateľ bol deaktivovaný.';
   static const String deactivateUserQuestion =
       'Naozaj chcete deaktivovať tohto používateľa? Nebude sa môcť ďalej používať v správe aplikácie.';

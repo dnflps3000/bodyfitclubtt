@@ -47,3 +47,5 @@ app.*.map.json
 .env
 .env.*
 .secret.local
+local.properties
+android/local.properties

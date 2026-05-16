@@ -121,6 +121,16 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             final safeSelectedIndex = _selectedIndex >= tabs.length
                 ? 0
                 : _selectedIndex;
+
+            if (safeSelectedIndex != _selectedIndex) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (!mounted) return;
+
+                setState(() {
+                  _selectedIndex = safeSelectedIndex;
+                });
+              });
+            }
             final menuButton = AppMenuButton(
               showLogin: false,
               showLogout: true,

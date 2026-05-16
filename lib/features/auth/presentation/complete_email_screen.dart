@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_texts.dart';
+import '../data/auth_service.dart';
 import '../../audit/data/audit_log_service.dart';
 
 class CompleteEmailScreen extends StatefulWidget {
@@ -17,6 +18,7 @@ class CompleteEmailScreen extends StatefulWidget {
 class _CompleteEmailScreenState extends State<CompleteEmailScreen> {
   final TextEditingController _emailController = TextEditingController();
   final AuditLogService _auditLogService = AuditLogService();
+  final AuthService _authService = AuthService();
 
   bool _isSaving = false;
 
@@ -98,17 +100,41 @@ class _CompleteEmailScreenState extends State<CompleteEmailScreen> {
     }
   }
 
+  Future<void> _continueWithoutAccount() async {
+    setState(() {
+      _isSaving = true;
+    });
+
+    try {
+      await _authService.signOut();
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSaving = false;
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text(AppTexts.completeEmailTitle),
         automaticallyImplyLeading: false,
+        actions: [
+          TextButton(
+            onPressed: _isSaving ? null : _continueWithoutAccount,
+            child: const Text(AppTexts.continueWithoutAccount),
+          ),
+        ],
       ),
       body: ListView(
         padding: const EdgeInsets.all(AppSpacing.screenPadding),
         children: [
           const Text(AppTexts.completeEmailDescription),
+          const SizedBox(height: AppSpacing.cardGap),
+          const Text(AppTexts.completeEmailOrLogout),
           const SizedBox(height: AppSpacing.sectionGap),
           TextField(
             controller: _emailController,
@@ -136,6 +162,12 @@ class _CompleteEmailScreenState extends State<CompleteEmailScreen> {
                   )
                 : const Icon(Icons.email_outlined),
             label: const Text(AppTexts.save),
+          ),
+          const SizedBox(height: AppSpacing.cardGap),
+          OutlinedButton.icon(
+            onPressed: _isSaving ? null : _continueWithoutAccount,
+            icon: const Icon(Icons.logout),
+            label: const Text(AppTexts.continueWithoutAccount),
           ),
         ],
       ),

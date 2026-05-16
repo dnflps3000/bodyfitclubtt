@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_texts.dart';
 import '../data/auth_service.dart';
@@ -30,6 +31,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
   AuthMode _mode = AuthMode.login;
   bool _isLoading = false;
+  bool _termsAccepted = false;
+  bool _privacyAccepted = false;
 
   @override
   void initState() {
@@ -49,6 +52,25 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _saveLastUsedEmail(String email) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_lastUsedEmailKey, email);
+  }
+
+  Future<void> _openUrl(String url) async {
+    final uri = Uri.parse(url);
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
+  }
+
+  void _validateRegistrationConsents() {
+    if (_mode != AuthMode.register) {
+      return;
+    }
+
+    if (!_termsAccepted) {
+      throw AppTexts.termsConsentRequired;
+    }
+
+    if (!_privacyAccepted) {
+      throw AppTexts.privacyConsentRequired;
+    }
   }
 
   String _authErrorMessage(Object error) {
@@ -162,7 +184,15 @@ class _LoginScreenState extends State<LoginScreen> {
     if (_mode == AuthMode.login) {
       await _authService.loginWithEmail(email: email, password: password);
     } else {
-      await _authService.registerWithEmail(email: email, password: password);
+      _validateRegistrationConsents();
+
+      await _authService.registerWithEmail(
+        email: email,
+        password: password,
+        termsVersion: AppTexts.termsVersion,
+        privacyVersion: AppTexts.privacyVersion,
+        consentSource: 'email_password',
+      );
     }
 
     await _saveLastUsedEmail(email);
@@ -197,7 +227,17 @@ class _LoginScreenState extends State<LoginScreen> {
                   onPressed: _isLoading
                       ? null
                       : () => _runAuthAction(() async {
-                          await _authService.signInWithGoogle();
+                          _validateRegistrationConsents();
+
+                          await _authService.signInWithGoogle(
+                            termsVersion: isLoginMode
+                                ? null
+                                : AppTexts.termsVersion,
+                            privacyVersion: isLoginMode
+                                ? null
+                                : AppTexts.privacyVersion,
+                            consentSource: isLoginMode ? null : 'google',
+                          );
                         }),
                   icon: Image.asset('assets/auth/google.png', height: 22),
                   label: const Text(AppTexts.continueWithGoogle),
@@ -207,7 +247,17 @@ class _LoginScreenState extends State<LoginScreen> {
                   onPressed: _isLoading
                       ? null
                       : () => _runAuthAction(() async {
-                          await _authService.signInWithFacebook();
+                          _validateRegistrationConsents();
+
+                          await _authService.signInWithFacebook(
+                            termsVersion: isLoginMode
+                                ? null
+                                : AppTexts.termsVersion,
+                            privacyVersion: isLoginMode
+                                ? null
+                                : AppTexts.privacyVersion,
+                            consentSource: isLoginMode ? null : 'facebook',
+                          );
                         }),
                   icon: Image.asset('assets/auth/facebook.png', height: 22),
                   label: const Text(AppTexts.continueWithFacebook),
@@ -260,6 +310,55 @@ class _LoginScreenState extends State<LoginScreen> {
                     border: OutlineInputBorder(),
                   ),
                 ),
+                const SizedBox(height: AppSpacing.sectionGap),
+
+                if (!isLoginMode) ...[
+                  CheckboxListTile(
+                    value: _termsAccepted,
+                    onChanged: _isLoading
+                        ? null
+                        : (value) {
+                            setState(() {
+                              _termsAccepted = value ?? false;
+                            });
+                          },
+                    controlAffinity: ListTileControlAffinity.leading,
+                    contentPadding: EdgeInsets.zero,
+                    title: const Text(AppTexts.acceptTerms),
+                    subtitle: TextButton(
+                      onPressed: _isLoading
+                          ? null
+                          : () => _openUrl(AppTexts.bodyFitClubWebsite),
+                      child: const Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(AppTexts.openTerms),
+                      ),
+                    ),
+                  ),
+                  CheckboxListTile(
+                    value: _privacyAccepted,
+                    onChanged: _isLoading
+                        ? null
+                        : (value) {
+                            setState(() {
+                              _privacyAccepted = value ?? false;
+                            });
+                          },
+                    controlAffinity: ListTileControlAffinity.leading,
+                    contentPadding: EdgeInsets.zero,
+                    title: const Text(AppTexts.acceptPrivacy),
+                    subtitle: TextButton(
+                      onPressed: _isLoading
+                          ? null
+                          : () => _openUrl(AppTexts.bodyFitClubWebsite),
+                      child: const Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(AppTexts.openPrivacy),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.cardGap),
+                ],
                 const SizedBox(height: AppSpacing.sectionGap),
 
                 FilledButton(
