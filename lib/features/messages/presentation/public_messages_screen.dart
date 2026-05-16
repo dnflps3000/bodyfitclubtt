@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_roles.dart';
+import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_texts.dart';
 import '../../audit/data/audit_log_service.dart';
 import 'edit_public_message_screen.dart';
@@ -224,10 +225,11 @@ class PublicMessagesScreen extends StatelessWidget {
 
               return ListView.builder(
                 padding: EdgeInsets.fromLTRB(
-                  14,
-                  8,
-                  14,
-                  24 + MediaQuery.of(context).padding.bottom,
+                  AppSpacing.messageListHorizontalPadding,
+                  AppSpacing.messageListTopPadding,
+                  AppSpacing.messageListHorizontalPadding,
+                  AppSpacing.messageListBottomPadding +
+                      MediaQuery.of(context).padding.bottom,
                 ),
                 itemCount: messages.length,
                 itemBuilder: (context, index) {
@@ -246,13 +248,13 @@ class PublicMessagesScreen extends StatelessWidget {
                   );
 
                   return Card(
-                    margin: const EdgeInsets.only(bottom: 8),
+                    margin: const EdgeInsets.only(bottom: AppSpacing.sm),
                     child: Padding(
                       padding: const EdgeInsets.only(
-                        left: 14,
-                        right: 6,
-                        top: 8,
-                        bottom: 10,
+                        left: AppSpacing.messageCardLeftPadding,
+                        right: AppSpacing.messageCardRightPadding,
+                        top: AppSpacing.messageCardTopPadding,
+                        bottom: AppSpacing.messageCardBottomPadding,
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -262,18 +264,20 @@ class PublicMessagesScreen extends StatelessWidget {
                               Expanded(
                                 child: Text(
                                   authorLabel,
-                                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                                        fontWeight: FontWeight.w700,
-                                      ),
+                                  style: Theme.of(context).textTheme.titleSmall
+                                      ?.copyWith(fontWeight: FontWeight.w700),
                                 ),
                               ),
                               if (canManage)
                                 SizedBox(
-                                  width: 36,
-                                  height: 32,
+                                  width: AppSpacing.messageMenuButtonWidth,
+                                  height: AppSpacing.messageMenuButtonHeight,
                                   child: PopupMenuButton<String>(
                                     padding: EdgeInsets.zero,
-                                    icon: const Icon(Icons.more_vert, size: 20),
+                                    icon: const Icon(
+                                      Icons.more_vert,
+                                      size: AppSpacing.messageMenuIconSize,
+                                    ),
                                     itemBuilder: (_) => const [
                                       PopupMenuItem(
                                         value: 'edit',
@@ -306,10 +310,10 @@ class PublicMessagesScreen extends StatelessWidget {
                                 ),
                             ],
                           ),
-                          const SizedBox(height: 4),
+                          const SizedBox(height: AppSpacing.xs),
                           Text(text),
                           if (updatedByLabel != null) ...[
-                            const SizedBox(height: 8),
+                            const SizedBox(height: AppSpacing.sm),
                             Text(
                               updatedByLabel,
                               style: Theme.of(context).textTheme.bodySmall,

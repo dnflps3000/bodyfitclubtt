@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_texts.dart';
 import '../../audit/data/audit_log_service.dart';
 
@@ -105,10 +106,10 @@ class _CompleteEmailScreenState extends State<CompleteEmailScreen> {
         automaticallyImplyLeading: false,
       ),
       body: ListView(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(AppSpacing.screenPadding),
         children: [
           const Text(AppTexts.completeEmailDescription),
-          const SizedBox(height: 20),
+          const SizedBox(height: AppSpacing.sectionGap),
           TextField(
             controller: _emailController,
             enabled: !_isSaving,
@@ -124,7 +125,7 @@ class _CompleteEmailScreenState extends State<CompleteEmailScreen> {
               }
             },
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: AppSpacing.xl),
           FilledButton.icon(
             onPressed: _isSaving ? null : _saveEmail,
             icon: _isSaving

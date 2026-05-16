@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_texts.dart';
 import '../../audit/data/audit_log_service.dart';
 import '../../memberships/domain/membership_plan.dart';
@@ -186,18 +187,25 @@ class _PaymentScreenState extends State<PaymentScreen> {
           final displayedSelectedPlan = _selectedPlan ?? initialSelectedPlan;
 
           return ListView(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.screenPadding,
+              AppSpacing.screenPadding,
+              AppSpacing.screenPadding,
+              AppSpacing.xl,
+            ),
             children: [
               Text(
                 AppTexts.chooseMembership,
                 style: Theme.of(context).textTheme.titleLarge,
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppSpacing.cardGap),
 
               for (final plan in plans)
                 Card(
                   child: InkWell(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(
+                      AppSpacing.cardInnerRadius,
+                    ),
                     onTap: _isPaying
                         ? null
                         : () {
@@ -227,7 +235,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
       // Tlačidlo je mimo ListView a SafeArea ho drží nad systémovou lištou.
       bottomNavigationBar: SafeArea(
-        minimum: const EdgeInsets.all(16),
+        minimum: const EdgeInsets.all(AppSpacing.screenPadding),
         child: FilledButton(
           onPressed: _selectedPlan == null || _isPaying
               ? null

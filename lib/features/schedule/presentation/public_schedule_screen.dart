@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_texts.dart';
 import '../../../core/widgets/day_card_selector.dart';
 import '../data/schedule_service.dart';
@@ -53,7 +54,7 @@ class _PublicScheduleScreenState extends State<PublicScheduleScreen> {
                 child: items.isEmpty
                     ? const Center(
                         child: Padding(
-                          padding: EdgeInsets.all(24),
+                          padding: EdgeInsets.all(AppSpacing.xl),
                           child: Text(
                             AppTexts.noTrainingsForSelectedDay,
                             textAlign: TextAlign.center,
@@ -61,10 +62,10 @@ class _PublicScheduleScreenState extends State<PublicScheduleScreen> {
                         ),
                       )
                     : ListView.separated(
-                        padding: const EdgeInsets.all(16),
+                        padding: const EdgeInsets.all(AppSpacing.screenPadding),
                         itemCount: items.length,
                         separatorBuilder: (context, index) =>
-                            const SizedBox(height: 12),
+                            const SizedBox(height: AppSpacing.cardGap),
                         itemBuilder: (context, index) {
                           return _buildScheduleCard(items[index]);
                         },

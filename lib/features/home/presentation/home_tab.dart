@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_roles.dart';
+import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_texts.dart';
 import '../../memberships/data/membership_service.dart';
 import '../../memberships/domain/membership.dart';
@@ -41,21 +42,21 @@ class HomeTab extends StatelessWidget {
         final role = data?['role'] as String? ?? AppRoles.user;
 
         return ListView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(AppSpacing.screenPadding),
           children: [
             if (role == AppRoles.admin || role == AppRoles.trainer) ...[
               _buildQrScannerButton(context, role),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppSpacing.cardGap),
               _buildNearestTrainingsCard(),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppSpacing.cardGap),
               _buildNewsCard(),
             ] else ...[
               _buildNearestReservationsCard(context),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppSpacing.cardGap),
               _buildNearestTrainingsCard(),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppSpacing.cardGap),
               _buildMembershipSummaryCard(),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppSpacing.cardGap),
               _buildNewsCard(),
             ],
           ],
@@ -107,17 +108,17 @@ class HomeTab extends StatelessWidget {
 
         return Card(
           child: InkWell(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(AppSpacing.cardInnerRadius),
             onTap: onOpenSchedule,
             child: Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(AppSpacing.screenPadding),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     children: [
                       const Icon(Icons.event_available),
-                      const SizedBox(width: 16),
+                      const SizedBox(width: AppSpacing.iconTextGap),
                       Expanded(
                         child: Text(
                           AppTexts.nearestTrainings,
@@ -126,10 +127,12 @@ class HomeTab extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: AppSpacing.cardGap),
                   for (final session in sessions)
                     Padding(
-                      padding: const EdgeInsets.only(bottom: 6),
+                      padding: const EdgeInsets.only(
+                        bottom: AppSpacing.itemBottomGap,
+                      ),
                       child: Text(
                         '${session.trainingName} - '
                         '${_formatNearestTrainingTime(session.startTime)}'
@@ -182,10 +185,10 @@ class HomeTab extends StatelessWidget {
 
         return Card(
           child: InkWell(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(AppSpacing.cardInnerRadius),
             onTap: onOpenReservations,
             child: Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(AppSpacing.screenPadding),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -193,35 +196,42 @@ class HomeTab extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Icon(Icons.event_available),
-                      const SizedBox(width: 16),
+                      const SizedBox(width: AppSpacing.iconTextGap),
                       Expanded(
                         child: Text(
                           AppTexts.nearestReservations,
                           style: Theme.of(context).textTheme.titleLarge,
                         ),
                       ),
+                      OutlinedButton.icon(
+                        onPressed: () {
+                          _openReservationQrCode(context, nearestReservation);
+                        },
+                        icon: const Icon(Icons.qr_code, size: 18),
+                        label: const Text(AppTexts.qrShort),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal:
+                                AppSpacing.compactButtonHorizontalPadding,
+                            vertical: AppSpacing.compactButtonVerticalPadding,
+                          ),
+                          minimumSize: Size.zero,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                      ),
                     ],
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppSpacing.sm),
                   for (final reservation in reservations)
                     Padding(
-                      padding: const EdgeInsets.only(bottom: 4),
+                      padding: const EdgeInsets.only(
+                        bottom: AppSpacing.listBottomGap,
+                      ),
                       child: Text(
                         '${reservation.trainingName} - '
                         '${_formatNearestTrainingTime(reservation.startTime)}',
                       ),
                     ),
-                  const SizedBox(height: 12),
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: OutlinedButton.icon(
-                      onPressed: () {
-                        _openReservationQrCode(context, nearestReservation);
-                      },
-                      icon: const Icon(Icons.qr_code),
-                      label: const Text(AppTexts.showReservationQrCode),
-                    ),
-                  ),
                 ],
               ),
             ),

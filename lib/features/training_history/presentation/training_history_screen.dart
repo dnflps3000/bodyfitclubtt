@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_texts.dart';
 import '../data/training_history_service.dart';
 import 'training_history_detail_screen.dart';
@@ -111,39 +112,43 @@ class _TrainingHistoryScreenState extends State<TrainingHistoryScreen> {
   }
 
   Widget _buildFilters() {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          alignment: WrapAlignment.center,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
           children: [
-            OutlinedButton(
-              onPressed: _setLast7Days,
-              child: const Text(AppTexts.last7Days),
-            ),
-            OutlinedButton(
-              onPressed: _setLast30Days,
-              child: const Text(AppTexts.last30Days),
-            ),
-            OutlinedButton.icon(
-              onPressed: _pickFromDate,
-              icon: const Icon(Icons.date_range),
-              label: Text(
-                '${AppTexts.fromDatePrefix}: ${_formatDateTime(_from).split(' ').first}',
+            Expanded(
+              child: OutlinedButton(
+                onPressed: _setLast7Days,
+                child: const Text(AppTexts.last7Days),
               ),
             ),
-            OutlinedButton.icon(
-              onPressed: _pickToDate,
-              icon: const Icon(Icons.event),
-              label: Text(
-                '${AppTexts.toDatePrefix}: ${_formatDateTime(_to.subtract(const Duration(days: 1))).split(' ').first}',
+            const SizedBox(width: AppSpacing.sm),
+            Expanded(
+              child: OutlinedButton(
+                onPressed: _setLast30Days,
+                child: const Text(AppTexts.last30Days),
               ),
             ),
           ],
         ),
-      ),
+        const SizedBox(height: AppSpacing.cardGap),
+        OutlinedButton.icon(
+          onPressed: _pickFromDate,
+          icon: const Icon(Icons.date_range),
+          label: Text(
+            '${AppTexts.fromDatePrefix}: ${_formatDateTime(_from).split(' ').first}',
+          ),
+        ),
+        const SizedBox(height: AppSpacing.cardGap),
+        OutlinedButton.icon(
+          onPressed: _pickToDate,
+          icon: const Icon(Icons.event),
+          label: Text(
+            '${AppTexts.toDatePrefix}: ${_formatDateTime(_to.subtract(const Duration(days: 1))).split(' ').first}',
+          ),
+        ),
+      ],
     );
   }
 
@@ -170,7 +175,6 @@ class _TrainingHistoryScreenState extends State<TrainingHistoryScreen> {
           '${AppTexts.capacityLabel}: ${session.reservedCount}/${session.capacity} • $statusText',
         ),
         isThreeLine: true,
-        trailing: const Icon(Icons.chevron_right),
         onTap: () => _openDetail(session),
       ),
     );
@@ -180,42 +184,48 @@ class _TrainingHistoryScreenState extends State<TrainingHistoryScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text(AppTexts.trainingHistory)),
-      body: Column(
-        children: [
-          Padding(padding: const EdgeInsets.all(12), child: _buildFilters()),
-          Expanded(
-            child: StreamBuilder<List<TrainingHistorySession>>(
-              stream: _service.watchTrainingHistory(from: _from, to: _to),
-              builder: (context, snapshot) {
-                if (snapshot.hasError) {
-                  return const Center(
-                    child: Text(AppTexts.trainingHistoryLoadError),
-                  );
-                }
+      body: StreamBuilder<List<TrainingHistorySession>>(
+        stream: _service.watchTrainingHistory(from: _from, to: _to),
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return const Center(child: Text(AppTexts.trainingHistoryLoadError));
+          }
 
-                if (!snapshot.hasData) {
-                  return const Center(child: CircularProgressIndicator());
-                }
+          if (!snapshot.hasData) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-                final sessions = snapshot.data ?? [];
+          final sessions = snapshot.data ?? [];
 
-                if (sessions.isEmpty) {
-                  return const Center(
-                    child: Text(AppTexts.noTrainingHistoryInSelectedPeriod),
-                  );
-                }
-
-                return ListView.builder(
-                  padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-                  itemCount: sessions.length,
-                  itemBuilder: (context, index) {
-                    return _buildSessionCard(sessions[index]);
-                  },
-                );
-              },
+          return ListView.separated(
+            padding: EdgeInsets.fromLTRB(
+              AppSpacing.screenPadding,
+              AppSpacing.screenPadding,
+              AppSpacing.screenPadding,
+              AppSpacing.xxl + MediaQuery.of(context).padding.bottom,
             ),
-          ),
-        ],
+            itemCount: sessions.isEmpty ? 2 : sessions.length + 1,
+            separatorBuilder: (context, index) =>
+                const SizedBox(height: AppSpacing.cardGap),
+            itemBuilder: (context, index) {
+              if (index == 0) {
+                return _buildFilters();
+              }
+
+              if (sessions.isEmpty) {
+                return const Padding(
+                  padding: EdgeInsets.all(AppSpacing.xl),
+                  child: Text(
+                    AppTexts.noTrainingHistoryInSelectedPeriod,
+                    textAlign: TextAlign.center,
+                  ),
+                );
+              }
+
+              return _buildSessionCard(sessions[index - 1]);
+            },
+          );
+        },
       ),
     );
   }

@@ -9,6 +9,9 @@
         android:label="Body Fit Club TT"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyCVJ6ugTz3_WxfY0R0RQDnGpOpL2Qau0_M"/>
         <activity
             android:name="com.yalantis.ucrop.UCropActivity"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>

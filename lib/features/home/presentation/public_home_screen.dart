@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_texts.dart';
 import '../../messages/presentation/latest_public_message_card.dart';
 
@@ -15,10 +16,10 @@ class PublicHomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(AppSpacing.screenPadding),
       children: [
         _buildNearestTrainingsCard(context),
-        const SizedBox(height: 12),
+        const SizedBox(height: AppSpacing.cardGap),
         _buildNewsCard(),
       ],
     );
@@ -102,15 +103,15 @@ class PublicHomeScreen extends StatelessWidget {
 
         return Card(
           child: InkWell(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(AppSpacing.cardInnerRadius),
             onTap: onOpenSchedule,
             child: Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(AppSpacing.screenPadding),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Icon(Icons.calendar_month_outlined),
-                  const SizedBox(width: 16),
+                  const SizedBox(width: AppSpacing.iconTextGap),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -119,10 +120,12 @@ class PublicHomeScreen extends StatelessWidget {
                           AppTexts.nearestTrainings,
                           style: Theme.of(context).textTheme.titleLarge,
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: AppSpacing.sm),
                         for (final training in trainings)
                           Padding(
-                            padding: const EdgeInsets.only(bottom: 4),
+                            padding: const EdgeInsets.only(
+                              bottom: AppSpacing.listBottomGap,
+                            ),
                             child: Text(
                               '${training.trainingName} - '
                               '${_formatPublicTrainingTime(training.startTime)}',

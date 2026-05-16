@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../../core/constants/app_roles.dart';
+import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_texts.dart';
 import 'schedule_templates_management_screen.dart';
 import 'add_training_session_screen.dart';
@@ -115,14 +116,19 @@ class ScheduleManagementScreen extends StatelessWidget {
     final isTrainer = role == AppRoles.trainer;
 
     final content = ListView(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.fromLTRB(
+        AppSpacing.screenPadding,
+        AppSpacing.screenPadding,
+        AppSpacing.screenPadding,
+        AppSpacing.xxl + MediaQuery.of(context).padding.bottom,
+      ),
       children: [
         Text(
           AppTexts.managementDescription,
           style: Theme.of(context).textTheme.bodyMedium,
           textAlign: TextAlign.center,
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: AppSpacing.xl),
 
         if (isAdmin || isTrainer) ...[
           _buildManagementButton(
@@ -131,7 +137,7 @@ class ScheduleManagementScreen extends StatelessWidget {
             label: AppTexts.attendanceManagement,
             onPressed: () => _openAttendanceScreen(context),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppSpacing.cardGap),
         ],
 
         if (isAdmin) ...[
@@ -141,7 +147,7 @@ class ScheduleManagementScreen extends StatelessWidget {
             label: AppTexts.trainingHistory,
             onPressed: () => _openTrainingHistoryScreen(context),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppSpacing.cardGap),
         ],
 
         if (isAdmin) ...[
@@ -151,7 +157,7 @@ class ScheduleManagementScreen extends StatelessWidget {
             label: AppTexts.usersManagement,
             onPressed: () => _openUsersManagementScreen(context),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppSpacing.cardGap),
         ],
 
         if (isAdmin || isTrainer) ...[
@@ -161,7 +167,7 @@ class ScheduleManagementScreen extends StatelessWidget {
             label: AppTexts.assignMembership,
             onPressed: () => _openAssignMembershipScreen(context),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppSpacing.cardGap),
         ],
 
         if (isAdmin) ...[
@@ -171,7 +177,7 @@ class ScheduleManagementScreen extends StatelessWidget {
             label: AppTexts.membershipsManagement,
             onPressed: () => _openMembershipsManagementScreen(context),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppSpacing.cardGap),
         ],
 
         if (isAdmin) ...[
@@ -181,7 +187,7 @@ class ScheduleManagementScreen extends StatelessWidget {
             label: AppTexts.auditLogs,
             onPressed: () => _openAuditLogsScreen(context),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppSpacing.cardGap),
         ],
 
         if (isAdmin) ...[
@@ -191,7 +197,7 @@ class ScheduleManagementScreen extends StatelessWidget {
             label: AppTexts.scheduleTemplatesManagement,
             onPressed: () => _openScheduleTemplatesManagementScreen(context),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppSpacing.cardGap),
         ],
 
         if (isAdmin || isTrainer) ...[
@@ -201,7 +207,7 @@ class ScheduleManagementScreen extends StatelessWidget {
             label: AppTexts.addTrainingSession,
             onPressed: () => _openAddTrainingSessionScreen(context),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppSpacing.cardGap),
         ],
 
         if (isAdmin) ...[

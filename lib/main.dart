@@ -7,15 +7,14 @@ import 'features/auth/presentation/complete_email_screen.dart';
 import 'firebase_options.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/app_texts.dart';
+import 'core/widgets/app_menu_button.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'features/auth/data/auth_service.dart';
-import 'features/auth/presentation/login_screen.dart';
 import 'features/auth/presentation/complete_profile_screen.dart';
 import 'features/home/presentation/public_home_screen.dart';
 import 'features/main/main_navigation_screen.dart';
 import 'features/schedule/presentation/public_schedule_screen.dart';
 import 'features/settings/data/settings_service.dart';
-import 'features/settings/presentation/settings_screen.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'features/messages/data/notification_service.dart';
@@ -227,6 +226,7 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final authService = AuthService();
+    final settingsService = SettingsService.instance;
 
     return StreamBuilder<User?>(
       stream: authService.authStateChanges,
@@ -238,37 +238,30 @@ class HomeScreen extends StatelessWidget {
           return ActiveUserGate(user: user, authService: authService);
         }
 
-        return Scaffold(
-          appBar: AppBar(
-            title: const Text(AppTexts.appName),
-            actions: [
-              IconButton(
-                tooltip: AppTexts.settings,
-                icon: const Icon(Icons.settings_outlined),
-                onPressed: () {
+        return AnimatedBuilder(
+          animation: settingsService,
+          builder: (context, _) {
+            const menuButton = AppMenuButton(
+              showLogin: true,
+              showLogout: false,
+            );
+            return Scaffold(
+              appBar: AppBar(
+                title: const Text(AppTexts.appName),
+                leading: settingsService.isRightHanded ? null : menuButton,
+                actions: settingsService.isRightHanded ? [menuButton] : null,
+              ),
+              body: PublicHomeScreen(
+                onOpenSchedule: () {
                   Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => const SettingsScreen()),
+                    MaterialPageRoute(
+                      builder: (_) => const PublicScheduleScreen(),
+                    ),
                   );
                 },
               ),
-              IconButton(
-                tooltip: AppTexts.login,
-                icon: const Icon(Icons.account_circle_outlined),
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => const LoginScreen()),
-                  );
-                },
-              ),
-            ],
-          ),
-          body: PublicHomeScreen(
-            onOpenSchedule: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const PublicScheduleScreen()),
-              );
-            },
-          ),
+            );
+          },
         );
       },
     );

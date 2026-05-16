@@ -2,11 +2,11 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import '../../../core/constants/app_roles.dart';
+import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_texts.dart';
 import '../../auth/data/auth_service.dart';
-import '../../../core/constants/app_roles.dart';
 import 'edit_profile_screen.dart';
-import '../../settings/presentation/settings_screen.dart';
 
 class ProfileTab extends StatelessWidget {
   const ProfileTab({super.key, required this.user});
@@ -53,7 +53,7 @@ class ProfileTab extends StatelessWidget {
             : AppTexts.profile;
 
         return ListView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(AppSpacing.screenPadding),
           children: [
             CircleAvatar(
               radius: 42,
@@ -83,14 +83,14 @@ class ProfileTab extends StatelessWidget {
                     : const Icon(Icons.person, size: 42),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.sectionGap),
             Center(
               child: Text(
                 visibleDisplayName,
                 style: Theme.of(context).textTheme.titleLarge,
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: AppSpacing.xl),
             Card(
               child: Column(
                 children: [
@@ -126,28 +126,16 @@ class ProfileTab extends StatelessWidget {
                       );
                     },
                   ),
-                  const Divider(height: 1),
-                  ListTile(
-                    leading: const Icon(Icons.settings_outlined),
-                    title: const Text(AppTexts.settings),
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => const SettingsScreen(),
-                        ),
-                      );
-                    },
-                  ),
                 ],
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.sectionGap),
             FilledButton.icon(
               onPressed: () async {
                 await AuthService().signOut();
               },
               icon: const Icon(Icons.logout),
-              label: const Text(AppTexts.logoutTooltip),
+              label: const Text(AppTexts.logout),
             ),
           ],
         );

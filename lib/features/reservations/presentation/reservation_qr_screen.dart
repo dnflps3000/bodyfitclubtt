@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_texts.dart';
 
 class ReservationQrScreen extends StatefulWidget {
@@ -91,12 +93,12 @@ class _ReservationQrScreenState extends State<ReservationQrScreen> {
       appBar: AppBar(title: const Text(AppTexts.reservationQrCode)),
       body: Center(
         child: Card(
-          margin: const EdgeInsets.all(24),
-          color: Colors.white,
+          margin: const EdgeInsets.all(AppSpacing.xl),
+          color: AppColors.qrBackground,
           child: Padding(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.all(AppSpacing.xl),
             child: DefaultTextStyle.merge(
-              style: const TextStyle(color: Colors.black87),
+              style: const TextStyle(color: AppColors.qrText),
               textAlign: TextAlign.center,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -105,27 +107,27 @@ class _ReservationQrScreenState extends State<ReservationQrScreen> {
                     widget.trainingName,
                     style: Theme.of(
                       context,
-                    ).textTheme.titleLarge?.copyWith(color: Colors.black87),
+                    ).textTheme.titleLarge?.copyWith(color: AppColors.qrText),
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppSpacing.sm),
                   Text(_formatDateTimeRange(), textAlign: TextAlign.center),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: AppSpacing.xl),
                   QrImageView(
                     data: qrData,
                     version: QrVersions.auto,
                     size: 240,
-                    backgroundColor: Colors.white,
+                    backgroundColor: AppColors.qrBackground,
                     eyeStyle: const QrEyeStyle(
                       eyeShape: QrEyeShape.square,
-                      color: Colors.black,
+                      color: AppColors.qrForeground,
                     ),
                     dataModuleStyle: const QrDataModuleStyle(
                       dataModuleShape: QrDataModuleShape.square,
-                      color: Colors.black,
+                      color: AppColors.qrForeground,
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: AppSpacing.xl),
                   const Text(
                     AppTexts.showQrToTrainer,
                     textAlign: TextAlign.center,

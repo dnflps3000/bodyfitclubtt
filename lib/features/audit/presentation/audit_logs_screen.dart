@@ -1,7 +1,6 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
-
+import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_texts.dart';
 import '../data/audit_log_service.dart';
 import '../domain/audit_log.dart';
@@ -156,9 +155,10 @@ class _AuditLogsScreenState extends State<AuditLogsScreen> {
           ),
           onChanged: _onSearchChanged,
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: AppSpacing.cardGap),
         DropdownButtonFormField<String>(
           initialValue: _selectedCategory,
+          isExpanded: true,
           decoration: const InputDecoration(labelText: AppTexts.auditCategory),
           items: const [
             DropdownMenuItem(
@@ -203,9 +203,10 @@ class _AuditLogsScreenState extends State<AuditLogsScreen> {
             _reloadLogs();
           },
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: AppSpacing.cardGap),
         DropdownButtonFormField<String>(
           initialValue: _selectedAction,
+          isExpanded: true,
           decoration: const InputDecoration(labelText: AppTexts.auditAction),
           items: const [
             DropdownMenuItem(value: '', child: Text(AppTexts.auditAllActions)),
@@ -374,9 +375,10 @@ class _AuditLogsScreenState extends State<AuditLogsScreen> {
             _reloadLogs();
           },
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: AppSpacing.cardGap),
         DropdownButtonFormField<String>(
           initialValue: _selectedActorRole,
+          isExpanded: true,
           decoration: const InputDecoration(labelText: AppTexts.auditActorRole),
           items: const [
             DropdownMenuItem(
@@ -395,9 +397,10 @@ class _AuditLogsScreenState extends State<AuditLogsScreen> {
             _reloadLogs();
           },
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: AppSpacing.cardGap),
         DropdownButtonFormField<String>(
           initialValue: _selectedPeriod,
+          isExpanded: true,
           decoration: const InputDecoration(labelText: AppTexts.auditPeriod),
           items: const [
             DropdownMenuItem(value: 'today', child: Text(AppTexts.today)),
@@ -417,7 +420,7 @@ class _AuditLogsScreenState extends State<AuditLogsScreen> {
             _reloadLogs();
           },
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: AppSpacing.cardGap),
         SizedBox(
           width: double.infinity,
           child: FilledButton.icon(
@@ -472,13 +475,14 @@ class _AuditLogsScreenState extends State<AuditLogsScreen> {
 
           return ListView.separated(
             padding: EdgeInsets.fromLTRB(
-              16,
-              16,
-              16,
-              32 + MediaQuery.of(context).padding.bottom,
+              AppSpacing.screenPadding,
+              AppSpacing.screenPadding,
+              AppSpacing.screenPadding,
+              AppSpacing.xxl + MediaQuery.of(context).padding.bottom,
             ),
             itemCount: logs.length + 1 + (hasStatusRow ? 1 : 0),
-            separatorBuilder: (context, index) => const SizedBox(height: 8),
+            separatorBuilder: (context, index) =>
+                const SizedBox(height: AppSpacing.sm),
             itemBuilder: (context, index) {
               if (index == 0) {
                 return _buildFilters();
@@ -487,14 +491,14 @@ class _AuditLogsScreenState extends State<AuditLogsScreen> {
               if (hasStatusRow && index == 1) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Padding(
-                    padding: EdgeInsets.all(24),
+                    padding: EdgeInsets.all(AppSpacing.xl),
                     child: Center(child: CircularProgressIndicator()),
                   );
                 }
 
                 if (snapshot.hasError) {
                   return const Padding(
-                    padding: EdgeInsets.all(24),
+                    padding: EdgeInsets.all(AppSpacing.xl),
                     child: Text(
                       AppTexts.auditLogsLoadError,
                       textAlign: TextAlign.center,
@@ -503,7 +507,7 @@ class _AuditLogsScreenState extends State<AuditLogsScreen> {
                 }
 
                 return const Padding(
-                  padding: EdgeInsets.all(24),
+                  padding: EdgeInsets.all(AppSpacing.xl),
                   child: Text(
                     AppTexts.noAuditLogs,
                     textAlign: TextAlign.center,

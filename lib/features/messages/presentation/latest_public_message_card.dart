@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_roles.dart';
+import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_texts.dart';
 import 'public_messages_screen.dart';
 
@@ -54,15 +55,15 @@ class LatestPublicMessageCard extends StatelessWidget {
   }) {
     return Card(
       child: InkWell(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppSpacing.cardInnerRadius),
         onTap: () => _openMessages(context),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(AppSpacing.cardPadding),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Icon(Icons.campaign_outlined),
-              const SizedBox(width: 16),
+              const SizedBox(width: AppSpacing.iconTextGap),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -71,7 +72,7 @@ class LatestPublicMessageCard extends StatelessWidget {
                       AppTexts.news,
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: AppSpacing.sm),
                     RichText(
                       maxLines: 3,
                       overflow: TextOverflow.ellipsis,
@@ -80,12 +81,11 @@ class LatestPublicMessageCard extends StatelessWidget {
                         children: [
                           TextSpan(
                             text: subtitle.split('\n').first,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w700,
-                            ),
+                            style: const TextStyle(fontWeight: FontWeight.w700),
                           ),
                           TextSpan(
-                            text: '\n${subtitle.split('\n').skip(1).join('\n')}',
+                            text:
+                                '\n${subtitle.split('\n').skip(1).join('\n')}',
                           ),
                         ],
                       ),

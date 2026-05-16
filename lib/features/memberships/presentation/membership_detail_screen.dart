@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_texts.dart';
 import '../data/membership_service.dart';
 import '../domain/membership.dart';
@@ -108,23 +109,23 @@ class _MembershipDetailScreenState extends State<MembershipDetailScreen> {
   }) {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppSpacing.cardPadding),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(title, style: Theme.of(context).textTheme.titleLarge),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.cardGap),
             if (items.isEmpty)
               Text(emptyText)
             else ...[
               for (final item in items)
                 Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
+                  padding: const EdgeInsets.only(bottom: AppSpacing.sm),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Icon(Icons.fitness_center_outlined, size: 20),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: AppSpacing.smallIconTextGap),
                       Expanded(
                         child: Text(
                           '${_formatDateTime(item.startTime)} – '
@@ -132,7 +133,7 @@ class _MembershipDetailScreenState extends State<MembershipDetailScreen> {
                         ),
                       ),
                       if (canCancelItems) ...[
-                        const SizedBox(width: 8),
+                        const SizedBox(width: AppSpacing.smallIconTextGap),
                         TextButton(
                           onPressed: _isSaving
                               ? null
@@ -144,7 +145,7 @@ class _MembershipDetailScreenState extends State<MembershipDetailScreen> {
                   ),
                 ),
               if (canCancelItems) ...[
-                const SizedBox(height: 8),
+                const SizedBox(height: AppSpacing.sm),
                 SizedBox(
                   width: double.infinity,
                   child: FilledButton.icon(
@@ -432,15 +433,15 @@ class _MembershipDetailScreenState extends State<MembershipDetailScreen> {
         absorbing: _isSaving,
         child: ListView(
           padding: EdgeInsets.fromLTRB(
-            16,
-            16,
-            16,
-            32 + MediaQuery.of(context).padding.bottom,
+            AppSpacing.screenPadding,
+            AppSpacing.screenPadding,
+            AppSpacing.screenPadding,
+            AppSpacing.xxl + MediaQuery.of(context).padding.bottom,
           ),
           children: [
             Card(
               child: Padding(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(AppSpacing.cardPadding),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -448,7 +449,7 @@ class _MembershipDetailScreenState extends State<MembershipDetailScreen> {
                       membership.planName,
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: AppSpacing.cardGap),
                     Text('${AppTexts.status}: $displayStatusLabel'),
                     Text(
                       '${AppTexts.validFrom}: ${_formatDate(membership.validFrom)}',
@@ -456,7 +457,7 @@ class _MembershipDetailScreenState extends State<MembershipDetailScreen> {
                     Text(
                       '${AppTexts.validUntil}: ${_formatDate(membership.validUntil)}',
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: AppSpacing.cardGap),
                     Text('${AppTexts.entriesTotal}: ${entriesTotal ?? '-'}'),
                     Text(
                       '${AppTexts.entriesRemaining}: ${entriesRemainingValue ?? '-'}',
@@ -467,14 +468,14 @@ class _MembershipDetailScreenState extends State<MembershipDetailScreen> {
                 ),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.sectionGap),
             FutureBuilder<MembershipUsageSummary>(
               future: _usageFuture,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Card(
                     child: Padding(
-                      padding: EdgeInsets.all(16),
+                      padding: EdgeInsets.all(AppSpacing.cardPadding),
                       child: Center(child: CircularProgressIndicator()),
                     ),
                   );
@@ -483,7 +484,7 @@ class _MembershipDetailScreenState extends State<MembershipDetailScreen> {
                 if (snapshot.hasError) {
                   return const Card(
                     child: Padding(
-                      padding: EdgeInsets.all(16),
+                      padding: EdgeInsets.all(AppSpacing.cardPadding),
                       child: Text(AppTexts.membershipUsageLoadError),
                     ),
                   );
@@ -504,7 +505,7 @@ class _MembershipDetailScreenState extends State<MembershipDetailScreen> {
                       items: usage.allocatedReservations,
                       canCancelItems: widget.isAdmin,
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: AppSpacing.sectionGap),
                     _buildUsageCard(
                       context: context,
                       title: AppTexts.usedEntries,
@@ -516,10 +517,10 @@ class _MembershipDetailScreenState extends State<MembershipDetailScreen> {
               },
             ),
             if (widget.isAdmin) ...[
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.sectionGap),
               Card(
                 child: Padding(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(AppSpacing.cardPadding),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
@@ -527,7 +528,7 @@ class _MembershipDetailScreenState extends State<MembershipDetailScreen> {
                         AppTexts.adminMembershipEdit,
                         style: Theme.of(context).textTheme.titleLarge,
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: AppSpacing.cardGap),
                       DropdownButtonFormField<String>(
                         initialValue: _selectedStatus,
                         decoration: const InputDecoration(
@@ -556,7 +557,7 @@ class _MembershipDetailScreenState extends State<MembershipDetailScreen> {
                         },
                       ),
                       if (membership.entriesTotal != null) ...[
-                        const SizedBox(height: 12),
+                        const SizedBox(height: AppSpacing.cardGap),
                         TextField(
                           controller: _entriesRemainingController,
                           keyboardType: TextInputType.number,
@@ -566,7 +567,7 @@ class _MembershipDetailScreenState extends State<MembershipDetailScreen> {
                           ),
                         ),
                       ],
-                      const SizedBox(height: 16),
+                      const SizedBox(height: AppSpacing.sectionGap),
                       FilledButton.icon(
                         onPressed: _isSaving ? null : _saveAdminChanges,
                         icon: const Icon(Icons.save_outlined),

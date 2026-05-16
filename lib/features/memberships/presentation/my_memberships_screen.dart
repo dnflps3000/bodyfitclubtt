@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_texts.dart';
 import '../../../core/constants/membership_constants.dart';
 import '../../payment/presentation/payment_screen.dart';
@@ -55,13 +56,14 @@ class MyMembershipsScreen extends StatelessWidget {
 
           return ListView.separated(
             padding: EdgeInsets.fromLTRB(
-              16,
-              16,
-              16,
-              24 + MediaQuery.of(context).padding.bottom,
+              AppSpacing.screenPadding,
+              AppSpacing.screenPadding,
+              AppSpacing.screenPadding,
+              AppSpacing.xl + MediaQuery.of(context).padding.bottom,
             ),
             itemCount: memberships.length + 1,
-            separatorBuilder: (context, index) => const SizedBox(height: 8),
+            separatorBuilder: (context, index) =>
+                const SizedBox(height: AppSpacing.sm),
             itemBuilder: (context, index) {
               if (index == 0) {
                 return Column(
@@ -82,7 +84,7 @@ class MyMembershipsScreen extends StatelessWidget {
                       icon: const Icon(Icons.card_membership),
                       label: const Text(AppTexts.buyMembership),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: AppSpacing.sm),
                     OutlinedButton.icon(
                       onPressed: () {
                         Navigator.push(
@@ -100,10 +102,10 @@ class MyMembershipsScreen extends StatelessWidget {
                       label: const Text(AppTexts.buySingleEntry),
                     ),
                     if (memberships.isEmpty) ...[
-                      const SizedBox(height: 16),
+                      const SizedBox(height: AppSpacing.sectionGap),
                       const Card(
                         child: Padding(
-                          padding: EdgeInsets.all(16),
+                          padding: EdgeInsets.all(AppSpacing.cardPadding),
                           child: Text(AppTexts.noMemberships),
                         ),
                       ),

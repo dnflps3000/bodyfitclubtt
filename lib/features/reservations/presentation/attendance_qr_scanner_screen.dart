@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_texts.dart';
 import '../data/reservation_service.dart';
 
@@ -84,13 +86,15 @@ class _AttendanceQrScannerScreenState extends State<AttendanceQrScannerScreen> {
             Expanded(
               child: Center(
                 child: Padding(
-                  padding: const EdgeInsets.all(24),
+                  padding: const EdgeInsets.all(AppSpacing.xl),
                   child: AspectRatio(
                     aspectRatio: 1,
                     child: Stack(
                       children: [
                         ClipRRect(
-                          borderRadius: BorderRadius.circular(24),
+                          borderRadius: BorderRadius.circular(
+                            AppSpacing.cardRadius,
+                          ),
                           child: MobileScanner(
                             onDetect: (capture) {
                               final barcodes = capture.barcodes;
@@ -112,16 +116,23 @@ class _AttendanceQrScannerScreenState extends State<AttendanceQrScannerScreen> {
                         IgnorePointer(
                           child: Container(
                             decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(24),
-                              border: Border.all(color: Colors.white, width: 4),
+                              borderRadius: BorderRadius.circular(
+                                AppSpacing.cardRadius,
+                              ),
+                              border: Border.all(
+                                color: AppColors.qrScannerBorder,
+                                width: 4,
+                              ),
                             ),
                           ),
                         ),
                         if (_isProcessing)
                           Container(
                             decoration: BoxDecoration(
-                              color: Colors.black54,
-                              borderRadius: BorderRadius.circular(24),
+                              color: AppColors.qrScannerOverlay,
+                              borderRadius: BorderRadius.circular(
+                                AppSpacing.cardRadius,
+                              ),
                             ),
                             child: const Center(
                               child: CircularProgressIndicator(),
@@ -134,7 +145,12 @@ class _AttendanceQrScannerScreenState extends State<AttendanceQrScannerScreen> {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.screenPadding,
+                0,
+                AppSpacing.screenPadding,
+                AppSpacing.xl,
+              ),
               child: Text(
                 AppTexts.scanQrCodeHint,
                 textAlign: TextAlign.center,

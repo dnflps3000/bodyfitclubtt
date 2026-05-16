@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_roles.dart';
+import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_texts.dart';
 import '../data/schedule_service.dart';
 import '../domain/schedule_template.dart';
@@ -265,7 +266,7 @@ class _ScheduleTemplatesManagementScreenState
                       onChanged: isDialogSaving ? null : selectTrainingType,
                       hint: const Text(AppTexts.selectTrainingType),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: AppSpacing.cardGap),
                     DropdownButtonFormField<String>(
                       initialValue: selectedTrainerId,
                       decoration: const InputDecoration(
@@ -286,7 +287,7 @@ class _ScheduleTemplatesManagementScreenState
                             },
                       hint: const Text(AppTexts.selectTrainer),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: AppSpacing.cardGap),
                     DropdownButtonFormField<int>(
                       initialValue: selectedWeekday,
                       decoration: const InputDecoration(
@@ -309,13 +310,13 @@ class _ScheduleTemplatesManagementScreenState
                             },
                       hint: const Text(AppTexts.selectWeekday),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: AppSpacing.cardGap),
                     OutlinedButton.icon(
                       onPressed: isDialogSaving ? null : pickTime,
                       icon: const Icon(Icons.access_time),
                       label: Text(formattedTime),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: AppSpacing.cardGap),
                     TextFormField(
                       initialValue: durationText,
                       enabled: !isDialogSaving,
@@ -328,7 +329,7 @@ class _ScheduleTemplatesManagementScreenState
                         durationText = value;
                       },
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: AppSpacing.cardGap),
                     TextFormField(
                       initialValue: capacityText,
                       enabled: !isDialogSaving,
@@ -534,7 +535,7 @@ class _ScheduleTemplatesManagementScreenState
                   if (templates.isEmpty) {
                     return const Center(
                       child: Padding(
-                        padding: EdgeInsets.all(24),
+                        padding: EdgeInsets.all(AppSpacing.xl),
                         child: Text(
                           AppTexts.noScheduleTemplates,
                           textAlign: TextAlign.center,
@@ -544,10 +545,15 @@ class _ScheduleTemplatesManagementScreenState
                   }
 
                   return ListView.separated(
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 112),
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.screenPadding,
+                      AppSpacing.screenPadding,
+                      AppSpacing.screenPadding,
+                      AppSpacing.floatingActionButtonListBottomPadding,
+                    ),
                     itemCount: templates.length,
                     separatorBuilder: (context, index) =>
-                        const SizedBox(height: 8),
+                        const SizedBox(height: AppSpacing.sm),
                     itemBuilder: (context, index) {
                       return _buildTemplateCard(
                         template: templates[index],

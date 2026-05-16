@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_texts.dart';
 import '../data/schedule_service.dart';
 
@@ -106,21 +107,21 @@ class _AddTrainingTypeScreenState extends State<AddTrainingTypeScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text(AppTexts.addTrainingType)),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppSpacing.screenPadding),
         children: [
           TextField(
             controller: _nameController,
             enabled: !_isSaving,
             decoration: const InputDecoration(labelText: AppTexts.trainingName),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppSpacing.cardGap),
           TextField(
             controller: _descriptionController,
             enabled: !_isSaving,
             maxLines: 3,
             decoration: const InputDecoration(labelText: AppTexts.description),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppSpacing.cardGap),
           TextField(
             controller: _durationController,
             enabled: !_isSaving,
@@ -130,7 +131,7 @@ class _AddTrainingTypeScreenState extends State<AddTrainingTypeScreen> {
               suffixText: AppTexts.minutes,
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppSpacing.cardGap),
           TextField(
             controller: _capacityController,
             enabled: !_isSaving,
@@ -139,7 +140,7 @@ class _AddTrainingTypeScreenState extends State<AddTrainingTypeScreen> {
               labelText: AppTexts.defaultCapacity,
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: AppSpacing.xl),
           FilledButton(
             onPressed: _isSaving ? null : _saveTrainingType,
             child: _isSaving

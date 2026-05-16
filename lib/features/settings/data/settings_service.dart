@@ -7,16 +7,24 @@ class SettingsService extends ChangeNotifier {
   static final SettingsService instance = SettingsService._();
 
   static const String _themeModeKey = 'theme_mode';
+  static const String _menuPositionKey = 'menu_position';
 
   ThemeMode _themeMode = ThemeMode.system;
 
   ThemeMode get themeMode => _themeMode;
 
+  bool _isRightHanded = true;
+
+  bool get isRightHanded => _isRightHanded;
+
   Future<void> load() async {
     final preferences = await SharedPreferences.getInstance();
     final savedThemeMode = preferences.getString(_themeModeKey);
+    final savedMenuPosition = preferences.getBool(_menuPositionKey);
 
     _themeMode = _themeModeFromString(savedThemeMode);
+    _isRightHanded = savedMenuPosition ?? true;
+
     notifyListeners();
   }
 
@@ -26,6 +34,14 @@ class SettingsService extends ChangeNotifier {
 
     final preferences = await SharedPreferences.getInstance();
     await preferences.setString(_themeModeKey, _themeModeToString(themeMode));
+  }
+
+  Future<void> setIsRightHanded(bool value) async {
+    _isRightHanded = value;
+    notifyListeners();
+
+    final preferences = await SharedPreferences.getInstance();
+    await preferences.setBool(_menuPositionKey, value);
   }
 
   ThemeMode _themeModeFromString(String? value) {

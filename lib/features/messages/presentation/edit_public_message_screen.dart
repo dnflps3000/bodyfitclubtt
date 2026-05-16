@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_roles.dart';
+import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_texts.dart';
 import '../../audit/data/audit_log_service.dart';
 
@@ -167,7 +168,7 @@ class _EditPublicMessageScreenState extends State<EditPublicMessageScreen> {
       body: AbsorbPointer(
         absorbing: _isSaving,
         child: ListView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(AppSpacing.screenPadding),
           children: [
             TextField(
               controller: _textController,
@@ -182,7 +183,7 @@ class _EditPublicMessageScreenState extends State<EditPublicMessageScreen> {
                 alignLabelWithHint: true,
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: AppSpacing.xl),
             FilledButton.icon(
               onPressed: _isSaving ? null : _saveMessage,
               icon: _isSaving

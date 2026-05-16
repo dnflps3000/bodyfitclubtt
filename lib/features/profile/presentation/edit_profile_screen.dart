@@ -6,6 +6,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:image_cropper/image_cropper.dart';
+import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_texts.dart';
 import '../../audit/data/audit_log_service.dart';
 
@@ -557,15 +558,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       body: AbsorbPointer(
         absorbing: _saving,
         child: ListView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(AppSpacing.screenPadding),
           children: [
             _buildProfilePhoto(),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.cardGap),
             const Center(child: Text(AppTexts.changeProfilePhoto)),
-            const SizedBox(height: 24),
+            const SizedBox(height: AppSpacing.xl),
             Card(
               child: Padding(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(AppSpacing.cardPadding),
                 child: Form(
                   key: _formKey,
                   child: Column(
@@ -578,7 +579,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           prefixIcon: Icon(Icons.person_outline),
                         ),
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: AppSpacing.sectionGap),
                       TextFormField(
                         controller: _lastNameController,
                         textInputAction: TextInputAction.done,
@@ -588,7 +589,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         ),
                         onFieldSubmitted: (_) => _saveProfile(),
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: AppSpacing.sectionGap),
                       TextFormField(
                         controller: _publicNameController,
                         textInputAction: TextInputAction.next,
@@ -603,7 +604,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 ),
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: AppSpacing.xl),
             FilledButton.icon(
               onPressed: _saving ? null : _saveProfile,
               icon: _saving

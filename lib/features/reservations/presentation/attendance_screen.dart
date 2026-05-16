@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_texts.dart';
 import '../../../core/widgets/day_card_selector.dart';
 import '../data/reservation_service.dart';
@@ -252,7 +253,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   Widget _buildReservationCard(_AttendanceReservation reservation) {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppSpacing.cardPadding),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -261,14 +262,14 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
               style: Theme.of(context).textTheme.titleMedium,
             ),
             if (reservation.userEmail.isNotEmpty) ...[
-              const SizedBox(height: 4),
+              const SizedBox(height: AppSpacing.xs),
               Text(reservation.userEmail),
             ],
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.sm),
             Text(reservation.trainingName),
-            const SizedBox(height: 4),
+            const SizedBox(height: AppSpacing.xs),
             Text(_formatDateTime(reservation.startTime)),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.sectionGap),
             Row(
               children: [
                 Expanded(
@@ -278,7 +279,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                     label: const Text(AppTexts.attended),
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: AppSpacing.cardGap),
                 Expanded(
                   child: OutlinedButton.icon(
                     onPressed: () => _confirmMarkAttendance(reservation, false),
@@ -321,7 +322,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   Widget _buildEmptyAttendanceState() {
     return const Center(
       child: Padding(
-        padding: EdgeInsets.all(24),
+        padding: EdgeInsets.all(AppSpacing.xl),
         child: Text(
           AppTexts.noActiveReservationsForAttendance,
           textAlign: TextAlign.center,
@@ -419,10 +420,12 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                           }
 
                           return ListView.separated(
-                            padding: const EdgeInsets.all(16),
+                            padding: const EdgeInsets.all(
+                              AppSpacing.screenPadding,
+                            ),
                             itemCount: reservations.length,
                             separatorBuilder: (context, index) =>
-                                const SizedBox(height: 12),
+                                const SizedBox(height: AppSpacing.cardGap),
                             itemBuilder: (context, index) {
                               return _buildReservationCard(reservations[index]);
                             },

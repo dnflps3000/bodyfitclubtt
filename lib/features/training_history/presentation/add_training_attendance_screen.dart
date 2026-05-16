@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_texts.dart';
 import '../data/training_history_service.dart';
 
@@ -180,7 +181,7 @@ class _AddTrainingAttendanceScreenState
         if (memberships.isEmpty) {
           return const Card(
             child: Padding(
-              padding: EdgeInsets.all(16),
+              padding: EdgeInsets.all(AppSpacing.cardPadding),
               child: Text(AppTexts.noUsableMembershipsForAttendance),
             ),
           );
@@ -255,12 +256,12 @@ class _AddTrainingAttendanceScreenState
           }
 
           return ListView(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(AppSpacing.screenPadding),
             children: [
               _buildUserDropdown(users),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.sectionGap),
               _buildMembershipDropdown(),
-              const SizedBox(height: 24),
+              const SizedBox(height: AppSpacing.xl),
               FilledButton.icon(
                 onPressed: _isSaving ? null : _save,
                 icon: _isSaving

@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_roles.dart';
+import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_texts.dart';
 import '../data/schedule_service.dart';
 import '../domain/training_type.dart';
@@ -282,7 +283,7 @@ class _AddTrainingSessionScreenState extends State<AddTrainingSessionScreen> {
 
         if (trainerSnapshot.connectionState == ConnectionState.waiting) {
           return const Padding(
-            padding: EdgeInsets.symmetric(vertical: 12),
+            padding: EdgeInsets.symmetric(vertical: AppSpacing.cardGap),
             child: LinearProgressIndicator(),
           );
         }
@@ -366,7 +367,7 @@ class _AddTrainingSessionScreenState extends State<AddTrainingSessionScreen> {
               }
 
               return ListView(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(AppSpacing.screenPadding),
                 children: [
                   DropdownButtonFormField<String>(
                     initialValue: _selectedTrainingTypeId,
@@ -387,10 +388,10 @@ class _AddTrainingSessionScreenState extends State<AddTrainingSessionScreen> {
                     hint: const Text(AppTexts.selectTrainingType),
                   ),
                   if (isAdmin) ...[
-                    const SizedBox(height: 12),
+                    const SizedBox(height: AppSpacing.cardGap),
                     _buildTrainerDropdown(),
                   ],
-                  const SizedBox(height: 12),
+                  const SizedBox(height: AppSpacing.cardGap),
                   TextField(
                     controller: _durationController,
                     enabled: !_isSaving,
@@ -400,7 +401,7 @@ class _AddTrainingSessionScreenState extends State<AddTrainingSessionScreen> {
                       suffixText: AppTexts.minutes,
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: AppSpacing.cardGap),
                   TextField(
                     controller: _capacityController,
                     enabled: !_isSaving,
@@ -409,19 +410,19 @@ class _AddTrainingSessionScreenState extends State<AddTrainingSessionScreen> {
                       labelText: AppTexts.capacity,
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: AppSpacing.cardGap),
                   OutlinedButton.icon(
                     onPressed: _isSaving ? null : _pickDate,
                     icon: const Icon(Icons.calendar_month_outlined),
                     label: Text(_formatDate(_selectedDate)),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: AppSpacing.cardGap),
                   OutlinedButton.icon(
                     onPressed: _isSaving ? null : _pickTime,
                     icon: const Icon(Icons.access_time),
                     label: Text(_formatTime(_selectedTime)),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: AppSpacing.xl),
                   FilledButton(
                     onPressed: _isSaving
                         ? null

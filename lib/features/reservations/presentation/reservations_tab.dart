@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_texts.dart';
 import '../data/reservation_service.dart';
 import 'reservation_qr_screen.dart';
@@ -264,16 +265,17 @@ class ReservationsTab extends StatelessWidget {
             }
 
             return ListView.separated(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(AppSpacing.screenPadding),
               itemCount: reservations.length,
-              separatorBuilder: (context, index) => const SizedBox(height: 12),
+              separatorBuilder: (context, index) =>
+                  const SizedBox(height: AppSpacing.cardGap),
               itemBuilder: (context, index) {
                 final reservation = reservations[index];
                 final canShowQrCode = _canShowQrCode(reservation, reservations);
 
                 return Card(
                   child: Padding(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.all(AppSpacing.cardPadding),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -296,15 +298,15 @@ class ReservationsTab extends StatelessWidget {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: AppSpacing.sm),
                         Text(
                           '${_formatDateTime(reservation.startTime)} - '
                           '${_formatTime(reservation.endTime)}',
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: AppSpacing.sm),
                         Text('${AppTexts.trainer}: ${reservation.trainerName}'),
                         if (canShowQrCode) ...[
-                          const SizedBox(height: 16),
+                          const SizedBox(height: AppSpacing.sectionGap),
                           Align(
                             alignment: Alignment.centerRight,
                             child: OutlinedButton.icon(

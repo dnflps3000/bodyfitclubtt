@@ -3,11 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../core/constants/app_roles.dart';
 import '../../core/theme/app_texts.dart';
+import '../../core/widgets/app_bottom_navigation_bar.dart';
+import '../../core/widgets/app_menu_button.dart';
 import '../home/presentation/home_tab.dart';
 import '../profile/presentation/profile_tab.dart';
 import '../reservations/presentation/reservations_tab.dart';
 import '../schedule/presentation/schedule_tab.dart';
 import '../schedule/presentation/schedule_management_screen.dart';
+import '../settings/data/settings_service.dart';
 import '../memberships/presentation/my_memberships_screen.dart';
 
 class MainNavigationScreen extends StatefulWidget {
@@ -102,53 +105,47 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<String?>(
-      stream: _watchCurrentUserRole(),
-      builder: (context, roleSnapshot) {
-        final role = roleSnapshot.data;
-        final isManager = role == AppRoles.admin || role == AppRoles.trainer;
-        final titles = _buildTitles(role);
-        final tabs = _buildTabs(role);
+    final settingsService = SettingsService.instance;
 
-        return Scaffold(
-          appBar: AppBar(title: Text(titles[_selectedIndex])),
-          body: tabs[_selectedIndex],
-          bottomNavigationBar: NavigationBar(
-            selectedIndex: _selectedIndex,
-            onDestinationSelected: (index) {
-              setState(() {
-                _selectedIndex = index;
-              });
-            },
-            destinations: [
-              const NavigationDestination(
-                icon: Icon(Icons.home_outlined),
-                selectedIcon: Icon(Icons.home),
-                label: AppTexts.home,
+    return AnimatedBuilder(
+      animation: settingsService,
+      builder: (context, _) {
+        return StreamBuilder<String?>(
+          stream: _watchCurrentUserRole(),
+          builder: (context, roleSnapshot) {
+            final role = roleSnapshot.data;
+            final isManager =
+                role == AppRoles.admin || role == AppRoles.trainer;
+            final titles = _buildTitles(role);
+            final tabs = _buildTabs(role);
+            final safeSelectedIndex = _selectedIndex >= tabs.length
+                ? 0
+                : _selectedIndex;
+            final menuButton = AppMenuButton(
+              showLogin: false,
+              showLogout: true,
+              onLogout: () async {
+                await FirebaseAuth.instance.signOut();
+              },
+            );
+            return Scaffold(
+              appBar: AppBar(
+                title: Text(titles[safeSelectedIndex]),
+                leading: settingsService.isRightHanded ? null : menuButton,
+                actions: settingsService.isRightHanded ? [menuButton] : null,
               ),
-              const NavigationDestination(
-                icon: Icon(Icons.calendar_month_outlined),
-                selectedIcon: Icon(Icons.calendar_month),
-                label: AppTexts.schedule,
+              body: tabs[safeSelectedIndex],
+              bottomNavigationBar: AppBottomNavigationBar(
+                selectedIndex: safeSelectedIndex,
+                isManager: isManager,
+                onDestinationSelected: (index) {
+                  setState(() {
+                    _selectedIndex = index;
+                  });
+                },
               ),
-              NavigationDestination(
-                icon: const Icon(Icons.event_note_outlined),
-                selectedIcon: const Icon(Icons.event_note),
-                label: isManager ? AppTexts.management : AppTexts.reservations,
-              ),
-              if (!isManager)
-                const NavigationDestination(
-                  icon: Icon(Icons.card_membership_outlined),
-                  selectedIcon: Icon(Icons.card_membership),
-                  label: AppTexts.memberships,
-                ),
-              const NavigationDestination(
-                icon: Icon(Icons.person_outline),
-                selectedIcon: Icon(Icons.person),
-                label: AppTexts.profile,
-              ),
-            ],
-          ),
+            );
+          },
         );
       },
     );

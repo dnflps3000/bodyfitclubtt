@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../theme/app_colors.dart';
+import '../theme/app_spacing.dart';
 import '../theme/app_texts.dart';
 
 class DayCardSelector extends StatefulWidget {
@@ -65,9 +67,9 @@ class _DayCardSelectorState extends State<DayCardSelector> {
       return;
     }
 
-    const cardWidth = 104.0;
-    const separatorWidth = 10.0;
-    const horizontalPadding = 16.0;
+    const cardWidth = AppSpacing.dayCardWidth;
+    const separatorWidth = AppSpacing.dayCardSeparatorWidth;
+    const horizontalPadding = AppSpacing.screenPadding;
 
     final viewportWidth = _scrollController.position.viewportDimension;
     final itemCenter =
@@ -92,13 +94,19 @@ class _DayCardSelectorState extends State<DayCardSelector> {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 92,
+      height: AppSpacing.dayCardHeight,
       child: ListView.separated(
         controller: _scrollController,
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.screenPadding,
+          AppSpacing.dayCardListVerticalPadding,
+          AppSpacing.screenPadding,
+          AppSpacing.dayCardListVerticalPadding,
+        ),
         scrollDirection: Axis.horizontal,
         itemCount: widget.days.length,
-        separatorBuilder: (context, index) => const SizedBox(width: 10),
+        separatorBuilder: (context, index) =>
+            const SizedBox(width: AppSpacing.dayCardSeparatorWidth),
         itemBuilder: (context, index) {
           final day = widget.days[index];
           final isSelected = _isSameDate(day, widget.selectedDate);
@@ -138,17 +146,20 @@ class _DayCard extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     return InkWell(
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(AppSpacing.mediumRadius),
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
-        width: 104,
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+        width: AppSpacing.dayCardWidth,
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.dayCardHorizontalPadding,
+          vertical: AppSpacing.dayCardVerticalPadding,
+        ),
         decoration: BoxDecoration(
           color: isSelected
               ? colorScheme.primary.withValues(alpha: 0.18)
               : colorScheme.surface,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AppSpacing.mediumRadius),
           border: Border.all(
             color: isSelected
                 ? colorScheme.primary.withValues(alpha: 0.45)
@@ -156,7 +167,7 @@ class _DayCard extends StatelessWidget {
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.07),
+              color: AppColors.shadow,
               blurRadius: 8,
               offset: const Offset(0, 3),
             ),
@@ -174,7 +185,7 @@ class _DayCard extends StatelessWidget {
                 color: isSelected ? colorScheme.primary : null,
               ),
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: AppSpacing.dayCardTextGap),
             Text(
               _formatDate(date),
               style: Theme.of(

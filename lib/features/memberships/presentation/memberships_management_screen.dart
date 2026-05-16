@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_texts.dart';
 import '../data/membership_service.dart';
 import '../domain/membership.dart';
@@ -225,7 +226,7 @@ class _MembershipsManagementScreenState
           ),
           onChanged: _onSearchChanged,
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: AppSpacing.cardGap),
         DropdownButtonFormField<String>(
           initialValue: _selectedStatusFilter,
           decoration: const InputDecoration(labelText: AppTexts.status),
@@ -337,13 +338,14 @@ class _MembershipsManagementScreenState
 
               return ListView.separated(
                 padding: EdgeInsets.fromLTRB(
-                  16,
-                  16,
-                  16,
-                  32 + MediaQuery.of(context).padding.bottom,
+                  AppSpacing.screenPadding,
+                  AppSpacing.screenPadding,
+                  AppSpacing.screenPadding,
+                  AppSpacing.xxl + MediaQuery.of(context).padding.bottom,
                 ),
                 itemCount: memberships.length + 1,
-                separatorBuilder: (context, index) => const SizedBox(height: 8),
+                separatorBuilder: (context, index) =>
+                    const SizedBox(height: AppSpacing.sm),
                 itemBuilder: (context, index) {
                   if (index == 0) {
                     return _buildFilters();
@@ -351,7 +353,7 @@ class _MembershipsManagementScreenState
 
                   if (memberships.isEmpty) {
                     return const Padding(
-                      padding: EdgeInsets.all(24),
+                      padding: EdgeInsets.all(AppSpacing.xl),
                       child: Text(
                         AppTexts.noMemberships,
                         textAlign: TextAlign.center,

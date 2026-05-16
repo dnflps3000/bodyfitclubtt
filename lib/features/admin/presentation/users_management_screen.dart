@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_roles.dart';
+import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_texts.dart';
 import '../../audit/data/audit_log_service.dart';
 import '../../memberships/presentation/memberships_management_screen.dart';
@@ -597,8 +598,8 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
             return AlertDialog(
               scrollable: true,
               insetPadding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 16,
+                horizontal: AppSpacing.screenPadding,
+                vertical: AppSpacing.screenPadding,
               ),
               title: const Text(AppTexts.editUser),
               content: SingleChildScrollView(
@@ -615,7 +616,7 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
                         firstName = value;
                       },
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: AppSpacing.cardGap),
                     TextFormField(
                       initialValue: lastName,
                       enabled: !isSaving,
@@ -626,7 +627,7 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
                         lastName = value;
                       },
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: AppSpacing.cardGap),
                     TextFormField(
                       initialValue: publicName,
                       enabled: !isSaving,
@@ -638,7 +639,7 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
                         publicName = value;
                       },
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: AppSpacing.cardGap),
                     TextFormField(
                       initialValue: email,
                       enabled: !isSaving,
@@ -650,7 +651,7 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
                         email = value;
                       },
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: AppSpacing.cardGap),
                     DropdownButtonFormField<String>(
                       initialValue: selectedRole,
                       decoration: const InputDecoration(
@@ -681,13 +682,13 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
                             },
                     ),
                     if (isCurrentUser) ...[
-                      const SizedBox(height: 8),
+                      const SizedBox(height: AppSpacing.sm),
                       const Text(
                         AppTexts.cannotChangeOwnRole,
                         textAlign: TextAlign.center,
                       ),
                     ] else ...[
-                      const SizedBox(height: 8),
+                      const SizedBox(height: AppSpacing.sm),
                       const Text(
                         AppTexts.changeRoleWarning,
                         textAlign: TextAlign.center,
@@ -738,7 +739,7 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
           ),
           onChanged: _onSearchChanged,
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: AppSpacing.cardGap),
         DropdownButtonFormField<String>(
           initialValue: _selectedRoleFilter,
           decoration: const InputDecoration(labelText: AppTexts.role),
@@ -773,7 +774,7 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
 
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppSpacing.cardPadding),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
@@ -788,7 +789,7 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
                   : null,
               child: hasPhoto ? null : const Icon(Icons.person),
             ),
-            const SizedBox(width: 16),
+            const SizedBox(width: AppSpacing.iconTextGap),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -798,13 +799,13 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                   if (user.email.isNotEmpty) ...[
-                    const SizedBox(height: 4),
+                    const SizedBox(height: AppSpacing.xs),
                     Text(user.email),
                   ],
-                  const SizedBox(height: 4),
+                  const SizedBox(height: AppSpacing.xs),
                   Text(
                     '${AppTexts.role}: ${_roleLabel(user.role)}'
-                    '${isCurrentUser ? ' • vy' : ''}'
+                    '${isCurrentUser ? ' • ${AppTexts.currentUserShort}' : ''}'
                     '${!user.isActive ? ' • ${AppTexts.inactiveUser}' : ''}',
                   ),
                 ],
@@ -857,13 +858,14 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
 
           return ListView.separated(
             padding: EdgeInsets.fromLTRB(
-              16,
-              16,
-              16,
-              32 + MediaQuery.of(context).padding.bottom,
+              AppSpacing.screenPadding,
+              AppSpacing.screenPadding,
+              AppSpacing.screenPadding,
+              AppSpacing.xxl + MediaQuery.of(context).padding.bottom,
             ),
             itemCount: users.isEmpty ? 2 : users.length + 1,
-            separatorBuilder: (context, index) => const SizedBox(height: 8),
+            separatorBuilder: (context, index) =>
+                const SizedBox(height: AppSpacing.sm),
             itemBuilder: (context, index) {
               if (index == 0) {
                 return _buildFilters();

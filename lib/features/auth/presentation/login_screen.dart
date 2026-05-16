@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_texts.dart';
 import '../data/auth_service.dart';
 
@@ -184,7 +185,7 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
       body: Center(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(AppSpacing.xl),
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 420),
             child: Column(
@@ -201,7 +202,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   icon: Image.asset('assets/auth/google.png', height: 22),
                   label: const Text(AppTexts.continueWithGoogle),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: AppSpacing.cardGap),
                 ElevatedButton.icon(
                   onPressed: _isLoading
                       ? null
@@ -212,18 +213,20 @@ class _LoginScreenState extends State<LoginScreen> {
                   label: const Text(AppTexts.continueWithFacebook),
                 ),
 
-                const SizedBox(height: 24),
+                const SizedBox(height: AppSpacing.xl),
                 const Row(
                   children: [
                     Expanded(child: Divider()),
                     Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 12),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: AppSpacing.cardGap,
+                      ),
                       child: Text(AppTexts.or),
                     ),
                     Expanded(child: Divider()),
                   ],
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: AppSpacing.xl),
 
                 // E-mail a heslo používame len pri klasickom účte.
                 TextField(
@@ -236,7 +239,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     border: OutlineInputBorder(),
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: AppSpacing.cardGap),
                 TextField(
                   controller: _passwordController,
                   enabled: !_isLoading,
@@ -257,7 +260,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     border: OutlineInputBorder(),
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: AppSpacing.sectionGap),
 
                 FilledButton(
                   onPressed: _isLoading
@@ -270,7 +273,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                   child: Text(isLoginMode ? AppTexts.login : AppTexts.register),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: AppSpacing.sm),
 
                 TextButton(
                   onPressed: _isLoading ? null : _toggleMode,
@@ -282,7 +285,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
 
                 if (_isLoading) ...[
-                  const SizedBox(height: 24),
+                  const SizedBox(height: AppSpacing.xl),
                   const Center(child: CircularProgressIndicator()),
                 ],
               ],

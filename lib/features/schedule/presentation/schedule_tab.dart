@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_roles.dart';
+import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_texts.dart';
 import '../../../core/widgets/day_card_selector.dart';
 import '../data/schedule_service.dart';
@@ -309,7 +310,7 @@ class _ScheduleTabState extends State<ScheduleTab> {
     if (items.isEmpty) {
       return const Center(
         child: Padding(
-          padding: EdgeInsets.all(24),
+          padding: EdgeInsets.all(AppSpacing.xl),
           child: Text(
             AppTexts.noTrainingsForSelectedDay,
             textAlign: TextAlign.center,
@@ -324,9 +325,10 @@ class _ScheduleTabState extends State<ScheduleTab> {
         final reservedSessionIds = reservationSnapshot.data ?? <String>{};
 
         return ListView.separated(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(AppSpacing.screenPadding),
           itemCount: items.length,
-          separatorBuilder: (context, index) => const SizedBox(height: 12),
+          separatorBuilder: (context, index) =>
+              const SizedBox(height: AppSpacing.cardGap),
           itemBuilder: (context, index) {
             final item = items[index];
             final session = item.session;
@@ -352,7 +354,7 @@ class _ScheduleTabState extends State<ScheduleTab> {
 
             return Card(
               child: Padding(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(AppSpacing.cardPadding),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -397,7 +399,8 @@ class _ScheduleTabState extends State<ScheduleTab> {
                           FilledButton(
                             style: FilledButton.styleFrom(
                               padding: const EdgeInsets.symmetric(
-                                horizontal: 14,
+                                horizontal:
+                                    AppSpacing.compactButtonHorizontalPadding,
                               ),
                               minimumSize: const Size(0, 40),
                             ),
@@ -420,20 +423,20 @@ class _ScheduleTabState extends State<ScheduleTab> {
                           ),
                       ],
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: AppSpacing.sm),
                     Text(
                       '${_formatDateTime(session.startTime)} - '
                       '${_formatTime(session.endTime)}',
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: AppSpacing.sm),
                     Text('${AppTexts.trainer}: ${item.trainerName}'),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: AppSpacing.sm),
                     Text(
                       '${AppTexts.freeSpots}: '
                       '${session.freeSpots}/${session.capacity}',
                     ),
                     if (!isManager && trainingType.description.isNotEmpty) ...[
-                      const SizedBox(height: 8),
+                      const SizedBox(height: AppSpacing.sm),
                       Text(trainingType.description),
                     ],
                   ],

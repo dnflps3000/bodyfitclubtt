@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_roles.dart';
+import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_texts.dart';
 import '../data/schedule_service.dart';
 import '../domain/training_type.dart';
@@ -230,7 +231,7 @@ class _AddScheduleTemplateScreenState extends State<AddScheduleTemplateScreen> {
 
         if (trainerSnapshot.connectionState == ConnectionState.waiting) {
           return const Padding(
-            padding: EdgeInsets.symmetric(vertical: 12),
+            padding: EdgeInsets.symmetric(vertical: AppSpacing.cardGap),
             child: LinearProgressIndicator(),
           );
         }
@@ -281,7 +282,7 @@ class _AddScheduleTemplateScreenState extends State<AddScheduleTemplateScreen> {
           }
 
           return ListView(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(AppSpacing.screenPadding),
             children: [
               DropdownButtonFormField<String>(
                 initialValue: _selectedTrainingTypeId,
@@ -301,9 +302,9 @@ class _AddScheduleTemplateScreenState extends State<AddScheduleTemplateScreen> {
                       },
                 hint: const Text(AppTexts.selectTrainingType),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppSpacing.cardGap),
               _buildTrainerDropdown(),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppSpacing.cardGap),
               DropdownButtonFormField<int>(
                 initialValue: _selectedWeekday,
                 decoration: const InputDecoration(labelText: AppTexts.weekday),
@@ -324,13 +325,13 @@ class _AddScheduleTemplateScreenState extends State<AddScheduleTemplateScreen> {
                       },
                 hint: const Text(AppTexts.selectWeekday),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppSpacing.cardGap),
               OutlinedButton.icon(
                 onPressed: _isSaving ? null : _pickTime,
                 icon: const Icon(Icons.access_time),
                 label: Text(_formatTime(_selectedTime)),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppSpacing.cardGap),
               TextField(
                 controller: _durationController,
                 enabled: !_isSaving,
@@ -340,14 +341,14 @@ class _AddScheduleTemplateScreenState extends State<AddScheduleTemplateScreen> {
                   suffixText: AppTexts.minutes,
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppSpacing.cardGap),
               TextField(
                 controller: _capacityController,
                 enabled: !_isSaving,
                 keyboardType: TextInputType.number,
                 decoration: const InputDecoration(labelText: AppTexts.capacity),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: AppSpacing.xl),
               FilledButton(
                 onPressed: _isSaving
                     ? null

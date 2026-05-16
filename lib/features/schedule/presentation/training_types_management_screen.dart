@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_texts.dart';
 import '../data/schedule_service.dart';
 import '../domain/training_type.dart';
@@ -131,7 +132,7 @@ class _TrainingTypesManagementScreenState
                         name = value;
                       },
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: AppSpacing.cardGap),
                     TextFormField(
                       initialValue: description,
                       enabled: !isDialogSaving,
@@ -143,7 +144,7 @@ class _TrainingTypesManagementScreenState
                         description = value;
                       },
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: AppSpacing.cardGap),
                     TextFormField(
                       initialValue: durationText,
                       enabled: !isDialogSaving,
@@ -156,7 +157,7 @@ class _TrainingTypesManagementScreenState
                         durationText = value;
                       },
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: AppSpacing.cardGap),
                     TextFormField(
                       initialValue: capacityText,
                       enabled: !isDialogSaving,
@@ -322,7 +323,7 @@ class _TrainingTypesManagementScreenState
           if (trainingTypes.isEmpty) {
             return const Center(
               child: Padding(
-                padding: EdgeInsets.all(24),
+                padding: EdgeInsets.all(AppSpacing.xl),
                 child: Text(
                   AppTexts.noTrainingTypes,
                   textAlign: TextAlign.center,
@@ -332,9 +333,15 @@ class _TrainingTypesManagementScreenState
           }
 
           return ListView.separated(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 112),
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.screenPadding,
+              AppSpacing.screenPadding,
+              AppSpacing.screenPadding,
+              AppSpacing.floatingActionButtonListBottomPadding,
+            ),
             itemCount: trainingTypes.length,
-            separatorBuilder: (context, index) => const SizedBox(height: 8),
+            separatorBuilder: (context, index) =>
+                const SizedBox(height: AppSpacing.sm),
             itemBuilder: (context, index) {
               return _buildTrainingTypeCard(trainingTypes[index]);
             },

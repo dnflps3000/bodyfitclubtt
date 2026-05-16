@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'add_training_attendance_screen.dart';
+import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_texts.dart';
 import '../data/training_history_service.dart';
 
@@ -210,24 +211,24 @@ class _TrainingHistoryDetailScreenState
   Widget _buildSessionSummary(List<TrainingHistoryReservation> reservations) {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppSpacing.cardPadding),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               widget.session.trainingName,
-              style: const TextStyle(fontSize: 20),
+              style: Theme.of(context).textTheme.titleLarge,
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.sm),
             Text(
               '${_formatDateTime(widget.session.startTime)} – ${_formatTime(widget.session.endTime)}',
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: AppSpacing.xs),
             Text('${AppTexts.trainer}: ${widget.session.trainerName}'),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.cardGap),
             Wrap(
-              spacing: 8,
-              runSpacing: 8,
+              spacing: AppSpacing.sm,
+              runSpacing: AppSpacing.sm,
               children: [
                 Chip(
                   label: Text(
@@ -268,7 +269,7 @@ class _TrainingHistoryDetailScreenState
 
     return Card(
       child: Padding(
-        padding: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.only(bottom: AppSpacing.sm),
         child: Column(
           children: [
             ListTile(
@@ -288,7 +289,7 @@ class _TrainingHistoryDetailScreenState
             ),
             if (isRunning)
               const Padding(
-                padding: EdgeInsets.only(bottom: 8),
+                padding: EdgeInsets.only(bottom: AppSpacing.sm),
                 child: SizedBox(
                   width: 22,
                   height: 22,
@@ -297,10 +298,12 @@ class _TrainingHistoryDetailScreenState
               )
             else
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.cardGap,
+                ),
                 child: Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
+                  spacing: AppSpacing.sm,
+                  runSpacing: AppSpacing.sm,
                   children: [
                     if (reservation.isReserved) ...[
                       OutlinedButton.icon(
@@ -369,14 +372,14 @@ class _TrainingHistoryDetailScreenState
           final reservations = snapshot.data ?? [];
 
           return ListView(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(AppSpacing.screenPadding),
             children: [
               _buildSessionSummary(reservations),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppSpacing.cardGap),
               if (reservations.isEmpty)
                 const Card(
                   child: Padding(
-                    padding: EdgeInsets.all(16),
+                    padding: EdgeInsets.all(AppSpacing.cardPadding),
                     child: Text(AppTexts.noReservationsForTrainingHistory),
                   ),
                 )

@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_spacing.dart';
 import '../../../core/constants/app_roles.dart';
 import '../../../core/theme/app_texts.dart';
 import '../domain/membership_plan.dart';
@@ -115,7 +116,7 @@ class _AssignMembershipScreenState extends State<AssignMembershipScreen> {
 
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Padding(
-            padding: EdgeInsets.symmetric(vertical: 12),
+            padding: EdgeInsets.symmetric(vertical: AppSpacing.cardGap),
             child: LinearProgressIndicator(),
           );
         }
@@ -197,12 +198,12 @@ class _AssignMembershipScreenState extends State<AssignMembershipScreen> {
           }
 
           return ListView(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(AppSpacing.screenPadding),
             children: [
               _buildUserDropdown(),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppSpacing.cardGap),
               _buildPlanDropdown(plans),
-              const SizedBox(height: 24),
+              const SizedBox(height: AppSpacing.xl),
               FilledButton(
                 onPressed: _isSaving ? null : () => _assignMembership(plans),
                 child: _isSaving

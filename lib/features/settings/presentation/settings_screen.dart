@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_texts.dart';
 import '../data/settings_service.dart';
 
@@ -16,7 +16,7 @@ class SettingsScreen extends StatelessWidget {
         animation: settingsService,
         builder: (context, _) {
           return ListView(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(AppSpacing.screenPadding),
             children: [
               Card(
                 child: Column(
@@ -24,7 +24,10 @@ class SettingsScreen extends StatelessWidget {
                     const ListTile(
                       leading: Icon(Icons.palette_outlined),
                       title: Text(AppTexts.appearance),
-                      subtitle: Text(AppTexts.appearanceDescription),
+                      subtitle: Text(
+                        AppTexts.appearanceDescription,
+                        textAlign: TextAlign.justify,
+                      ),
                     ),
                     RadioGroup<ThemeMode>(
                       groupValue: settingsService.themeMode,
@@ -52,12 +55,49 @@ class SettingsScreen extends StatelessWidget {
                   ],
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppSpacing.cardGap),
               const Card(
                 child: ListTile(
                   leading: Icon(Icons.language_outlined),
                   title: Text(AppTexts.language),
-                  subtitle: Text(AppTexts.languageComingSoon),
+                  subtitle: Text(
+                    AppTexts.languageComingSoon,
+                    textAlign: TextAlign.justify,
+                  ),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.cardGap),
+              Card(
+                child: Column(
+                  children: [
+                    const ListTile(
+                      leading: Icon(Icons.touch_app_outlined),
+                      title: Text(AppTexts.menuPosition),
+                      subtitle: Text(
+                        AppTexts.menuPositionDescription,
+                        textAlign: TextAlign.justify,
+                      ),
+                    ),
+                    SwitchListTile(
+                      value: settingsService.isRightHanded,
+                      title: Text(
+                        settingsService.isRightHanded
+                            ? AppTexts.rightHanded
+                            : AppTexts.leftHanded,
+                      ),
+                      subtitle: Text(
+                        settingsService.isRightHanded
+                            ? AppTexts.menuRightPositionDescription
+                            : AppTexts.menuLeftPositionDescription,
+                      ),
+                      secondary: Icon(
+                        settingsService.isRightHanded
+                            ? Icons.keyboard_arrow_right
+                            : Icons.keyboard_arrow_left,
+                      ),
+                      onChanged: settingsService.setIsRightHanded,
+                    ),
+                  ],
                 ),
               ),
             ],

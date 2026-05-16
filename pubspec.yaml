@@ -32,6 +32,8 @@ dependencies:
   firebase_messaging: ^16.0.0
   flutter_local_notifications: ^17.2.1
   cached_network_image: ^3.4.1
+  url_launcher: ^6.3.1
+  google_maps_flutter: ^2.10.0
 
 dev_dependencies:
   flutter_test:
@@ -49,6 +51,7 @@ flutter:
     - assets/splash_logo.png
     - assets/auth/google.png
     - assets/auth/facebook.png
+    - assets/contacts/instagram.png
 
   fonts:
   - family: Inter
@@ -65,12 +68,12 @@ flutter_launcher_icons:
   android: true
   ios: true
   image_path: "assets/app_icon_foreground.png"
-  adaptive_icon_background: "#DCEBFF"
+  adaptive_icon_background: "#8FB8ED"
   adaptive_icon_foreground: "assets/app_icon_foreground.png"
 
 flutter_native_splash:
   # Rovnaká farba ako brand_background v android/app/src/main/res/values/colors.xml
-  color: "#DCEBFF"
+  color: "#8FB8ED"
   image: assets/native_splash_logo.png
   android: true
   ios: true
@@ -78,5 +81,5 @@ flutter_native_splash:
 
   android_12:
     # Rovnaká farba ako brand_background v android/app/src/main/res/values/colors.xml
-    color: "#DCEBFF"
+    color: "#8FB8ED"
     image: assets/native_splash_logo.png

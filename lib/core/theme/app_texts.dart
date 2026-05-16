@@ -20,6 +20,59 @@ class AppTexts {
   static const String last7Days = 'Posledných 7 dní';
   static const String last30Days = 'Posledných 30 dní';
   static const String allTime = 'Celé obdobie';
+  static const String menu = 'Menu';
+  static const String close = 'Zavrieť';
+  static const String aboutApp = 'O aplikácii';
+  static const String aboutUs = 'O nás';
+  static const String aboutAppDescription =
+      'Aplikácia Body Fit Club TT slúži na správu tréningov, rezervácií, permanentiek a komunikácie medzi fitnescentrom a používateľmi.';
+  static const String aboutUsDescription =
+      'Body Fit Club je fitnescentrum v Trnave zamerané na skupinové aj individuálne tréningy, pohyb, zdravý životný štýl a osobný prístup ku klientom.';
+  static const String bodyFitClubWebsite = 'https://bodyfitclub.sk/';
+  static const String openWebsite = 'Otvoriť webovú stránku';
+  static const String businessTerms = 'Obchodné podmienky';
+  static const String privacyPolicy = 'Ochrana osobných údajov';
+  static const String legalDocumentsInfo =
+      'Obchodné podmienky a informácie o ochrane osobných údajov budú dostupné na webovej stránke Body Fit Club.';
+  static const String contacts = 'Kontakty';
+  static const String billingDetails = 'Fakturačné údaje';
+  static const String address = 'Adresa';
+  static const String phone = 'Telefón';
+  static const String website = 'Webová stránka';
+  static const String emailContact = 'E-mail';
+  static const String socialNetworks = 'Sociálne siete';
+  static const String openMap = 'Otvoriť mapu';
+  static const String openFacebook = 'Facebook';
+  static const String openInstagram = 'Instagram';
+  static const String multisport = 'MultiSport';
+  static const String multisportInfo =
+      'Akceptujeme kartu MultiSport podľa aktuálnych podmienok prevádzky.';
+  static const String bodyFitClubCompanyName = 'BODYFIT CLUB s.r.o.';
+  static const String bodyFitClubOperationAddress = 'V Jame 24, Trnava';
+  static const String bodyFitClubBillingAddress =
+      'J. G. Tajovského 18, 917 08 Trnava';
+  static const String bodyFitClubPhonePrimary = '+421 902 860 008';
+  static const String bodyFitClubPhoneSecondary = '+421 903 946 895';
+  static const String bodyFitClubEmail = 'bodyfitclubtt@gmail.com';
+  static const String bodyFitClubIco = '48074128';
+  static const String ico = 'IČO: ';
+  static const String companySeat = 'Sídlo';
+  static const String operation = 'Prevádzka';
+  static const String bodyFitClubFacebookUrl =
+      'https://www.facebook.com/bodyfitclub.sk';
+  static const String bodyFitClubInstagramUrl =
+      'https://www.instagram.com/bodyfitclub.tt/';
+  static const String bodyFitClubMapUrl =
+      'https://www.google.com/maps/search/?api=1&query=V%20Jame%206641%2F24%2C%20917%2001%20Trnava';
+  static const String bodyFitClubMultiSportUrl =
+      'https://multi-sport.sk/aktivity/partner/bodyfit-club/';
+  static const String multisportInfo2 =
+      'Body Fit Club je partnerom programu MultiSport. Akceptovanie karty MultiSport sa riadi aktuálnymi podmienkami prevádzky.';
+  static const String bodyFitClubWebsiteLabel = 'www.bodyfitclub.sk';
+  static const String dic = 'DIČ: ';
+  static const String bodyFitClubDic = '2120035445';
+  static const String notVatPayer = 'Spoločnosť nie je platiteľom DPH';
+  static const String legalDocuments = 'Právne dokumenty';
 
   // Role
   static const String roleUser = 'Používateľ';
@@ -44,7 +97,7 @@ class AppTexts {
   static const String password = 'Heslo';
   static const String login = 'Prihlásiť';
   static const String register = 'Registrovať';
-  static const String logoutTooltip = 'Odhlásiť';
+  static const String logout = 'Odhlásiť';
   static const String noAccountRegister = 'Nemáš účet? Registrovať';
   static const String hasAccountLogin = 'Už máš účet? Prihlásiť';
   static const String authError = 'Chyba prihlásenia';
@@ -135,7 +188,7 @@ class AppTexts {
   static const String nearestReservations = 'Najbližšie rezervácie';
   static const String noNearestReservations =
       'Nemáte žiadne najbližšie rezervácie.';
-  static const String showReservationQrCode = 'Zobraziť QR kód';
+  static const String qrShort = 'QR';
 
   // Novinky / verejné správy
   static const String news = 'Novinky';
@@ -622,6 +675,13 @@ class AppTexts {
   static const String language = 'Jazyk';
   static const String languageComingSoon =
       'Prepínanie jazyka pripravíme neskôr.';
+  static const String menuPosition = 'Umiestnenie menu';
+  static const String menuPositionDescription =
+      'Vyberte, na ktorej strane sa má zobrazovať hlavné menu.';
+  static const String rightHanded = 'Pravák';
+  static const String leftHanded = 'Ľavák';
+  static const String menuRightPositionDescription = 'Menu bude vpravo hore.';
+  static const String menuLeftPositionDescription = 'Menu bude vľavo hore.';
 
   // História zásahov
   static const String auditLogs = 'História zásahov';
@@ -847,11 +907,10 @@ class AppTexts {
   static const String auditUserEmailCompletedTitle = 'Doplnenie e-mailu';
   static const String auditUserEmailCompletedDescription =
       'Používateľ doplnil chýbajúci e-mail k účtu.';
-
+  static const String currentUserShort = 'vy';
   static const String auditUserEmailUpdatedTitle = 'Úprava e-mailu používateľa';
   static const String auditUserEmailUpdatedDescription =
       'Administrátor upravil kontaktný e-mail používateľa.';
-
   static const String auditUserReactivatedTitle = 'Aktivácia používateľa';
   static const String auditUserReactivatedDescription =
       'Administrátor znovu aktivoval používateľa.';
@@ -859,7 +918,6 @@ class AppTexts {
   static const String auditActionUserEmailUpdated =
       'Úprava e-mailu používateľa';
   static const String auditActionUserReactivated = 'Aktivácia používateľa';
-
   static String allocatedReservationsCancelled(int count) {
     if (count == 1) {
       return 'Bola zrušená 1 rezervácia.';

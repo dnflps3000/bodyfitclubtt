@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_texts.dart';
 import '../../audit/data/audit_log_service.dart';
 
@@ -78,20 +79,20 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text(AppTexts.completeProfileTitle)),
       body: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(AppSpacing.screenPadding),
         child: Column(
           children: [
             TextField(
               controller: _firstNameController,
               decoration: const InputDecoration(labelText: AppTexts.firstName),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.cardGap),
             TextField(
               controller: _lastNameController,
               decoration: const InputDecoration(labelText: AppTexts.lastName),
             ),
-            const SizedBox(height: 24),
-            ElevatedButton(
+            const SizedBox(height: AppSpacing.xl),
+            FilledButton(
               onPressed: _loading ? null : _saveProfile,
               child: _loading
                   ? const SizedBox(
