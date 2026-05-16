@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../../core/constants/app_roles.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_texts.dart';
+import '../../admin/presentation/account_deletion_requests_screen.dart';
 import '../../memberships/data/membership_service.dart';
 import '../../memberships/domain/membership.dart';
 import '../../reservations/presentation/attendance_qr_scanner_screen.dart';
@@ -50,6 +51,10 @@ class HomeTab extends StatelessWidget {
               _buildNearestTrainingsCard(),
               const SizedBox(height: AppSpacing.cardGap),
               _buildNewsCard(),
+              if (role == AppRoles.admin) ...[
+                const SizedBox(height: AppSpacing.cardGap),
+                _buildAccountDeletionRequestsCard(context),
+              ],
             ] else ...[
               _buildNearestReservationsCard(context),
               const SizedBox(height: AppSpacing.cardGap),
@@ -70,6 +75,62 @@ class HomeTab extends StatelessWidget {
       onPressed: () => _openAttendanceQrScanner(context, role),
       icon: const Icon(Icons.qr_code_scanner),
       label: const Text(AppTexts.scanQrCodes),
+    );
+  }
+
+  Widget _buildAccountDeletionRequestsCard(BuildContext context) {
+    return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+      stream: FirebaseFirestore.instance
+          .collection('accountDeletionRequests')
+          .where('status', isEqualTo: 'pending')
+          .snapshots(),
+      builder: (context, snapshot) {
+        final pendingCount = snapshot.data?.docs.length ?? 0;
+
+        if (snapshot.hasError) {
+          return Card(
+            child: ListTile(
+              leading: const Icon(Icons.delete_forever_outlined),
+              title: Text(
+                AppTexts.accountDeletionRequests,
+                style: _homeCardTitleStyle(context),
+              ),
+              subtitle: const Text(AppTexts.accountDeletionRequestsLoadError),
+              onTap: () => _openAccountDeletionRequests(context),
+            ),
+          );
+        }
+
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Card(
+            child: ListTile(
+              leading: const Icon(Icons.delete_forever_outlined),
+              title: Text(
+                AppTexts.accountDeletionRequests,
+                style: _homeCardTitleStyle(context),
+              ),
+              subtitle: const Text(AppTexts.loading),
+              onTap: () => _openAccountDeletionRequests(context),
+            ),
+          );
+        }
+
+        return Card(
+          child: ListTile(
+            leading: const Icon(Icons.delete_forever_outlined),
+            title: Text(
+              '${AppTexts.accountDeletionRequests} ($pendingCount)',
+              style: _homeCardTitleStyle(context),
+            ),
+            subtitle: Text(
+              pendingCount == 0
+                  ? AppTexts.noAccountDeletionRequests
+                  : AppTexts.accountDeletionRequestsWaiting,
+            ),
+            onTap: () => _openAccountDeletionRequests(context),
+          ),
+        );
+      },
     );
   }
 
@@ -485,6 +546,12 @@ class HomeTab extends StatelessWidget {
           trainerId: role == AppRoles.trainer ? currentUser.uid : null,
         ),
       ),
+    );
+  }
+
+  void _openAccountDeletionRequests(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const AccountDeletionRequestsScreen()),
     );
   }
 }

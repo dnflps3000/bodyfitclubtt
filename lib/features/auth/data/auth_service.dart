@@ -14,6 +14,55 @@ class AuthService {
 
   Stream<User?> get authStateChanges => _auth.userChanges();
 
+  bool isEmailPasswordUser(User user) {
+    return user.providerData.any((provider) {
+      return provider.providerId == 'password';
+    });
+  }
+
+  Future<void> sendPasswordResetEmail(String email) async {
+    await _auth.setLanguageCode('sk');
+    await _auth.sendPasswordResetEmail(email: email.trim());
+  }
+
+  Future<void> requestEmailChange({
+    required String newEmail,
+    required String currentPassword,
+  }) async {
+    final user = _auth.currentUser;
+
+    if (user == null) {
+      throw FirebaseAuthException(code: 'no-current-user');
+    }
+
+    final currentEmail = user.email?.trim();
+
+    if (currentEmail == null || currentEmail.isEmpty) {
+      throw FirebaseAuthException(code: 'missing-current-email');
+    }
+
+    if (!isEmailPasswordUser(user)) {
+      throw FirebaseAuthException(code: 'email-change-not-available');
+    }
+
+    final credential = EmailAuthProvider.credential(
+      email: currentEmail,
+      password: currentPassword,
+    );
+
+    await user.reauthenticateWithCredential(credential);
+
+    await _auth.setLanguageCode('sk');
+    await user.verifyBeforeUpdateEmail(newEmail.trim());
+
+    await _firestore.collection('users').doc(user.uid).set({
+      'pendingEmail': newEmail.trim(),
+      'emailChangeRequestedAt': FieldValue.serverTimestamp(),
+      'emailChangeSource': 'self_service',
+      'updatedAt': FieldValue.serverTimestamp(),
+    }, SetOptions(merge: true));
+  }
+
   Future<void> ensureUserIsActive(User user) async {
     final snapshot = await _firestore.collection('users').doc(user.uid).get();
     final data = snapshot.data();
@@ -23,6 +72,23 @@ class AuthService {
     if (!isActive) {
       await signOut();
       throw FirebaseAuthException(code: 'user-disabled-in-app');
+    }
+
+    final authEmail = user.email?.trim();
+    final firestoreEmail = (data?['email'] as String?)?.trim();
+    final pendingEmail = (data?['pendingEmail'] as String?)?.trim();
+
+    if (authEmail != null &&
+        authEmail.isNotEmpty &&
+        authEmail != firestoreEmail) {
+      await _firestore.collection('users').doc(user.uid).set({
+        'email': authEmail,
+        'pendingEmail': FieldValue.delete(),
+        'emailChangeCompletedAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+        if (pendingEmail != null && pendingEmail.isNotEmpty)
+          'previousEmail': firestoreEmail ?? '',
+      }, SetOptions(merge: true));
     }
   }
 

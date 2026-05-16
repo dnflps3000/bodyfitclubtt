@@ -173,6 +173,215 @@ export const setUserDisabledStatus = onCall(
   },
 );
 
+export const requestAccountDeletion = onCall(
+  {region: "europe-west1"},
+  async (request) => {
+    if (!request.auth) {
+      throw new HttpsError(
+        "unauthenticated",
+        "Používateľ nie je prihlásený.",
+      );
+    }
+
+    const uid = request.auth.uid;
+    const reason = String(request.data?.reason ?? "").trim();
+
+    const userRef = db.collection("users").doc(uid);
+    const userSnapshot = await userRef.get();
+
+    if (!userSnapshot.exists) {
+      throw new HttpsError(
+        "not-found",
+        "Používateľský profil neexistuje.",
+      );
+    }
+
+    const userData = userSnapshot.data() ?? {};
+    const role = String(userData.role ?? "user");
+
+    if (role === "admin" || role === "trainer") {
+      throw new HttpsError(
+        "failed-precondition",
+        "Admin alebo tréner nemôže požiadať o vymazanie účtu týmto spôsobom.",
+      );
+    }
+
+    const activeReservationsSnapshot = await db
+      .collection("reservations")
+      .where("userId", "==", uid)
+      .where("status", "==", "active")
+      .get();
+
+    if (!activeReservationsSnapshot.empty) {
+      throw new HttpsError(
+        "failed-precondition",
+        "Účet nie je možné vymazať, pretože máte aktívne rezervácie.",
+      );
+    }
+
+    const requestRef = db.collection("accountDeletionRequests").doc(uid);
+
+    await db.runTransaction(async (transaction) => {
+      transaction.set(
+        requestRef,
+        {
+          uid,
+          email: userData.email ?? "",
+          displayName: userData.displayName ?? "",
+          publicName: userData.publicName ?? "",
+          status: "pending",
+          reason,
+          requestedAt: FieldValue.serverTimestamp(),
+          updatedAt: FieldValue.serverTimestamp(),
+        },
+        {merge: true},
+      );
+
+      transaction.set(
+        userRef,
+        {
+          isActive: false,
+          accountDeletionRequested: true,
+          accountDeletionRequestedAt: FieldValue.serverTimestamp(),
+          accountDeletionStatus: "pending",
+          deactivatedAt: FieldValue.serverTimestamp(),
+          deactivatedBy: uid,
+          deactivationReason: "Žiadosť používateľa o vymazanie účtu.",
+          updatedAt: FieldValue.serverTimestamp(),
+        },
+        {merge: true},
+      );
+    });
+
+    await getAuth().updateUser(uid, {
+      disabled: true,
+    });
+
+    return {
+      success: true,
+    };
+  },
+);
+
+export const completeAccountDeletionRequest = onCall(
+  {region: "europe-west1"},
+  async (request) => {
+    if (!request.auth) {
+      throw new HttpsError(
+        "unauthenticated",
+        "Používateľ nie je prihlásený.",
+      );
+    }
+
+    const callerUid = request.auth.uid;
+    const targetUid = request.data?.uid as string | undefined;
+
+    if (!targetUid) {
+      throw new HttpsError(
+        "invalid-argument",
+        "Chýba uid používateľa.",
+      );
+    }
+
+    if (callerUid === targetUid) {
+      throw new HttpsError(
+        "failed-precondition",
+        "Nemôžete anonymizovať vlastný účet.",
+      );
+    }
+
+    const callerSnapshot = await db.collection("users").doc(callerUid).get();
+    const callerData = callerSnapshot.data();
+    const callerRole = callerData?.role;
+    const callerIsActive = callerData?.isActive ?? true;
+
+    if (!callerSnapshot.exists || callerRole !== "admin" || !callerIsActive) {
+      throw new HttpsError(
+        "permission-denied",
+        "Na túto akciu nemáte oprávnenie.",
+      );
+    }
+
+    const userRef = db.collection("users").doc(targetUid);
+    const requestRef = db.collection("accountDeletionRequests").doc(targetUid);
+
+    const [userSnapshot, deletionRequestSnapshot] = await Promise.all([
+      userRef.get(),
+      requestRef.get(),
+    ]);
+
+    if (!userSnapshot.exists) {
+      throw new HttpsError(
+        "not-found",
+        "Používateľský profil neexistuje.",
+      );
+    }
+
+    if (!deletionRequestSnapshot.exists) {
+      throw new HttpsError(
+        "not-found",
+        "Žiadosť o vymazanie účtu neexistuje.",
+      );
+    }
+
+    const deletionRequestData = deletionRequestSnapshot.data() ?? {};
+    const requestStatus = String(deletionRequestData.status ?? "");
+
+    if (requestStatus !== "pending") {
+      throw new HttpsError(
+        "failed-precondition",
+        "Žiadosť už nie je v stave pending.",
+      );
+    }
+
+    await getAuth().updateUser(targetUid, {
+      disabled: true,
+      displayName: "Vymazaný používateľ",
+      photoURL: undefined,
+    });
+
+    await db.runTransaction(async (transaction) => {
+      transaction.set(
+        userRef,
+        {
+          email: "",
+          firstName: "",
+          lastName: "",
+          publicName: "Vymazaný používateľ",
+          displayName: "Vymazaný používateľ",
+          photoURL: null,
+          providerPhotoURL: null,
+          phone: "",
+          isActive: false,
+          isAnonymized: true,
+          accountDeletionRequested: true,
+          accountDeletionStatus: "completed",
+          accountDeletedAt: FieldValue.serverTimestamp(),
+          accountDeletedBy: callerUid,
+          updatedAt: FieldValue.serverTimestamp(),
+        },
+        {merge: true},
+      );
+
+      transaction.set(
+        requestRef,
+        {
+          status: "completed",
+          completedAt: FieldValue.serverTimestamp(),
+          completedBy: callerUid,
+          updatedAt: FieldValue.serverTimestamp(),
+        },
+        {merge: true},
+      );
+    });
+
+    return {
+      success: true,
+      uid: targetUid,
+    };
+  },
+);
+
 type ScheduleTemplate = {
   trainingTypeId: string;
   trainerId: string;

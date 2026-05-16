@@ -9,6 +9,7 @@ import 'package:image_cropper/image_cropper.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_texts.dart';
 import '../../audit/data/audit_log_service.dart';
+import '../../auth/data/auth_service.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({
@@ -44,6 +45,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   String? _photoUrl;
   bool _saving = false;
   bool _photoSaving = false;
+  bool _emailChangeSaving = false;
 
   @override
   void initState() {
@@ -101,6 +103,139 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     }
 
     return currentPhotoUrl != providerPhotoUrl;
+  }
+
+  String _emailChangeErrorMessage(FirebaseAuthException error) {
+    switch (error.code) {
+      case 'wrong-password':
+      case 'invalid-credential':
+        return AppTexts.wrongCurrentPassword;
+      case 'email-already-in-use':
+        return AppTexts.userAlreadyExists;
+      case 'invalid-email':
+        return AppTexts.invalidEmailFormat;
+      case 'requires-recent-login':
+        return AppTexts.requiresRecentLogin;
+      case 'email-change-not-available':
+        return AppTexts.emailChangeNotAvailable;
+      case 'network-request-failed':
+        return AppTexts.networkError;
+      default:
+        return AppTexts.emailChangeRequestError;
+    }
+  }
+
+  Future<void> _requestEmailChange() async {
+    final messenger = ScaffoldMessenger.of(context);
+
+    var newEmail = widget.user.email ?? '';
+    var currentPassword = '';
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          scrollable: true,
+          title: const Text(AppTexts.changeEmailTitle),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(AppTexts.changeEmailDescription),
+              const SizedBox(height: AppSpacing.cardGap),
+              TextFormField(
+                initialValue: newEmail,
+                keyboardType: TextInputType.emailAddress,
+                decoration: const InputDecoration(labelText: AppTexts.newEmail),
+                onChanged: (value) {
+                  newEmail = value;
+                },
+              ),
+              const SizedBox(height: AppSpacing.cardGap),
+              TextFormField(
+                obscureText: true,
+                decoration: const InputDecoration(
+                  labelText: AppTexts.currentPassword,
+                ),
+                onChanged: (value) {
+                  currentPassword = value;
+                },
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                FocusScope.of(dialogContext).unfocus();
+                Navigator.of(dialogContext).pop(false);
+              },
+              child: const Text(AppTexts.cancel),
+            ),
+            FilledButton(
+              onPressed: () {
+                FocusScope.of(dialogContext).unfocus();
+                Navigator.of(dialogContext).pop(true);
+              },
+              child: const Text(AppTexts.sendVerificationEmail),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed != true) {
+      return;
+    }
+
+    final trimmedEmail = newEmail.trim();
+
+    if (trimmedEmail.isEmpty || currentPassword.isEmpty) {
+      messenger.showSnackBar(
+        const SnackBar(content: Text(AppTexts.fillEmailPassword)),
+      );
+      return;
+    }
+
+    if (!trimmedEmail.contains('@') || !trimmedEmail.contains('.')) {
+      messenger.showSnackBar(
+        const SnackBar(content: Text(AppTexts.invalidEmailFormat)),
+      );
+      return;
+    }
+
+    setState(() {
+      _emailChangeSaving = true;
+    });
+
+    try {
+      await AuthService().requestEmailChange(
+        newEmail: trimmedEmail,
+        currentPassword: currentPassword,
+      );
+
+      if (!mounted) return;
+
+      messenger.showSnackBar(
+        const SnackBar(content: Text(AppTexts.emailChangeVerificationSent)),
+      );
+    } on FirebaseAuthException catch (error) {
+      if (!mounted) return;
+
+      messenger.showSnackBar(
+        SnackBar(content: Text(_emailChangeErrorMessage(error))),
+      );
+    } catch (_) {
+      if (!mounted) return;
+
+      messenger.showSnackBar(
+        const SnackBar(content: Text(AppTexts.emailChangeRequestError)),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _emailChangeSaving = false;
+        });
+      }
+    }
   }
 
   Future<void> _saveProfile() async {
@@ -553,6 +688,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final canChangeEmail = AuthService().isEmailPasswordUser(widget.user);
+
     return Scaffold(
       appBar: AppBar(title: const Text(AppTexts.editProfile)),
       body: AbsorbPointer(
@@ -604,6 +741,21 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 ),
               ),
             ),
+            const SizedBox(height: AppSpacing.xl),
+            if (canChangeEmail) ...[
+              const SizedBox(height: AppSpacing.cardGap),
+              OutlinedButton.icon(
+                onPressed: _emailChangeSaving ? null : _requestEmailChange,
+                icon: _emailChangeSaving
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.mark_email_read_outlined),
+                label: const Text(AppTexts.changeEmail),
+              ),
+            ],
             const SizedBox(height: AppSpacing.xl),
             FilledButton.icon(
               onPressed: _saving ? null : _saveProfile,

@@ -1,17 +1,27 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_roles.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_texts.dart';
+import '../data/account_service.dart';
 import '../../auth/data/auth_service.dart';
 import 'edit_profile_screen.dart';
 
-class ProfileTab extends StatelessWidget {
+class ProfileTab extends StatefulWidget {
   const ProfileTab({super.key, required this.user});
 
   final User user;
+
+  @override
+  State<ProfileTab> createState() => _ProfileTabState();
+}
+
+class _ProfileTabState extends State<ProfileTab> {
+  final AccountService _accountService = AccountService();
+  bool _isDeletingAccount = false;
 
   String _roleLabel(String? role) {
     switch (role) {
@@ -26,11 +36,104 @@ class ProfileTab extends StatelessWidget {
     }
   }
 
+  Future<void> _requestAccountDeletion() async {
+    final messenger = ScaffoldMessenger.of(context);
+    var reason = '';
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          scrollable: true,
+          title: const Text(AppTexts.deleteAccountRequestTitle),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(AppTexts.deleteAccountRequestDescription),
+              const SizedBox(height: AppSpacing.cardGap),
+              const Text(AppTexts.deleteAccountConfirm),
+              const SizedBox(height: AppSpacing.cardGap),
+              TextField(
+                decoration: const InputDecoration(
+                  labelText: AppTexts.deleteAccountReason,
+                ),
+                maxLines: 2,
+                onChanged: (value) {
+                  reason = value;
+                },
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                FocusScope.of(dialogContext).unfocus();
+                Navigator.of(dialogContext).pop(false);
+              },
+              child: const Text(AppTexts.cancel),
+            ),
+            FilledButton(
+              onPressed: () {
+                FocusScope.of(dialogContext).unfocus();
+                Navigator.of(dialogContext).pop(true);
+              },
+              child: const Text(AppTexts.deleteAccountRequest),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed != true) {
+      return;
+    }
+
+    setState(() {
+      _isDeletingAccount = true;
+    });
+
+    try {
+      await _accountService.requestAccountDeletion(reason: reason);
+
+      await AuthService().signOut();
+
+      messenger.showSnackBar(
+        const SnackBar(content: Text(AppTexts.deleteAccountRequestSent)),
+      );
+    } on FirebaseFunctionsException catch (error) {
+      if (!mounted) return;
+
+      setState(() {
+        _isDeletingAccount = false;
+      });
+
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(
+            error.code == 'failed-precondition'
+                ? AppTexts.deleteAccountBlockedActiveReservations
+                : AppTexts.deleteAccountRequestError,
+          ),
+        ),
+      );
+    } catch (_) {
+      if (!mounted) return;
+
+      setState(() {
+        _isDeletingAccount = false;
+      });
+
+      messenger.showSnackBar(
+        const SnackBar(content: Text(AppTexts.deleteAccountRequestError)),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final userDoc = FirebaseFirestore.instance
         .collection('users')
-        .doc(user.uid);
+        .doc(widget.user.uid);
 
     return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
       stream: userDoc.snapshots(),
@@ -43,13 +146,14 @@ class ProfileTab extends StatelessWidget {
         final publicName = data?['publicName'] as String? ?? '';
         final email = data?['email'] as String?;
         final role = data?['role'] as String?;
-        final photoUrl = data?['photoURL'] as String? ?? user.photoURL;
+        final canRequestAccountDeletion = role == AppRoles.user;
+        final photoUrl = data?['photoURL'] as String? ?? widget.user.photoURL;
         final providerPhotoUrl = data?['providerPhotoURL'] as String?;
 
         final visibleDisplayName = displayName?.isNotEmpty == true
             ? displayName!
-            : user.displayName?.isNotEmpty == true
-            ? user.displayName!
+            : widget.user.displayName?.isNotEmpty == true
+            ? widget.user.displayName!
             : AppTexts.profile;
 
         return ListView(
@@ -98,7 +202,7 @@ class ProfileTab extends StatelessWidget {
                     leading: const Icon(Icons.email_outlined),
                     title: const Text(AppTexts.email),
                     subtitle: Text(
-                      email ?? user.email ?? AppTexts.emailNotProvided,
+                      email ?? widget.user.email ?? AppTexts.emailNotProvided,
                     ),
                   ),
                   const Divider(height: 1),
@@ -115,7 +219,7 @@ class ProfileTab extends StatelessWidget {
                       Navigator.of(context).push(
                         MaterialPageRoute(
                           builder: (_) => EditProfileScreen(
-                            user: user,
+                            user: widget.user,
                             initialFirstName: firstName,
                             initialLastName: lastName,
                             initialPublicName: publicName,
@@ -130,13 +234,26 @@ class ProfileTab extends StatelessWidget {
               ),
             ),
             const SizedBox(height: AppSpacing.sectionGap),
-            FilledButton.icon(
-              onPressed: () async {
-                await AuthService().signOut();
-              },
-              icon: const Icon(Icons.logout),
-              label: const Text(AppTexts.logout),
+            OutlinedButton.icon(
+              onPressed: null,
+              icon: const Icon(Icons.discount_outlined),
+              label: const Text(AppTexts.requestDiscount),
             ),
+
+            if (canRequestAccountDeletion) ...[
+              const SizedBox(height: AppSpacing.cardGap),
+              OutlinedButton.icon(
+                onPressed: _isDeletingAccount ? null : _requestAccountDeletion,
+                icon: const Icon(Icons.delete_forever_outlined),
+                label: _isDeletingAccount
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Text(AppTexts.deleteAccountRequest),
+              ),
+            ],
           ],
         );
       },

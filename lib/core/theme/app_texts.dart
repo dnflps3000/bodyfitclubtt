@@ -146,6 +146,12 @@ class AppTexts {
   static const String verificationEmailSentAgain =
       'Overovací e-mail sme vám poslali opäť. '
       'Ak ho nevidíte v doručenej pošte, skontrolujte aj priečinok Spam.';
+  static const String forgotPassword = 'Zabudli ste heslo?';
+  static const String resetPasswordTitle = 'Obnovenie hesla';
+  static const String sendResetEmail = 'Poslať e-mail';
+  static const String passwordResetEmailSent =
+      'Ak účet s týmto e-mailom existuje, poslali sme e-mail na obnovenie hesla.';
+  static const String emailRequired = 'Zadajte e-mail.';
 
   // Complete profile / profil
   static const String completeProfileTitle = 'Doplnenie profilu';
@@ -167,6 +173,57 @@ class AppTexts {
       'Použijeme ju ako kontaktný e-mail k vášmu účtu.';
   static const String emailSaved = 'E-mail bol uložený.';
   static const String emailSaveError = 'E-mail sa nepodarilo uložiť.';
+  static const String deleteAccountRequest = 'Požiadať o vymazanie účtu';
+  static const String deleteAccountRequestTitle = 'Vymazanie účtu';
+  static const String deleteAccountRequestDescription =
+      'Po odoslaní žiadosti bude účet deaktivovaný a nebude možné sa doň prihlásiť. Údaje budú následne spracované administrátorom podľa pravidiel ochrany osobných údajov.';
+  static const String deleteAccountReason = 'Dôvod žiadosti';
+  static const String deleteAccountConfirm =
+      'Naozaj chcete požiadať o vymazanie účtu?';
+  static const String deleteAccountRequestSent =
+      'Žiadosť o vymazanie účtu bola odoslaná.';
+  static const String deleteAccountRequestError =
+      'Žiadosť o vymazanie účtu sa nepodarilo odoslať.';
+  static const String deleteAccountBlockedActiveReservations =
+      'Účet nie je možné vymazať, pretože máte aktívne rezervácie.';
+  static const String accountDeletionRequests = 'Žiadosti o vymazanie účtu';
+  static const String accountDeletionRequestsWithCount =
+      'Žiadosti o vymazanie účtu';
+  static const String accountDeletionRequestsLoadError =
+      'Žiadosti o vymazanie účtu sa nepodarilo načítať.';
+  static const String noAccountDeletionRequests =
+      'Nie sú evidované žiadne čakajúce žiadosti.';
+  static const String completeAccountDeletion = 'Anonymizovať účet';
+  static const String completeAccountDeletionTitle = 'Anonymizovať účet';
+  static const String completeAccountDeletionQuestion =
+      'Naozaj chcete anonymizovať tento účet? Táto akcia prepíše osobné údaje používateľa.';
+  static const String accountDeletionCompleted = 'Účet bol anonymizovaný.';
+  static const String accountDeletionCompleteError =
+      'Účet sa nepodarilo anonymizovať.';
+  static const String requestedAt = 'Požiadané';
+  static const String reason = 'Dôvod';
+  static const String unknownDate = 'Neznámy dátum';
+  static const String accountDeletionRequestsWaiting =
+      'Čakajúce žiadosti na spracovanie.';
+  static const String changeEmail = 'Zmeniť e-mail';
+  static const String changeEmailTitle = 'Zmena e-mailu';
+  static const String changeEmailDescription =
+      'Zadajte nový e-mail a aktuálne heslo. Na nový e-mail pošleme overovací odkaz. Zmena sa dokončí až po potvrdení odkazu v e-maile.';
+  static const String changeEmailProfileHint =
+      'Dostupné pre účty vytvorené e-mailom a heslom.';
+  static const String newEmail = 'Nový e-mail';
+  static const String currentPassword = 'Aktuálne heslo';
+  static const String sendVerificationEmail = 'Poslať overovací e-mail';
+  static const String emailChangeVerificationSent =
+      'Na nový e-mail sme poslali overovací odkaz. Zmena sa dokončí po jeho potvrdení.';
+  static const String emailChangeRequestError =
+      'Zmenu e-mailu sa nepodarilo spustiť.';
+  static const String wrongCurrentPassword = 'Aktuálne heslo nie je správne.';
+  static const String requiresRecentLogin =
+      'Pre túto akciu sa najskôr odhláste a znovu prihláste.';
+  static const String emailChangeNotAvailable =
+      'Zmena e-mailu je dostupná iba pre účty vytvorené e-mailom a heslom.';
+  static const String requestDiscount = 'Požiadať o zľavu';
 
   // Profilová fotka
   static const String changeProfilePhoto = 'Zmeniť profilovú fotku';

@@ -54,21 +54,27 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
         .limit(200)
         .snapshots()
         .map((snapshot) {
-          final users = snapshot.docs.map((document) {
-            final data = document.data();
+          final users = snapshot.docs
+              .where((document) {
+                final data = document.data();
+                return data['isAnonymized'] != true;
+              })
+              .map((document) {
+                final data = document.data();
 
-            return _ManagedUser(
-              id: document.id,
-              email: data['email'] as String? ?? '',
-              firstName: data['firstName'] as String? ?? '',
-              lastName: data['lastName'] as String? ?? '',
-              publicName: data['publicName'] as String? ?? '',
-              displayName: data['displayName'] as String? ?? '',
-              role: data['role'] as String? ?? AppRoles.user,
-              photoUrl: data['photoURL'] as String?,
-              isActive: data['isActive'] as bool? ?? true,
-            );
-          }).toList();
+                return _ManagedUser(
+                  id: document.id,
+                  email: data['email'] as String? ?? '',
+                  firstName: data['firstName'] as String? ?? '',
+                  lastName: data['lastName'] as String? ?? '',
+                  publicName: data['publicName'] as String? ?? '',
+                  displayName: data['displayName'] as String? ?? '',
+                  role: data['role'] as String? ?? AppRoles.user,
+                  photoUrl: data['photoURL'] as String?,
+                  isActive: data['isActive'] as bool? ?? true,
+                );
+              })
+              .toList();
 
           users.sort((a, b) {
             return a.displayLabel.toLowerCase().compareTo(

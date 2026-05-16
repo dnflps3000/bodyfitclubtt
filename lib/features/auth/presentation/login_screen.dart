@@ -92,6 +92,8 @@ class _LoginScreenState extends State<LoginScreen> {
           return AppTexts.weakPassword;
         case 'too-many-requests':
           return AppTexts.tooManyRequests;
+        case 'missing-email':
+          return AppTexts.emailRequired;
         case 'network-request-failed':
           return AppTexts.networkError;
         case 'user-disabled-in-app':
@@ -196,6 +198,114 @@ class _LoginScreenState extends State<LoginScreen> {
     }
 
     await _saveLastUsedEmail(email);
+  }
+
+  Future<void> _resetPassword() async {
+    final messenger = ScaffoldMessenger.of(context);
+    var email = _emailController.text.trim();
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          scrollable: true,
+          title: const Text(AppTexts.resetPasswordTitle),
+          content: TextFormField(
+            initialValue: email,
+            keyboardType: TextInputType.emailAddress,
+            decoration: const InputDecoration(labelText: AppTexts.email),
+            onChanged: (value) {
+              email = value;
+            },
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                FocusScope.of(dialogContext).unfocus();
+                Navigator.of(dialogContext).pop(false);
+              },
+              child: const Text(AppTexts.cancel),
+            ),
+            FilledButton(
+              onPressed: () {
+                FocusScope.of(dialogContext).unfocus();
+                Navigator.of(dialogContext).pop(true);
+              },
+              child: const Text(AppTexts.sendResetEmail),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed != true) {
+      return;
+    }
+
+    final trimmedEmail = email.trim();
+
+    if (trimmedEmail.isEmpty) {
+      messenger.showSnackBar(
+        const SnackBar(content: Text(AppTexts.emailRequired)),
+      );
+      return;
+    }
+
+    if (!trimmedEmail.contains('@') || !trimmedEmail.contains('.')) {
+      messenger.showSnackBar(
+        const SnackBar(content: Text(AppTexts.invalidEmailFormat)),
+      );
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      await _authService.sendPasswordResetEmail(trimmedEmail);
+      await _saveLastUsedEmail(trimmedEmail);
+
+      debugPrint('PASSWORD RESET SENT TO: $trimmedEmail');
+
+      if (!mounted) return;
+
+      messenger.showSnackBar(
+        const SnackBar(content: Text(AppTexts.passwordResetEmailSent)),
+      );
+    } on FirebaseAuthException catch (error) {
+      if (!mounted) return;
+
+      debugPrint('PASSWORD RESET ERROR: ${error.code} ${error.message}');
+
+      if (error.code == 'invalid-email') {
+        messenger.showSnackBar(
+          const SnackBar(content: Text(AppTexts.invalidEmailFormat)),
+        );
+      } else if (error.code == 'network-request-failed') {
+        messenger.showSnackBar(
+          const SnackBar(content: Text(AppTexts.networkError)),
+        );
+      } else {
+        messenger.showSnackBar(
+          const SnackBar(content: Text(AppTexts.passwordResetEmailSent)),
+        );
+      }
+    } catch (error) {
+      if (!mounted) return;
+
+      debugPrint('PASSWORD RESET UNKNOWN ERROR: $error');
+
+      messenger.showSnackBar(
+        const SnackBar(content: Text(AppTexts.passwordResetEmailSent)),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   @override
@@ -373,6 +483,11 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: Text(isLoginMode ? AppTexts.login : AppTexts.register),
                 ),
                 const SizedBox(height: AppSpacing.sm),
+                if (isLoginMode)
+                  TextButton(
+                    onPressed: _isLoading ? null : _resetPassword,
+                    child: const Text(AppTexts.forgotPassword),
+                  ),
 
                 TextButton(
                   onPressed: _isLoading ? null : _toggleMode,
