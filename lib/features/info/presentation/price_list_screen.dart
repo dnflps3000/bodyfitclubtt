@@ -109,12 +109,12 @@ class PriceListScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text(AppTexts.priceList)),
+      appBar: AppBar(title: Text(AppTexts.priceList)),
       body: StreamBuilder<List<MembershipPlan>>(
         stream: MembershipService().watchActiveMembershipPlans(),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
-            return const Center(child: Text(AppTexts.membershipPlansLoadError));
+            return Center(child: Text(AppTexts.membershipPlansLoadError));
           }
 
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -124,7 +124,7 @@ class PriceListScreen extends StatelessWidget {
           final plans = snapshot.data ?? [];
 
           if (plans.isEmpty) {
-            return const Center(child: Text(AppTexts.noMemberships));
+            return Center(child: Text(AppTexts.noMemberships));
           }
 
           final singleEntryPlans = plans.where((plan) {

@@ -54,9 +54,9 @@ class _ReservationQrScreenState extends State<ReservationQrScreen> {
 
             if (!mounted) return;
 
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text(AppTexts.qrCodeScanned)),
-            );
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(AppTexts.qrCodeScanned)));
 
             Navigator.of(context).pop();
           }
@@ -90,7 +90,7 @@ class _ReservationQrScreenState extends State<ReservationQrScreen> {
     });
 
     return Scaffold(
-      appBar: AppBar(title: const Text(AppTexts.reservationQrCode)),
+      appBar: AppBar(title: Text(AppTexts.reservationQrCode)),
       body: Center(
         child: Card(
           margin: const EdgeInsets.all(AppSpacing.xl),
@@ -128,10 +128,7 @@ class _ReservationQrScreenState extends State<ReservationQrScreen> {
                     ),
                   ),
                   const SizedBox(height: AppSpacing.xl),
-                  const Text(
-                    AppTexts.showQrToTrainer,
-                    textAlign: TextAlign.center,
-                  ),
+                  Text(AppTexts.showQrToTrainer, textAlign: TextAlign.center),
                 ],
               ),
             ),

@@ -136,16 +136,16 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       builder: (dialogContext) {
         return AlertDialog(
           scrollable: true,
-          title: const Text(AppTexts.changeEmailTitle),
+          title: Text(AppTexts.changeEmailTitle),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text(AppTexts.changeEmailDescription),
+              Text(AppTexts.changeEmailDescription),
               const SizedBox(height: AppSpacing.cardGap),
               TextFormField(
                 initialValue: newEmail,
                 keyboardType: TextInputType.emailAddress,
-                decoration: const InputDecoration(labelText: AppTexts.newEmail),
+                decoration: InputDecoration(labelText: AppTexts.newEmail),
                 onChanged: (value) {
                   newEmail = value;
                 },
@@ -153,7 +153,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               const SizedBox(height: AppSpacing.cardGap),
               TextFormField(
                 obscureText: true,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: AppTexts.currentPassword,
                 ),
                 onChanged: (value) {
@@ -168,14 +168,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 FocusScope.of(dialogContext).unfocus();
                 Navigator.of(dialogContext).pop(false);
               },
-              child: const Text(AppTexts.cancel),
+              child: Text(AppTexts.cancel),
             ),
             FilledButton(
               onPressed: () {
                 FocusScope.of(dialogContext).unfocus();
                 Navigator.of(dialogContext).pop(true);
               },
-              child: const Text(AppTexts.sendVerificationEmail),
+              child: Text(AppTexts.sendVerificationEmail),
             ),
           ],
         );
@@ -190,14 +190,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
     if (trimmedEmail.isEmpty || currentPassword.isEmpty) {
       messenger.showSnackBar(
-        const SnackBar(content: Text(AppTexts.fillEmailPassword)),
+        SnackBar(content: Text(AppTexts.fillEmailPassword)),
       );
       return;
     }
 
     if (!trimmedEmail.contains('@') || !trimmedEmail.contains('.')) {
       messenger.showSnackBar(
-        const SnackBar(content: Text(AppTexts.invalidEmailFormat)),
+        SnackBar(content: Text(AppTexts.invalidEmailFormat)),
       );
       return;
     }
@@ -215,7 +215,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       if (!mounted) return;
 
       messenger.showSnackBar(
-        const SnackBar(content: Text(AppTexts.emailChangeVerificationSent)),
+        SnackBar(content: Text(AppTexts.emailChangeVerificationSent)),
       );
     } on FirebaseAuthException catch (error) {
       if (!mounted) return;
@@ -227,7 +227,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       if (!mounted) return;
 
       messenger.showSnackBar(
-        const SnackBar(content: Text(AppTexts.emailChangeRequestError)),
+        SnackBar(content: Text(AppTexts.emailChangeRequestError)),
       );
     } finally {
       if (mounted) {
@@ -325,7 +325,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text(AppTexts.profileSaved)));
+      ).showSnackBar(SnackBar(content: Text(AppTexts.profileSaved)));
 
       Navigator.of(context).pop();
     } catch (_) {
@@ -333,7 +333,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text(AppTexts.profileSaveError)));
+      ).showSnackBar(SnackBar(content: Text(AppTexts.profileSaveError)));
     } finally {
       if (mounted) {
         setState(() {
@@ -356,7 +356,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             children: [
               ListTile(
                 leading: const Icon(Icons.photo_library_outlined),
-                title: const Text(AppTexts.chooseFromGallery),
+                title: Text(AppTexts.chooseFromGallery),
                 onTap: () {
                   Navigator.of(bottomSheetContext).pop();
                   _pickAndUploadPhoto(ImageSource.gallery);
@@ -364,7 +364,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               ),
               ListTile(
                 leading: const Icon(Icons.photo_camera_outlined),
-                title: const Text(AppTexts.takePhoto),
+                title: Text(AppTexts.takePhoto),
                 onTap: () {
                   Navigator.of(bottomSheetContext).pop();
                   _pickAndUploadPhoto(ImageSource.camera);
@@ -373,7 +373,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               if (_photoUrl != null && _photoUrl!.isNotEmpty)
                 ListTile(
                   leading: const Icon(Icons.tune_outlined),
-                  title: const Text(AppTexts.editPhoto),
+                  title: Text(AppTexts.editPhoto),
                   onTap: () {
                     Navigator.of(bottomSheetContext).pop();
                     _editCurrentPhoto();
@@ -382,7 +382,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               if (_photoUrl != null && _photoUrl!.isNotEmpty)
                 ListTile(
                   leading: const Icon(Icons.delete_outline),
-                  title: const Text(AppTexts.removePhoto),
+                  title: Text(AppTexts.removePhoto),
                   onTap: () {
                     Navigator.of(bottomSheetContext).pop();
                     _removeProfilePhoto();
@@ -477,7 +477,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
     ScaffoldMessenger.of(
       context,
-    ).showSnackBar(const SnackBar(content: Text(AppTexts.profilePhotoUpdated)));
+    ).showSnackBar(SnackBar(content: Text(AppTexts.profilePhotoUpdated)));
   }
 
   Future<File> _downloadCurrentProfilePhoto(String photoUrl) async {
@@ -523,9 +523,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     } catch (_) {
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text(AppTexts.profilePhotoUpdateError)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(AppTexts.profilePhotoUpdateError)));
     } finally {
       if (mounted) {
         setState(() {
@@ -561,9 +561,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     } catch (_) {
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text(AppTexts.profilePhotoUpdateError)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(AppTexts.profilePhotoUpdateError)));
     } finally {
       if (mounted) {
         setState(() {
@@ -616,15 +616,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         _photoUrl = fallbackPhotoUrl;
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text(AppTexts.profilePhotoUpdated)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(AppTexts.profilePhotoUpdated)));
     } catch (_) {
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text(AppTexts.profilePhotoRemoveError)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(AppTexts.profilePhotoRemoveError)));
     } finally {
       if (mounted) {
         setState(() {
@@ -691,7 +691,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     final canChangeEmail = AuthService().isEmailPasswordUser(widget.user);
 
     return Scaffold(
-      appBar: AppBar(title: const Text(AppTexts.editProfile)),
+      appBar: AppBar(title: Text(AppTexts.editProfile)),
       body: AbsorbPointer(
         absorbing: _saving,
         child: ListView(
@@ -699,7 +699,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           children: [
             _buildProfilePhoto(),
             const SizedBox(height: AppSpacing.cardGap),
-            const Center(child: Text(AppTexts.changeProfilePhoto)),
+            Center(child: Text(AppTexts.changeProfilePhoto)),
             const SizedBox(height: AppSpacing.xl),
             Card(
               child: Padding(
@@ -711,7 +711,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       TextFormField(
                         controller: _firstNameController,
                         textInputAction: TextInputAction.next,
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           labelText: AppTexts.firstName,
                           prefixIcon: Icon(Icons.person_outline),
                         ),
@@ -720,7 +720,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       TextFormField(
                         controller: _lastNameController,
                         textInputAction: TextInputAction.done,
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           labelText: AppTexts.lastName,
                           prefixIcon: Icon(Icons.badge_outlined),
                         ),
@@ -730,7 +730,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       TextFormField(
                         controller: _publicNameController,
                         textInputAction: TextInputAction.next,
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           labelText: AppTexts.publicName,
                           hintText: AppTexts.publicNameHint,
                           prefixIcon: Icon(Icons.alternate_email_outlined),
@@ -753,7 +753,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
                     : const Icon(Icons.mark_email_read_outlined),
-                label: const Text(AppTexts.changeEmail),
+                label: Text(AppTexts.changeEmail),
               ),
             ],
             const SizedBox(height: AppSpacing.xl),
@@ -766,7 +766,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
                   : const Icon(Icons.save_outlined),
-              label: const Text(AppTexts.save),
+              label: Text(AppTexts.save),
             ),
           ],
         ),

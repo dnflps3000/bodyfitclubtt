@@ -26,12 +26,12 @@ class _PublicScheduleScreenState extends State<PublicScheduleScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text(AppTexts.schedule)),
+      appBar: AppBar(title: Text(AppTexts.schedule)),
       body: StreamBuilder<List<ScheduleItem>>(
         stream: ScheduleService().watchScheduleItems(),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
-            return const Center(child: Text(AppTexts.trainingsLoadError));
+            return Center(child: Text(AppTexts.trainingsLoadError));
           }
 
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -52,7 +52,7 @@ class _PublicScheduleScreenState extends State<PublicScheduleScreen> {
               _buildDaySelector(),
               Expanded(
                 child: items.isEmpty
-                    ? const Center(
+                    ? Center(
                         child: Padding(
                           padding: EdgeInsets.all(AppSpacing.xl),
                           child: Text(

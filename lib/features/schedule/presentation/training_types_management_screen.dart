@@ -43,22 +43,22 @@ class _TrainingTypesManagementScreenState
                   trimmedDescription.isEmpty ||
                   defaultDurationMinutes == null ||
                   defaultCapacity == null) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text(AppTexts.fillAllFields)),
-                );
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(SnackBar(content: Text(AppTexts.fillAllFields)));
                 return;
               }
 
               if (defaultDurationMinutes <= 0) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text(AppTexts.invalidDuration)),
+                  SnackBar(content: Text(AppTexts.invalidDuration)),
                 );
                 return;
               }
 
               if (defaultCapacity <= 0) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text(AppTexts.invalidCapacity)),
+                  SnackBar(content: Text(AppTexts.invalidCapacity)),
                 );
                 return;
               }
@@ -125,7 +125,7 @@ class _TrainingTypesManagementScreenState
                     TextFormField(
                       initialValue: name,
                       enabled: !isDialogSaving,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         labelText: AppTexts.trainingName,
                       ),
                       onChanged: (value) {
@@ -137,7 +137,7 @@ class _TrainingTypesManagementScreenState
                       initialValue: description,
                       enabled: !isDialogSaving,
                       maxLines: 3,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         labelText: AppTexts.description,
                       ),
                       onChanged: (value) {
@@ -149,7 +149,7 @@ class _TrainingTypesManagementScreenState
                       initialValue: durationText,
                       enabled: !isDialogSaving,
                       keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         labelText: AppTexts.defaultDuration,
                         suffixText: AppTexts.minutes,
                       ),
@@ -162,7 +162,7 @@ class _TrainingTypesManagementScreenState
                       initialValue: capacityText,
                       enabled: !isDialogSaving,
                       keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         labelText: AppTexts.defaultCapacity,
                       ),
                       onChanged: (value) {
@@ -177,7 +177,7 @@ class _TrainingTypesManagementScreenState
                   onPressed: isDialogSaving
                       ? null
                       : () => Navigator.of(dialogContext).pop(),
-                  child: const Text(AppTexts.cancel),
+                  child: Text(AppTexts.cancel),
                 ),
                 FilledButton(
                   onPressed: isDialogSaving ? null : save,
@@ -187,7 +187,7 @@ class _TrainingTypesManagementScreenState
                           height: 18,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
-                      : const Text(AppTexts.save),
+                      : Text(AppTexts.save),
                 ),
               ],
             );
@@ -210,7 +210,7 @@ class _TrainingTypesManagementScreenState
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          title: const Text(AppTexts.deleteTrainingType),
+          title: Text(AppTexts.deleteTrainingType),
           content: Text(
             '${AppTexts.trainingTypeDeleteQuestion}\n\n'
             '${trainingType.name}',
@@ -218,11 +218,11 @@ class _TrainingTypesManagementScreenState
           actions: [
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: const Text(AppTexts.cancel),
+              child: Text(AppTexts.cancel),
             ),
             FilledButton(
               onPressed: () => Navigator.of(dialogContext).pop(true),
-              child: const Text(AppTexts.delete),
+              child: Text(AppTexts.delete),
             ),
           ],
         );
@@ -247,9 +247,9 @@ class _TrainingTypesManagementScreenState
 
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text(AppTexts.trainingTypeDeleted)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(AppTexts.trainingTypeDeleted)));
     } catch (error) {
       if (!mounted) return;
 
@@ -301,17 +301,17 @@ class _TrainingTypesManagementScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text(AppTexts.trainingTypesManagement)),
+      appBar: AppBar(title: Text(AppTexts.trainingTypesManagement)),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showTrainingTypeForm(),
         icon: const Icon(Icons.add),
-        label: const Text(AppTexts.addTrainingType),
+        label: Text(AppTexts.addTrainingType),
       ),
       body: StreamBuilder<List<TrainingType>>(
         stream: _scheduleService.watchTrainingTypes(),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
-            return const Center(child: Text(AppTexts.trainingTypesLoadError));
+            return Center(child: Text(AppTexts.trainingTypesLoadError));
           }
 
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -321,7 +321,7 @@ class _TrainingTypesManagementScreenState
           final trainingTypes = snapshot.data ?? [];
 
           if (trainingTypes.isEmpty) {
-            return const Center(
+            return Center(
               child: Padding(
                 padding: EdgeInsets.all(AppSpacing.xl),
                 child: Text(

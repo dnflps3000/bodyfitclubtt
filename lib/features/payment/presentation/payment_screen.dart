@@ -191,7 +191,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text(AppTexts.paymentSuccessful)));
+      ).showSnackBar(SnackBar(content: Text(AppTexts.paymentSuccessful)));
 
       Navigator.pop(context);
     } catch (error) {
@@ -208,7 +208,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text(AppTexts.paymentFailed)));
+      ).showSnackBar(SnackBar(content: Text(AppTexts.paymentFailed)));
     } finally {
       if (mounted) {
         setState(() {
@@ -251,7 +251,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
             stream: _membershipService.watchActiveMembershipPlans(),
             builder: (context, snapshot) {
               if (snapshot.hasError) {
-                return const Center(child: Text(AppTexts.noAvailablePlans));
+                return Center(child: Text(AppTexts.noAvailablePlans));
               }
 
               if (!snapshot.hasData) {
@@ -275,9 +275,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
               );
 
               if (plans.isEmpty) {
-                return const Center(
-                  child: Text(AppTexts.membershipPlansLoadError),
-                );
+                return Center(child: Text(AppTexts.membershipPlansLoadError));
               }
 
               final initialSelectedPlan = widget.preselectedPlanId == null

@@ -194,21 +194,21 @@ class _AddTrainingSessionScreenState extends State<AddTrainingSessionScreen> {
         capacity == null) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text(AppTexts.fillAllFields)));
+      ).showSnackBar(SnackBar(content: Text(AppTexts.fillAllFields)));
       return;
     }
 
     if (durationMinutes <= 0) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text(AppTexts.invalidDuration)));
+      ).showSnackBar(SnackBar(content: Text(AppTexts.invalidDuration)));
       return;
     }
 
     if (capacity <= 0) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text(AppTexts.invalidCapacity)));
+      ).showSnackBar(SnackBar(content: Text(AppTexts.invalidCapacity)));
       return;
     }
 
@@ -221,9 +221,9 @@ class _AddTrainingSessionScreenState extends State<AddTrainingSessionScreen> {
     );
 
     if (!startTime.isAfter(DateTime.now())) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text(AppTexts.trainingSessionInPast)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(AppTexts.trainingSessionInPast)));
       return;
     }
 
@@ -243,9 +243,9 @@ class _AddTrainingSessionScreenState extends State<AddTrainingSessionScreen> {
 
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text(AppTexts.trainingSessionCreated)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(AppTexts.trainingSessionCreated)));
 
       Navigator.of(context).pop(true);
     } catch (error) {
@@ -278,7 +278,7 @@ class _AddTrainingSessionScreenState extends State<AddTrainingSessionScreen> {
       stream: _watchTrainers(),
       builder: (context, trainerSnapshot) {
         if (trainerSnapshot.hasError) {
-          return const Text(AppTexts.trainersLoadError);
+          return Text(AppTexts.trainersLoadError);
         }
 
         if (trainerSnapshot.connectionState == ConnectionState.waiting) {
@@ -292,7 +292,7 @@ class _AddTrainingSessionScreenState extends State<AddTrainingSessionScreen> {
 
         return DropdownButtonFormField<String>(
           initialValue: _selectedTrainerId,
-          decoration: const InputDecoration(labelText: AppTexts.trainer),
+          decoration: InputDecoration(labelText: AppTexts.trainer),
           items: trainers.map((trainer) {
             return DropdownMenuItem<String>(
               value: trainer.id,
@@ -306,7 +306,7 @@ class _AddTrainingSessionScreenState extends State<AddTrainingSessionScreen> {
                     _selectedTrainerId = trainerId;
                   });
                 },
-          hint: const Text(AppTexts.selectTrainer),
+          hint: Text(AppTexts.selectTrainer),
         );
       },
     );
@@ -335,7 +335,7 @@ class _AddTrainingSessionScreenState extends State<AddTrainingSessionScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text(AppTexts.addTrainingSession)),
+      appBar: AppBar(title: Text(AppTexts.addTrainingSession)),
       body: FutureBuilder<String?>(
         future: FirebaseAuth.instance.currentUser == null
             ? Future.value(null)
@@ -351,9 +351,7 @@ class _AddTrainingSessionScreenState extends State<AddTrainingSessionScreen> {
             stream: _scheduleService.watchTrainingTypes(),
             builder: (context, snapshot) {
               if (snapshot.hasError) {
-                return const Center(
-                  child: Text(AppTexts.trainingTypesLoadError),
-                );
+                return Center(child: Text(AppTexts.trainingTypesLoadError));
               }
 
               if (snapshot.connectionState == ConnectionState.waiting) {
@@ -363,7 +361,7 @@ class _AddTrainingSessionScreenState extends State<AddTrainingSessionScreen> {
               final trainingTypes = snapshot.data ?? [];
 
               if (trainingTypes.isEmpty) {
-                return const Center(child: Text(AppTexts.noTrainings));
+                return Center(child: Text(AppTexts.noTrainings));
               }
 
               return ListView(
@@ -371,7 +369,7 @@ class _AddTrainingSessionScreenState extends State<AddTrainingSessionScreen> {
                 children: [
                   DropdownButtonFormField<String>(
                     initialValue: _selectedTrainingTypeId,
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       labelText: AppTexts.trainingType,
                     ),
                     items: trainingTypes.map((trainingType) {
@@ -385,7 +383,7 @@ class _AddTrainingSessionScreenState extends State<AddTrainingSessionScreen> {
                         : (trainingTypeId) {
                             _selectTrainingType(trainingTypeId, trainingTypes);
                           },
-                    hint: const Text(AppTexts.selectTrainingType),
+                    hint: Text(AppTexts.selectTrainingType),
                   ),
                   if (isAdmin) ...[
                     const SizedBox(height: AppSpacing.cardGap),
@@ -396,7 +394,7 @@ class _AddTrainingSessionScreenState extends State<AddTrainingSessionScreen> {
                     controller: _durationController,
                     enabled: !_isSaving,
                     keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       labelText: AppTexts.duration,
                       suffixText: AppTexts.minutes,
                     ),
@@ -406,9 +404,7 @@ class _AddTrainingSessionScreenState extends State<AddTrainingSessionScreen> {
                     controller: _capacityController,
                     enabled: !_isSaving,
                     keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(
-                      labelText: AppTexts.capacity,
-                    ),
+                    decoration: InputDecoration(labelText: AppTexts.capacity),
                   ),
                   const SizedBox(height: AppSpacing.cardGap),
                   OutlinedButton.icon(
@@ -433,7 +429,7 @@ class _AddTrainingSessionScreenState extends State<AddTrainingSessionScreen> {
                             height: 20,
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
-                        : const Text(AppTexts.save),
+                        : Text(AppTexts.save),
                   ),
                 ],
               );

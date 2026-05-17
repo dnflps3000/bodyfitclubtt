@@ -118,12 +118,12 @@ class _LoginScreenState extends State<LoginScreen> {
     await showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text(AppTexts.registerTitle),
+        title: Text(AppTexts.registerTitle),
         content: Text(message),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text(AppTexts.ok),
+            child: Text(AppTexts.ok),
           ),
         ],
       ),
@@ -209,11 +209,11 @@ class _LoginScreenState extends State<LoginScreen> {
       builder: (dialogContext) {
         return AlertDialog(
           scrollable: true,
-          title: const Text(AppTexts.resetPasswordTitle),
+          title: Text(AppTexts.resetPasswordTitle),
           content: TextFormField(
             initialValue: email,
             keyboardType: TextInputType.emailAddress,
-            decoration: const InputDecoration(labelText: AppTexts.email),
+            decoration: InputDecoration(labelText: AppTexts.email),
             onChanged: (value) {
               email = value;
             },
@@ -224,14 +224,14 @@ class _LoginScreenState extends State<LoginScreen> {
                 FocusScope.of(dialogContext).unfocus();
                 Navigator.of(dialogContext).pop(false);
               },
-              child: const Text(AppTexts.cancel),
+              child: Text(AppTexts.cancel),
             ),
             FilledButton(
               onPressed: () {
                 FocusScope.of(dialogContext).unfocus();
                 Navigator.of(dialogContext).pop(true);
               },
-              child: const Text(AppTexts.sendResetEmail),
+              child: Text(AppTexts.sendResetEmail),
             ),
           ],
         );
@@ -245,15 +245,13 @@ class _LoginScreenState extends State<LoginScreen> {
     final trimmedEmail = email.trim();
 
     if (trimmedEmail.isEmpty) {
-      messenger.showSnackBar(
-        const SnackBar(content: Text(AppTexts.emailRequired)),
-      );
+      messenger.showSnackBar(SnackBar(content: Text(AppTexts.emailRequired)));
       return;
     }
 
     if (!trimmedEmail.contains('@') || !trimmedEmail.contains('.')) {
       messenger.showSnackBar(
-        const SnackBar(content: Text(AppTexts.invalidEmailFormat)),
+        SnackBar(content: Text(AppTexts.invalidEmailFormat)),
       );
       return;
     }
@@ -271,7 +269,7 @@ class _LoginScreenState extends State<LoginScreen> {
       if (!mounted) return;
 
       messenger.showSnackBar(
-        const SnackBar(content: Text(AppTexts.passwordResetEmailSent)),
+        SnackBar(content: Text(AppTexts.passwordResetEmailSent)),
       );
     } on FirebaseAuthException catch (error) {
       if (!mounted) return;
@@ -280,15 +278,13 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (error.code == 'invalid-email') {
         messenger.showSnackBar(
-          const SnackBar(content: Text(AppTexts.invalidEmailFormat)),
+          SnackBar(content: Text(AppTexts.invalidEmailFormat)),
         );
       } else if (error.code == 'network-request-failed') {
-        messenger.showSnackBar(
-          const SnackBar(content: Text(AppTexts.networkError)),
-        );
+        messenger.showSnackBar(SnackBar(content: Text(AppTexts.networkError)));
       } else {
         messenger.showSnackBar(
-          const SnackBar(content: Text(AppTexts.passwordResetEmailSent)),
+          SnackBar(content: Text(AppTexts.passwordResetEmailSent)),
         );
       }
     } catch (error) {
@@ -297,7 +293,7 @@ class _LoginScreenState extends State<LoginScreen> {
       debugPrint('PASSWORD RESET UNKNOWN ERROR: $error');
 
       messenger.showSnackBar(
-        const SnackBar(content: Text(AppTexts.passwordResetEmailSent)),
+        SnackBar(content: Text(AppTexts.passwordResetEmailSent)),
       );
     } finally {
       if (mounted) {
@@ -350,7 +346,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           );
                         }),
                   icon: Image.asset('assets/auth/google.png', height: 22),
-                  label: const Text(AppTexts.continueWithGoogle),
+                  label: Text(AppTexts.continueWithGoogle),
                 ),
                 const SizedBox(height: AppSpacing.cardGap),
                 ElevatedButton.icon(
@@ -370,11 +366,11 @@ class _LoginScreenState extends State<LoginScreen> {
                           );
                         }),
                   icon: Image.asset('assets/auth/facebook.png', height: 22),
-                  label: const Text(AppTexts.continueWithFacebook),
+                  label: Text(AppTexts.continueWithFacebook),
                 ),
 
                 const SizedBox(height: AppSpacing.xl),
-                const Row(
+                Row(
                   children: [
                     Expanded(child: Divider()),
                     Padding(
@@ -394,7 +390,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   enabled: !_isLoading,
                   keyboardType: TextInputType.emailAddress,
                   textInputAction: TextInputAction.next,
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     labelText: AppTexts.email,
                     border: OutlineInputBorder(),
                   ),
@@ -415,7 +411,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       );
                     }
                   },
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     labelText: AppTexts.password,
                     border: OutlineInputBorder(),
                   ),
@@ -434,12 +430,12 @@ class _LoginScreenState extends State<LoginScreen> {
                           },
                     controlAffinity: ListTileControlAffinity.leading,
                     contentPadding: EdgeInsets.zero,
-                    title: const Text(AppTexts.acceptTerms),
+                    title: Text(AppTexts.acceptTerms),
                     subtitle: TextButton(
                       onPressed: _isLoading
                           ? null
                           : () => _openUrl(AppTexts.bodyFitClubWebsite),
-                      child: const Align(
+                      child: Align(
                         alignment: Alignment.centerLeft,
                         child: Text(AppTexts.openTerms),
                       ),
@@ -456,12 +452,12 @@ class _LoginScreenState extends State<LoginScreen> {
                           },
                     controlAffinity: ListTileControlAffinity.leading,
                     contentPadding: EdgeInsets.zero,
-                    title: const Text(AppTexts.acceptPrivacy),
+                    title: Text(AppTexts.acceptPrivacy),
                     subtitle: TextButton(
                       onPressed: _isLoading
                           ? null
                           : () => _openUrl(AppTexts.bodyFitClubWebsite),
-                      child: const Align(
+                      child: Align(
                         alignment: Alignment.centerLeft,
                         child: Text(AppTexts.openPrivacy),
                       ),
@@ -486,7 +482,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 if (isLoginMode)
                   TextButton(
                     onPressed: _isLoading ? null : _resetPassword,
-                    child: const Text(AppTexts.forgotPassword),
+                    child: Text(AppTexts.forgotPassword),
                   ),
 
                 TextButton(

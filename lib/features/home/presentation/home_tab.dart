@@ -77,7 +77,7 @@ class HomeTab extends StatelessWidget {
     return FilledButton.icon(
       onPressed: () => _openAttendanceQrScanner(context, role),
       icon: const Icon(Icons.qr_code_scanner),
-      label: const Text(AppTexts.scanQrCodes),
+      label: Text(AppTexts.scanQrCodes),
     );
   }
 
@@ -98,7 +98,7 @@ class HomeTab extends StatelessWidget {
                 AppTexts.accountDeletionRequests,
                 style: _homeCardTitleStyle(context),
               ),
-              subtitle: const Text(AppTexts.accountDeletionRequestsLoadError),
+              subtitle: Text(AppTexts.accountDeletionRequestsLoadError),
               onTap: () => _openAccountDeletionRequests(context),
             ),
           );
@@ -112,7 +112,7 @@ class HomeTab extends StatelessWidget {
                 AppTexts.accountDeletionRequests,
                 style: _homeCardTitleStyle(context),
               ),
-              subtitle: const Text(AppTexts.loading),
+              subtitle: Text(AppTexts.loading),
               onTap: () => _openAccountDeletionRequests(context),
             ),
           );
@@ -154,7 +154,7 @@ class HomeTab extends StatelessWidget {
                 AppTexts.discountRequests,
                 style: _homeCardTitleStyle(context),
               ),
-              subtitle: const Text(AppTexts.discountRequestsLoadError),
+              subtitle: Text(AppTexts.discountRequestsLoadError),
               onTap: () => _openDiscountRequests(context),
             ),
           );
@@ -168,7 +168,7 @@ class HomeTab extends StatelessWidget {
                 AppTexts.discountRequests,
                 style: _homeCardTitleStyle(context),
               ),
-              subtitle: const Text(AppTexts.loading),
+              subtitle: Text(AppTexts.loading),
               onTap: () => _openDiscountRequests(context),
             ),
           );
@@ -207,7 +207,7 @@ class HomeTab extends StatelessWidget {
                 AppTexts.nearestTrainings,
                 style: _homeCardTitleStyle(context),
               ),
-              subtitle: const Text(AppTexts.loading),
+              subtitle: Text(AppTexts.loading),
             ),
           );
         }
@@ -220,7 +220,7 @@ class HomeTab extends StatelessWidget {
                 AppTexts.nearestTrainings,
                 style: _homeCardTitleStyle(context),
               ),
-              subtitle: const Text(AppTexts.noNearestTraining),
+              subtitle: Text(AppTexts.noNearestTraining),
               onTap: onOpenSchedule,
             ),
           );
@@ -283,7 +283,7 @@ class HomeTab extends StatelessWidget {
                 AppTexts.nearestReservations,
                 style: _homeCardTitleStyle(context),
               ),
-              subtitle: const Text(AppTexts.loading),
+              subtitle: Text(AppTexts.loading),
             ),
           );
         }
@@ -296,7 +296,7 @@ class HomeTab extends StatelessWidget {
                 AppTexts.nearestReservations,
                 style: _homeCardTitleStyle(context),
               ),
-              subtitle: const Text(AppTexts.noNearestReservations),
+              subtitle: Text(AppTexts.noNearestReservations),
               onTap: onOpenReservations,
             ),
           );
@@ -336,7 +336,7 @@ class HomeTab extends StatelessWidget {
                                 );
                               },
                               icon: const Icon(Icons.qr_code, size: 18),
-                              label: const Text(AppTexts.qrShort),
+                              label: Text(AppTexts.qrShort),
                               style: OutlinedButton.styleFrom(
                                 padding: const EdgeInsets.symmetric(
                                   horizontal:
@@ -385,7 +385,7 @@ class HomeTab extends StatelessWidget {
                 AppTexts.myMemberships,
                 style: _homeCardTitleStyle(context),
               ),
-              subtitle: const Text(AppTexts.membershipLoadError),
+              subtitle: Text(AppTexts.membershipLoadError),
             ),
           );
         }
@@ -400,7 +400,7 @@ class HomeTab extends StatelessWidget {
                 AppTexts.myMemberships,
                 style: _homeCardTitleStyle(context),
               ),
-              subtitle: const Text(AppTexts.loading),
+              subtitle: Text(AppTexts.loading),
             ),
           );
         }
@@ -413,7 +413,7 @@ class HomeTab extends StatelessWidget {
                 AppTexts.myMemberships,
                 style: _homeCardTitleStyle(context),
               ),
-              subtitle: const Text(AppTexts.noActiveMembership),
+              subtitle: Text(AppTexts.noActiveMembership),
               onTap: onOpenMemberships,
             ),
           );

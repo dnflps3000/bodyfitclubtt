@@ -28,16 +28,16 @@ class _AddTrainingAttendanceScreenState
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text(AppTexts.addTrainingAttendance),
-          content: const Text(AppTexts.addTrainingAttendanceQuestion),
+          title: Text(AppTexts.addTrainingAttendance),
+          content: Text(AppTexts.addTrainingAttendanceQuestion),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: const Text(AppTexts.cancel),
+              child: Text(AppTexts.cancel),
             ),
             FilledButton(
               onPressed: () => Navigator.of(context).pop(true),
-              child: const Text(AppTexts.confirm),
+              child: Text(AppTexts.confirm),
             ),
           ],
         );
@@ -54,7 +54,7 @@ class _AddTrainingAttendanceScreenState
     if (selectedUser == null || selectedMembership == null) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text(AppTexts.fillAllFields)));
+      ).showSnackBar(SnackBar(content: Text(AppTexts.fillAllFields)));
       return;
     }
 
@@ -79,9 +79,9 @@ class _AddTrainingAttendanceScreenState
         return;
       }
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text(AppTexts.trainingAttendanceAdded)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(AppTexts.trainingAttendanceAdded)));
 
       Navigator.of(context).pop(true);
     } catch (error) {
@@ -117,7 +117,7 @@ class _AddTrainingAttendanceScreenState
     return DropdownButtonFormField<String>(
       initialValue: safeSelectedUserId,
       isExpanded: true,
-      decoration: const InputDecoration(
+      decoration: InputDecoration(
         labelText: AppTexts.selectAttendanceUser,
         border: OutlineInputBorder(),
       ),
@@ -169,7 +169,7 @@ class _AddTrainingAttendanceScreenState
       ),
       builder: (context, snapshot) {
         if (snapshot.hasError) {
-          return const Text(AppTexts.membershipLoadError);
+          return Text(AppTexts.membershipLoadError);
         }
 
         if (!snapshot.hasData) {
@@ -179,7 +179,7 @@ class _AddTrainingAttendanceScreenState
         final memberships = snapshot.data ?? [];
 
         if (memberships.isEmpty) {
-          return const Card(
+          return Card(
             child: Padding(
               padding: EdgeInsets.all(AppSpacing.cardPadding),
               child: Text(AppTexts.noUsableMembershipsForAttendance),
@@ -198,7 +198,7 @@ class _AddTrainingAttendanceScreenState
         return DropdownButtonFormField<String>(
           initialValue: safeSelectedMembershipId,
           isExpanded: true,
-          decoration: const InputDecoration(
+          decoration: InputDecoration(
             labelText: AppTexts.selectAttendanceMembership,
             border: OutlineInputBorder(),
           ),
@@ -237,12 +237,12 @@ class _AddTrainingAttendanceScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text(AppTexts.addTrainingAttendance)),
+      appBar: AppBar(title: Text(AppTexts.addTrainingAttendance)),
       body: StreamBuilder<List<TrainingHistoryUserOption>>(
         stream: _service.watchUsersForAttendance(),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
-            return const Center(child: Text(AppTexts.usersLoadError));
+            return Center(child: Text(AppTexts.usersLoadError));
           }
 
           if (!snapshot.hasData) {
@@ -252,7 +252,7 @@ class _AddTrainingAttendanceScreenState
           final users = snapshot.data ?? [];
 
           if (users.isEmpty) {
-            return const Center(child: Text(AppTexts.noUsersForAttendance));
+            return Center(child: Text(AppTexts.noUsersForAttendance));
           }
 
           return ListView(
@@ -271,7 +271,7 @@ class _AddTrainingAttendanceScreenState
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
                     : const Icon(Icons.person_add_alt_1),
-                label: const Text(AppTexts.addTrainingAttendance),
+                label: Text(AppTexts.addTrainingAttendance),
               ),
             ],
           );

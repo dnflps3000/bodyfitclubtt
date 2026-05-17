@@ -17,7 +17,7 @@ class AboutAppScreen extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
-      appBar: AppBar(title: const Text(AppTexts.aboutApp)),
+      appBar: AppBar(title: Text(AppTexts.aboutApp)),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.all(AppSpacing.screenPadding),
@@ -36,7 +36,7 @@ class AboutAppScreen extends StatelessWidget {
             Card(
               child: Column(
                 children: [
-                  const ListTile(
+                  ListTile(
                     leading: Icon(Icons.description_outlined),
                     title: Text(AppTexts.legalDocuments),
                   ),

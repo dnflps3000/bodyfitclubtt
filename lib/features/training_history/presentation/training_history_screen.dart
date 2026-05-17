@@ -120,14 +120,14 @@ class _TrainingHistoryScreenState extends State<TrainingHistoryScreen> {
             Expanded(
               child: OutlinedButton(
                 onPressed: _setLast7Days,
-                child: const Text(AppTexts.last7Days),
+                child: Text(AppTexts.last7Days),
               ),
             ),
             const SizedBox(width: AppSpacing.sm),
             Expanded(
               child: OutlinedButton(
                 onPressed: _setLast30Days,
-                child: const Text(AppTexts.last30Days),
+                child: Text(AppTexts.last30Days),
               ),
             ),
           ],
@@ -183,12 +183,12 @@ class _TrainingHistoryScreenState extends State<TrainingHistoryScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text(AppTexts.trainingHistory)),
+      appBar: AppBar(title: Text(AppTexts.trainingHistory)),
       body: StreamBuilder<List<TrainingHistorySession>>(
         stream: _service.watchTrainingHistory(from: _from, to: _to),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
-            return const Center(child: Text(AppTexts.trainingHistoryLoadError));
+            return Center(child: Text(AppTexts.trainingHistoryLoadError));
           }
 
           if (!snapshot.hasData) {
@@ -213,7 +213,7 @@ class _TrainingHistoryScreenState extends State<TrainingHistoryScreen> {
               }
 
               if (sessions.isEmpty) {
-                return const Padding(
+                return Padding(
                   padding: EdgeInsets.all(AppSpacing.xl),
                   child: Text(
                     AppTexts.noTrainingHistoryInSelectedPeriod,

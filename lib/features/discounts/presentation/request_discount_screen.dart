@@ -64,7 +64,7 @@ class _RequestDiscountScreenState extends State<RequestDiscountScreen> {
 
     if (documentFile == null) {
       messenger.showSnackBar(
-        const SnackBar(content: Text(AppTexts.discountDocumentRequired)),
+        SnackBar(content: Text(AppTexts.discountDocumentRequired)),
       );
       return;
     }
@@ -83,7 +83,7 @@ class _RequestDiscountScreenState extends State<RequestDiscountScreen> {
       if (!mounted) return;
 
       messenger.showSnackBar(
-        const SnackBar(content: Text(AppTexts.discountRequestSent)),
+        SnackBar(content: Text(AppTexts.discountRequestSent)),
       );
 
       Navigator.of(context).pop();
@@ -110,7 +110,7 @@ class _RequestDiscountScreenState extends State<RequestDiscountScreen> {
     const discountTypes = ['student', 'senior', 'ztp', 'individual'];
 
     return Scaffold(
-      appBar: AppBar(title: const Text(AppTexts.requestDiscount)),
+      appBar: AppBar(title: Text(AppTexts.requestDiscount)),
       body: ListView(
         padding: const EdgeInsets.all(AppSpacing.screenPadding),
         children: [
@@ -121,7 +121,7 @@ class _RequestDiscountScreenState extends State<RequestDiscountScreen> {
           const SizedBox(height: AppSpacing.sectionGap),
           DropdownButtonFormField<String>(
             initialValue: _selectedType,
-            decoration: const InputDecoration(labelText: AppTexts.discountType),
+            decoration: InputDecoration(labelText: AppTexts.discountType),
             items: [
               for (final type in discountTypes)
                 DropdownMenuItem(
@@ -144,7 +144,7 @@ class _RequestDiscountScreenState extends State<RequestDiscountScreen> {
             controller: _noteController,
             enabled: !_isSaving,
             maxLines: 4,
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               labelText: AppTexts.discountRequestNote,
               alignLabelWithHint: true,
             ),
@@ -174,7 +174,7 @@ class _RequestDiscountScreenState extends State<RequestDiscountScreen> {
                             ? null
                             : () => _pickDocument(ImageSource.camera),
                         icon: const Icon(Icons.photo_camera_outlined),
-                        label: const Text(AppTexts.takeDiscountDocumentPhoto),
+                        label: Text(AppTexts.takeDiscountDocumentPhoto),
                       ),
                       const SizedBox(height: AppSpacing.sm),
                       OutlinedButton.icon(
@@ -182,9 +182,7 @@ class _RequestDiscountScreenState extends State<RequestDiscountScreen> {
                             ? null
                             : () => _pickDocument(ImageSource.gallery),
                         icon: const Icon(Icons.photo_library_outlined),
-                        label: const Text(
-                          AppTexts.chooseDiscountDocumentFromGallery,
-                        ),
+                        label: Text(AppTexts.chooseDiscountDocumentFromGallery),
                       ),
                     ],
                   ),
@@ -208,7 +206,7 @@ class _RequestDiscountScreenState extends State<RequestDiscountScreen> {
                     height: 18,
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
-                : const Text(AppTexts.sendRequest),
+                : Text(AppTexts.sendRequest),
           ),
         ],
       ),

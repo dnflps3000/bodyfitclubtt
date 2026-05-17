@@ -34,7 +34,7 @@ class _AccountDeletionRequestsScreenState
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          title: const Text(AppTexts.completeAccountDeletionTitle),
+          title: Text(AppTexts.completeAccountDeletionTitle),
           content: Text(
             '${AppTexts.completeAccountDeletionQuestion}\n\n'
             '$displayLabel',
@@ -42,11 +42,11 @@ class _AccountDeletionRequestsScreenState
           actions: [
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: const Text(AppTexts.cancel),
+              child: Text(AppTexts.cancel),
             ),
             FilledButton(
               onPressed: () => Navigator.of(dialogContext).pop(true),
-              child: const Text(AppTexts.completeAccountDeletion),
+              child: Text(AppTexts.completeAccountDeletion),
             ),
           ],
         );
@@ -71,13 +71,13 @@ class _AccountDeletionRequestsScreenState
       if (!mounted) return;
 
       messenger.showSnackBar(
-        const SnackBar(content: Text(AppTexts.accountDeletionCompleted)),
+        SnackBar(content: Text(AppTexts.accountDeletionCompleted)),
       );
     } catch (_) {
       if (!mounted) return;
 
       messenger.showSnackBar(
-        const SnackBar(content: Text(AppTexts.accountDeletionCompleteError)),
+        SnackBar(content: Text(AppTexts.accountDeletionCompleteError)),
       );
     } finally {
       if (mounted) {
@@ -151,7 +151,7 @@ class _AccountDeletionRequestsScreenState
                         displayLabel: displayLabel,
                       ),
                 icon: const Icon(Icons.privacy_tip_outlined),
-                label: const Text(AppTexts.completeAccountDeletion),
+                label: Text(AppTexts.completeAccountDeletion),
               ),
             ),
           ],
@@ -163,12 +163,12 @@ class _AccountDeletionRequestsScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text(AppTexts.accountDeletionRequests)),
+      appBar: AppBar(title: Text(AppTexts.accountDeletionRequests)),
       body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
         stream: _watchRequests(),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
-            return const Center(
+            return Center(
               child: Text(AppTexts.accountDeletionRequestsLoadError),
             );
           }
@@ -180,9 +180,7 @@ class _AccountDeletionRequestsScreenState
           final requests = snapshot.data?.docs ?? [];
 
           if (requests.isEmpty) {
-            return const Center(
-              child: Text(AppTexts.noAccountDeletionRequests),
-            );
+            return Center(child: Text(AppTexts.noAccountDeletionRequests));
           }
 
           return ListView.separated(

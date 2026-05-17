@@ -138,7 +138,7 @@ class _MembershipDetailScreenState extends State<MembershipDetailScreen> {
                           onPressed: _isSaving
                               ? null
                               : () => _cancelReservedReservation(item),
-                          child: const Text(AppTexts.cancel),
+                          child: Text(AppTexts.cancel),
                         ),
                       ],
                     ],
@@ -151,7 +151,7 @@ class _MembershipDetailScreenState extends State<MembershipDetailScreen> {
                   child: FilledButton.icon(
                     onPressed: _isSaving ? null : _cancelReservedReservations,
                     icon: const Icon(Icons.event_busy_outlined),
-                    label: const Text(AppTexts.cancelAllReservations),
+                    label: Text(AppTexts.cancelAllReservations),
                   ),
                 ),
               ],
@@ -179,16 +179,16 @@ class _MembershipDetailScreenState extends State<MembershipDetailScreen> {
         _entriesReservedOverride ?? (widget.membership.entriesReserved ?? 0);
 
     if (entriesTotal != null && entriesRemaining == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text(AppTexts.invalidRemainingEntries)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(AppTexts.invalidRemainingEntries)));
       return;
     }
 
     if (entriesRemaining != null && entriesRemaining < 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text(AppTexts.invalidRemainingEntries)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(AppTexts.invalidRemainingEntries)));
       return;
     }
 
@@ -196,7 +196,7 @@ class _MembershipDetailScreenState extends State<MembershipDetailScreen> {
         entriesRemaining != null &&
         entriesRemaining > entriesTotal) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text(AppTexts.invalidRemainingEntriesHigherThanTotal),
         ),
       );
@@ -205,7 +205,7 @@ class _MembershipDetailScreenState extends State<MembershipDetailScreen> {
 
     if (entriesRemaining != null && entriesReserved > entriesRemaining) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text(AppTexts.invalidRemainingEntriesLowerThanReserved),
         ),
       );
@@ -217,9 +217,7 @@ class _MembershipDetailScreenState extends State<MembershipDetailScreen> {
 
     if (isDeactivatingMembership && entriesReserved > 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(AppTexts.cancelReservationsBeforeDeactivation),
-        ),
+        SnackBar(content: Text(AppTexts.cancelReservationsBeforeDeactivation)),
       );
       return;
     }
@@ -244,13 +242,13 @@ class _MembershipDetailScreenState extends State<MembershipDetailScreen> {
 
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text(AppTexts.membershipUpdated)));
+      ).showSnackBar(SnackBar(content: Text(AppTexts.membershipUpdated)));
     } catch (_) {
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text(AppTexts.membershipUpdateError)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(AppTexts.membershipUpdateError)));
     } finally {
       if (mounted) {
         setState(() {
@@ -271,16 +269,16 @@ class _MembershipDetailScreenState extends State<MembershipDetailScreen> {
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          title: const Text(AppTexts.cancelAllocatedReservations),
-          content: const Text(AppTexts.cancelAllocatedReservationsQuestion),
+          title: Text(AppTexts.cancelAllocatedReservations),
+          content: Text(AppTexts.cancelAllocatedReservationsQuestion),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: const Text(AppTexts.back),
+              child: Text(AppTexts.back),
             ),
             FilledButton(
               onPressed: () => Navigator.of(dialogContext).pop(true),
-              child: const Text(AppTexts.cancelReservations),
+              child: Text(AppTexts.cancelReservations),
             ),
           ],
         );
@@ -316,9 +314,7 @@ class _MembershipDetailScreenState extends State<MembershipDetailScreen> {
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(AppTexts.cancelAllocatedReservationsError),
-        ),
+        SnackBar(content: Text(AppTexts.cancelAllocatedReservationsError)),
       );
     } finally {
       if (mounted) {
@@ -342,16 +338,16 @@ class _MembershipDetailScreenState extends State<MembershipDetailScreen> {
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          title: const Text(AppTexts.cancelReservationForMembership),
-          content: const Text(AppTexts.cancelReservationForMembershipQuestion),
+          title: Text(AppTexts.cancelReservationForMembership),
+          content: Text(AppTexts.cancelReservationForMembershipQuestion),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: const Text(AppTexts.back),
+              child: Text(AppTexts.back),
             ),
             FilledButton(
               onPressed: () => Navigator.of(dialogContext).pop(true),
-              child: const Text(AppTexts.cancelReservation),
+              child: Text(AppTexts.cancelReservation),
             ),
           ],
         );
@@ -386,16 +382,14 @@ class _MembershipDetailScreenState extends State<MembershipDetailScreen> {
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(AppTexts.reservationForMembershipCancelled),
-        ),
+        SnackBar(content: Text(AppTexts.reservationForMembershipCancelled)),
       );
     } catch (_) {
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text(AppTexts.reservationCancelError)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(AppTexts.reservationCancelError)));
     } finally {
       if (mounted) {
         setState(() {
@@ -428,7 +422,7 @@ class _MembershipDetailScreenState extends State<MembershipDetailScreen> {
     );
 
     return Scaffold(
-      appBar: AppBar(title: const Text(AppTexts.membershipDetail)),
+      appBar: AppBar(title: Text(AppTexts.membershipDetail)),
       body: AbsorbPointer(
         absorbing: _isSaving,
         child: ListView(
@@ -482,7 +476,7 @@ class _MembershipDetailScreenState extends State<MembershipDetailScreen> {
                 }
 
                 if (snapshot.hasError) {
-                  return const Card(
+                  return Card(
                     child: Padding(
                       padding: EdgeInsets.all(AppSpacing.cardPadding),
                       child: Text(AppTexts.membershipUsageLoadError),
@@ -531,10 +525,8 @@ class _MembershipDetailScreenState extends State<MembershipDetailScreen> {
                       const SizedBox(height: AppSpacing.cardGap),
                       DropdownButtonFormField<String>(
                         initialValue: _selectedStatus,
-                        decoration: const InputDecoration(
-                          labelText: AppTexts.status,
-                        ),
-                        items: const [
+                        decoration: InputDecoration(labelText: AppTexts.status),
+                        items: [
                           DropdownMenuItem(
                             value: 'active',
                             child: Text(AppTexts.membershipStatusActive),
@@ -561,7 +553,7 @@ class _MembershipDetailScreenState extends State<MembershipDetailScreen> {
                         TextField(
                           controller: _entriesRemainingController,
                           keyboardType: TextInputType.number,
-                          decoration: const InputDecoration(
+                          decoration: InputDecoration(
                             labelText: AppTexts.entriesRemaining,
                             border: OutlineInputBorder(),
                           ),
@@ -571,7 +563,7 @@ class _MembershipDetailScreenState extends State<MembershipDetailScreen> {
                       FilledButton.icon(
                         onPressed: _isSaving ? null : _saveAdminChanges,
                         icon: const Icon(Icons.save_outlined),
-                        label: const Text(AppTexts.save),
+                        label: Text(AppTexts.save),
                       ),
                     ],
                   ),

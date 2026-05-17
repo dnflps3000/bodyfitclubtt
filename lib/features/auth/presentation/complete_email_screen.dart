@@ -42,9 +42,9 @@ class _CompleteEmailScreenState extends State<CompleteEmailScreen> {
     final email = _emailController.text.trim().toLowerCase();
 
     if (!_isValidEmail(email)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text(AppTexts.invalidEmailFormat)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(AppTexts.invalidEmailFormat)));
       return;
     }
 
@@ -82,7 +82,7 @@ class _CompleteEmailScreenState extends State<CompleteEmailScreen> {
 
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text(AppTexts.emailSaved)));
+      ).showSnackBar(SnackBar(content: Text(AppTexts.emailSaved)));
 
       widget.onCompleted?.call();
     } catch (_) {
@@ -90,7 +90,7 @@ class _CompleteEmailScreenState extends State<CompleteEmailScreen> {
 
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text(AppTexts.emailSaveError)));
+      ).showSnackBar(SnackBar(content: Text(AppTexts.emailSaveError)));
     } finally {
       if (mounted) {
         setState(() {
@@ -120,28 +120,28 @@ class _CompleteEmailScreenState extends State<CompleteEmailScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(AppTexts.completeEmailTitle),
+        title: Text(AppTexts.completeEmailTitle),
         automaticallyImplyLeading: false,
         actions: [
           TextButton(
             onPressed: _isSaving ? null : _continueWithoutAccount,
-            child: const Text(AppTexts.continueWithoutAccount),
+            child: Text(AppTexts.continueWithoutAccount),
           ),
         ],
       ),
       body: ListView(
         padding: const EdgeInsets.all(AppSpacing.screenPadding),
         children: [
-          const Text(AppTexts.completeEmailDescription),
+          Text(AppTexts.completeEmailDescription),
           const SizedBox(height: AppSpacing.cardGap),
-          const Text(AppTexts.completeEmailOrLogout),
+          Text(AppTexts.completeEmailOrLogout),
           const SizedBox(height: AppSpacing.sectionGap),
           TextField(
             controller: _emailController,
             enabled: !_isSaving,
             keyboardType: TextInputType.emailAddress,
             textInputAction: TextInputAction.done,
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               labelText: AppTexts.email,
               border: OutlineInputBorder(),
             ),
@@ -161,13 +161,13 @@ class _CompleteEmailScreenState extends State<CompleteEmailScreen> {
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
                 : const Icon(Icons.email_outlined),
-            label: const Text(AppTexts.save),
+            label: Text(AppTexts.save),
           ),
           const SizedBox(height: AppSpacing.cardGap),
           OutlinedButton.icon(
             onPressed: _isSaving ? null : _continueWithoutAccount,
             icon: const Icon(Icons.logout),
-            label: const Text(AppTexts.continueWithoutAccount),
+            label: Text(AppTexts.continueWithoutAccount),
           ),
         ],
       ),

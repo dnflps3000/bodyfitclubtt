@@ -129,7 +129,7 @@ class _ScheduleTabState extends State<ScheduleTab> {
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          title: const Text(AppTexts.cancelTrainingSessionTitle),
+          title: Text(AppTexts.cancelTrainingSessionTitle),
           content: Text(
             '${AppTexts.cancelTrainingSessionQuestion}\n\n'
             '${item.trainingType.name}\n'
@@ -139,11 +139,11 @@ class _ScheduleTabState extends State<ScheduleTab> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: const Text(AppTexts.cancel),
+              child: Text(AppTexts.cancel),
             ),
             FilledButton(
               onPressed: () => Navigator.of(dialogContext).pop(true),
-              child: const Text(AppTexts.cancelTrainingSessionConfirm),
+              child: Text(AppTexts.cancelTrainingSessionConfirm),
             ),
           ],
         );
@@ -170,7 +170,7 @@ class _ScheduleTabState extends State<ScheduleTab> {
       if (!context.mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text(AppTexts.trainingSessionCancelled)),
+        SnackBar(content: Text(AppTexts.trainingSessionCancelled)),
       );
     } catch (error) {
       if (!context.mounted) return;
@@ -207,9 +207,9 @@ class _ScheduleTabState extends State<ScheduleTab> {
 
       if (!context.mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text(AppTexts.reservationCreated)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(AppTexts.reservationCreated)));
     } catch (error) {
       if (!context.mounted) return;
 
@@ -261,7 +261,7 @@ class _ScheduleTabState extends State<ScheduleTab> {
           stream: scheduleService.watchScheduleItems(),
           builder: (context, scheduleSnapshot) {
             if (scheduleSnapshot.hasError) {
-              return const Center(child: Text(AppTexts.trainingsLoadError));
+              return Center(child: Text(AppTexts.trainingsLoadError));
             }
 
             if (scheduleSnapshot.connectionState == ConnectionState.waiting) {
@@ -308,7 +308,7 @@ class _ScheduleTabState extends State<ScheduleTab> {
         role == AppRoles.user || role == null || role.isEmpty;
 
     if (items.isEmpty) {
-      return const Center(
+      return Center(
         child: Padding(
           padding: EdgeInsets.all(AppSpacing.xl),
           child: Text(
@@ -418,9 +418,7 @@ class _ScheduleTabState extends State<ScheduleTab> {
                             ),
                           )
                         else if (!isManager && sessionHasEnded)
-                          const Chip(
-                            label: Text(AppTexts.trainingSessionFinished),
-                          ),
+                          Chip(label: Text(AppTexts.trainingSessionFinished)),
                       ],
                     ),
                     const SizedBox(height: AppSpacing.sm),

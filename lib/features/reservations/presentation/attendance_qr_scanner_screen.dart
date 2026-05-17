@@ -54,7 +54,7 @@ class _AttendanceQrScannerScreenState extends State<AttendanceQrScannerScreen> {
 
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text(AppTexts.qrScanSuccessful)));
+      ).showSnackBar(SnackBar(content: Text(AppTexts.qrScanSuccessful)));
 
       await Future.delayed(const Duration(seconds: 2));
 
@@ -72,14 +72,14 @@ class _AttendanceQrScannerScreenState extends State<AttendanceQrScannerScreen> {
 
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text(AppTexts.invalidQrCode)));
+      ).showSnackBar(SnackBar(content: Text(AppTexts.invalidQrCode)));
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text(AppTexts.scanQrCodes)),
+      appBar: AppBar(title: Text(AppTexts.scanQrCodes)),
       body: SafeArea(
         child: Column(
           children: [

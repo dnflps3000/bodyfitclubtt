@@ -54,7 +54,7 @@ class PublicHomeScreen extends StatelessWidget {
                 AppTexts.nearestTrainings,
                 style: _homeCardTitleStyle(context),
               ),
-              subtitle: const Text(AppTexts.trainingsLoadError),
+              subtitle: Text(AppTexts.trainingsLoadError),
               onTap: onOpenSchedule,
             ),
           );
@@ -68,7 +68,7 @@ class PublicHomeScreen extends StatelessWidget {
                 AppTexts.nearestTrainings,
                 style: _homeCardTitleStyle(context),
               ),
-              subtitle: const Text(AppTexts.loading),
+              subtitle: Text(AppTexts.loading),
             ),
           );
         }
@@ -95,7 +95,7 @@ class PublicHomeScreen extends StatelessWidget {
                 AppTexts.nearestTrainings,
                 style: _homeCardTitleStyle(context),
               ),
-              subtitle: const Text(AppTexts.noNearestTraining),
+              subtitle: Text(AppTexts.noNearestTraining),
               onTap: onOpenSchedule,
             ),
           );

@@ -69,7 +69,7 @@ class _AssignMembershipScreenState extends State<AssignMembershipScreen> {
         selectedPlan == null) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text(AppTexts.fillAllFields)));
+      ).showSnackBar(SnackBar(content: Text(AppTexts.fillAllFields)));
       return;
     }
 
@@ -86,17 +86,17 @@ class _AssignMembershipScreenState extends State<AssignMembershipScreen> {
 
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text(AppTexts.membershipAssigned)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(AppTexts.membershipAssigned)));
 
       Navigator.of(context).pop(true);
     } catch (_) {
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text(AppTexts.membershipAssignError)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(AppTexts.membershipAssignError)));
     } finally {
       if (mounted) {
         setState(() {
@@ -111,7 +111,7 @@ class _AssignMembershipScreenState extends State<AssignMembershipScreen> {
       stream: _watchUsers(),
       builder: (context, snapshot) {
         if (snapshot.hasError) {
-          return const Text(AppTexts.usersLoadError);
+          return Text(AppTexts.usersLoadError);
         }
 
         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -126,7 +126,7 @@ class _AssignMembershipScreenState extends State<AssignMembershipScreen> {
         return DropdownButtonFormField<String>(
           initialValue: _selectedUserId,
           isExpanded: true,
-          decoration: const InputDecoration(labelText: AppTexts.client),
+          decoration: InputDecoration(labelText: AppTexts.client),
           items: users.map((user) {
             final subtitle = user.email == null ? '' : ' (${user.email})';
 
@@ -145,7 +145,7 @@ class _AssignMembershipScreenState extends State<AssignMembershipScreen> {
                     _selectedUserId = userId;
                   });
                 },
-          hint: const Text(AppTexts.selectUser),
+          hint: Text(AppTexts.selectUser),
         );
       },
     );
@@ -155,7 +155,7 @@ class _AssignMembershipScreenState extends State<AssignMembershipScreen> {
     return DropdownButtonFormField<String>(
       initialValue: _selectedPlanId,
       isExpanded: true,
-      decoration: const InputDecoration(labelText: AppTexts.membershipPlan),
+      decoration: InputDecoration(labelText: AppTexts.membershipPlan),
       items: plans.map((plan) {
         return DropdownMenuItem<String>(
           value: plan.id,
@@ -172,19 +172,19 @@ class _AssignMembershipScreenState extends State<AssignMembershipScreen> {
                 _selectedPlanId = planId;
               });
             },
-      hint: const Text(AppTexts.selectMembershipPlan),
+      hint: Text(AppTexts.selectMembershipPlan),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text(AppTexts.assignMembership)),
+      appBar: AppBar(title: Text(AppTexts.assignMembership)),
       body: StreamBuilder<List<MembershipPlan>>(
         stream: _membershipService.watchActiveMembershipPlans(),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
-            return const Center(child: Text(AppTexts.membershipPlansLoadError));
+            return Center(child: Text(AppTexts.membershipPlansLoadError));
           }
 
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -194,7 +194,7 @@ class _AssignMembershipScreenState extends State<AssignMembershipScreen> {
           final plans = snapshot.data ?? [];
 
           if (plans.isEmpty) {
-            return const Center(child: Text(AppTexts.membershipPlansLoadError));
+            return Center(child: Text(AppTexts.membershipPlansLoadError));
           }
 
           return ListView(
@@ -203,7 +203,7 @@ class _AssignMembershipScreenState extends State<AssignMembershipScreen> {
               _buildUserDropdown(),
               const SizedBox(height: AppSpacing.cardGap),
               _buildPlanDropdown(plans),
-              const SizedBox(height: AppSpacing.xl),
+              const SizedBox(height: 24),
               FilledButton(
                 onPressed: _isSaving ? null : () => _assignMembership(plans),
                 child: _isSaving
@@ -212,7 +212,7 @@ class _AssignMembershipScreenState extends State<AssignMembershipScreen> {
                         height: 20,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
-                    : const Text(AppTexts.assignMembership),
+                    : Text(AppTexts.assignMembership),
               ),
             ],
           );

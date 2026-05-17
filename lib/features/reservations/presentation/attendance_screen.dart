@@ -205,7 +205,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: const Text(AppTexts.cancel),
+              child: Text(AppTexts.cancel),
             ),
             FilledButton(
               onPressed: () => Navigator.of(dialogContext).pop(true),
@@ -232,13 +232,13 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
 
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text(AppTexts.attendanceMarked)));
+      ).showSnackBar(SnackBar(content: Text(AppTexts.attendanceMarked)));
     } catch (_) {
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text(AppTexts.attendanceMarkError)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(AppTexts.attendanceMarkError)));
     }
   }
 
@@ -276,7 +276,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                   child: FilledButton.icon(
                     onPressed: () => _confirmMarkAttendance(reservation, true),
                     icon: const Icon(Icons.check),
-                    label: const Text(AppTexts.attended),
+                    label: Text(AppTexts.attended),
                   ),
                 ),
                 const SizedBox(width: AppSpacing.cardGap),
@@ -284,7 +284,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                   child: OutlinedButton.icon(
                     onPressed: () => _confirmMarkAttendance(reservation, false),
                     icon: const Icon(Icons.close),
-                    label: const Text(AppTexts.noShow),
+                    label: Text(AppTexts.noShow),
                   ),
                 ),
               ],
@@ -320,7 +320,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   }
 
   Widget _buildEmptyAttendanceState() {
-    return const Center(
+    return Center(
       child: Padding(
         padding: EdgeInsets.all(AppSpacing.xl),
         child: Text(
@@ -367,7 +367,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(AppTexts.attendance),
+        title: Text(AppTexts.attendance),
         actions: [
           IconButton(
             tooltip: AppTexts.scanQrCode,
@@ -380,7 +380,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         stream: reservationsStream,
         builder: (context, snapshot) {
           if (snapshot.hasError) {
-            return const Center(child: Text(AppTexts.attendanceLoadError));
+            return Center(child: Text(AppTexts.attendanceLoadError));
           }
 
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -408,7 +408,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                           }
 
                           if (detailSnapshot.hasError) {
-                            return const Center(
+                            return Center(
                               child: Text(AppTexts.attendanceLoadError),
                             );
                           }

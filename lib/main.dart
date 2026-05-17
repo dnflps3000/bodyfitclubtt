@@ -182,7 +182,7 @@ class _ActiveUserGateState extends State<ActiveUserGate> {
         }
 
         if (snapshot.hasError) {
-          return const Scaffold(
+          return Scaffold(
             body: Center(
               child: Padding(
                 padding: EdgeInsets.all(24),
@@ -258,7 +258,7 @@ class HomeScreen extends StatelessWidget {
             );
             return Scaffold(
               appBar: AppBar(
-                title: const Text(AppTexts.appName),
+                title: Text(AppTexts.appName),
                 leading: settingsService.isRightHanded ? null : menuButton,
                 actions: settingsService.isRightHanded ? [menuButton] : null,
               ),

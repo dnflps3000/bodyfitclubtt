@@ -149,7 +149,7 @@ class _EditPublicMessageScreenState extends State<EditPublicMessageScreen> {
 
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text(AppTexts.messageSaveError)));
+      ).showSnackBar(SnackBar(content: Text(AppTexts.messageSaveError)));
     } finally {
       if (mounted) {
         setState(() {
@@ -176,7 +176,7 @@ class _EditPublicMessageScreenState extends State<EditPublicMessageScreen> {
               minLines: 8,
               maxLines: 14,
               textInputAction: TextInputAction.newline,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: AppTexts.messageText,
                 hintText: AppTexts.messageHint,
                 border: OutlineInputBorder(),

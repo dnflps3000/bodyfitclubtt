@@ -49,21 +49,21 @@ class _AddTrainingTypeScreenState extends State<AddTrainingTypeScreen> {
         defaultCapacity == null) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text(AppTexts.fillAllFields)));
+      ).showSnackBar(SnackBar(content: Text(AppTexts.fillAllFields)));
       return;
     }
 
     if (defaultDurationMinutes <= 0) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text(AppTexts.invalidDuration)));
+      ).showSnackBar(SnackBar(content: Text(AppTexts.invalidDuration)));
       return;
     }
 
     if (defaultCapacity <= 0) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text(AppTexts.invalidCapacity)));
+      ).showSnackBar(SnackBar(content: Text(AppTexts.invalidCapacity)));
       return;
     }
 
@@ -82,9 +82,9 @@ class _AddTrainingTypeScreenState extends State<AddTrainingTypeScreen> {
 
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text(AppTexts.trainingTypeCreated)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(AppTexts.trainingTypeCreated)));
 
       Navigator.of(context).pop(true);
     } catch (_) {
@@ -92,7 +92,7 @@ class _AddTrainingTypeScreenState extends State<AddTrainingTypeScreen> {
 
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text(AppTexts.saveError)));
+      ).showSnackBar(SnackBar(content: Text(AppTexts.saveError)));
     } finally {
       if (mounted) {
         setState(() {
@@ -105,28 +105,28 @@ class _AddTrainingTypeScreenState extends State<AddTrainingTypeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text(AppTexts.addTrainingType)),
+      appBar: AppBar(title: Text(AppTexts.addTrainingType)),
       body: ListView(
         padding: const EdgeInsets.all(AppSpacing.screenPadding),
         children: [
           TextField(
             controller: _nameController,
             enabled: !_isSaving,
-            decoration: const InputDecoration(labelText: AppTexts.trainingName),
+            decoration: InputDecoration(labelText: AppTexts.trainingName),
           ),
           const SizedBox(height: AppSpacing.cardGap),
           TextField(
             controller: _descriptionController,
             enabled: !_isSaving,
             maxLines: 3,
-            decoration: const InputDecoration(labelText: AppTexts.description),
+            decoration: InputDecoration(labelText: AppTexts.description),
           ),
           const SizedBox(height: AppSpacing.cardGap),
           TextField(
             controller: _durationController,
             enabled: !_isSaving,
             keyboardType: TextInputType.number,
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               labelText: AppTexts.defaultDuration,
               suffixText: AppTexts.minutes,
             ),
@@ -136,9 +136,7 @@ class _AddTrainingTypeScreenState extends State<AddTrainingTypeScreen> {
             controller: _capacityController,
             enabled: !_isSaving,
             keyboardType: TextInputType.number,
-            decoration: const InputDecoration(
-              labelText: AppTexts.defaultCapacity,
-            ),
+            decoration: InputDecoration(labelText: AppTexts.defaultCapacity),
           ),
           const SizedBox(height: AppSpacing.xl),
           FilledButton(
@@ -149,7 +147,7 @@ class _AddTrainingTypeScreenState extends State<AddTrainingTypeScreen> {
                     height: 20,
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
-                : const Text(AppTexts.save),
+                : Text(AppTexts.save),
           ),
         ],
       ),

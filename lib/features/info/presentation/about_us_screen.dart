@@ -32,7 +32,7 @@ class AboutUsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text(AppTexts.aboutUs)),
+      appBar: AppBar(title: Text(AppTexts.aboutUs)),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.all(AppSpacing.screenPadding),
@@ -51,8 +51,8 @@ class AboutUsScreen extends StatelessWidget {
             Card(
               child: ListTile(
                 leading: const Icon(Icons.credit_card_outlined),
-                title: const Text(AppTexts.multisport),
-                subtitle: const Text(
+                title: Text(AppTexts.multisport),
+                subtitle: Text(
                   AppTexts.multisportInfo,
                   textAlign: TextAlign.start,
                 ),
@@ -63,7 +63,7 @@ class AboutUsScreen extends StatelessWidget {
             Card(
               child: Column(
                 children: [
-                  const ListTile(
+                  ListTile(
                     leading: Icon(Icons.contact_phone_outlined),
                     title: Text(AppTexts.contacts),
                   ),
@@ -110,7 +110,7 @@ class AboutUsScreen extends StatelessWidget {
                       ],
                     ),
                   ),
-                  const _ContactRow(
+                  _ContactRow(
                     icon: Icons.location_on_outlined,
                     text: AppTexts.bodyFitClubOperationAddress,
                   ),
@@ -165,7 +165,7 @@ class AboutUsScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const ListTile(
+                  ListTile(
                     leading: Icon(Icons.receipt_long_outlined),
                     title: Text(AppTexts.billingDetails),
                   ),
@@ -178,7 +178,7 @@ class AboutUsScreen extends StatelessWidget {
                     ),
                     child: DefaultTextStyle(
                       style: Theme.of(context).textTheme.bodyMedium!,
-                      child: const Column(
+                      child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(AppTexts.bodyFitClubCompanyName),

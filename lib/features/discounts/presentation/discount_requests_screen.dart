@@ -68,13 +68,13 @@ class _DiscountRequestsScreenState extends State<DiscountRequestsScreen> {
           builder: (context, setDialogState) {
             return AlertDialog(
               scrollable: true,
-              title: const Text(AppTexts.approveDiscount),
+              title: Text(AppTexts.approveDiscount),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   ListTile(
                     contentPadding: EdgeInsets.zero,
-                    title: const Text(AppTexts.selectDiscountValidUntil),
+                    title: Text(AppTexts.selectDiscountValidUntil),
                     subtitle: Text(
                       selectedDate == null
                           ? AppTexts.discountValidUntilRequired
@@ -101,7 +101,7 @@ class _DiscountRequestsScreenState extends State<DiscountRequestsScreen> {
                   const SizedBox(height: AppSpacing.cardGap),
                   TextField(
                     maxLines: 3,
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       labelText: AppTexts.discountAdminNote,
                       alignLabelWithHint: true,
                     ),
@@ -116,7 +116,7 @@ class _DiscountRequestsScreenState extends State<DiscountRequestsScreen> {
                   onPressed: () {
                     Navigator.of(dialogContext).pop(false);
                   },
-                  child: const Text(AppTexts.cancel),
+                  child: Text(AppTexts.cancel),
                 ),
                 FilledButton(
                   onPressed: selectedDate == null
@@ -124,7 +124,7 @@ class _DiscountRequestsScreenState extends State<DiscountRequestsScreen> {
                       : () {
                           Navigator.of(dialogContext).pop(true);
                         },
-                  child: const Text(AppTexts.approveDiscount),
+                  child: Text(AppTexts.approveDiscount),
                 ),
               ],
             );
@@ -153,13 +153,13 @@ class _DiscountRequestsScreenState extends State<DiscountRequestsScreen> {
       if (!mounted) return;
 
       messenger.showSnackBar(
-        const SnackBar(content: Text(AppTexts.discountApproved)),
+        SnackBar(content: Text(AppTexts.discountApproved)),
       );
     } catch (_) {
       if (!mounted) return;
 
       messenger.showSnackBar(
-        const SnackBar(content: Text(AppTexts.discountDecisionError)),
+        SnackBar(content: Text(AppTexts.discountDecisionError)),
       );
     } finally {
       if (mounted) {
@@ -182,10 +182,10 @@ class _DiscountRequestsScreenState extends State<DiscountRequestsScreen> {
       builder: (dialogContext) {
         return AlertDialog(
           scrollable: true,
-          title: const Text(AppTexts.rejectDiscount),
+          title: Text(AppTexts.rejectDiscount),
           content: TextField(
             maxLines: 3,
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               labelText: AppTexts.discountAdminNote,
               alignLabelWithHint: true,
             ),
@@ -198,13 +198,13 @@ class _DiscountRequestsScreenState extends State<DiscountRequestsScreen> {
               onPressed: () {
                 Navigator.of(dialogContext).pop(false);
               },
-              child: const Text(AppTexts.cancel),
+              child: Text(AppTexts.cancel),
             ),
             FilledButton(
               onPressed: () {
                 Navigator.of(dialogContext).pop(true);
               },
-              child: const Text(AppTexts.rejectDiscount),
+              child: Text(AppTexts.rejectDiscount),
             ),
           ],
         );
@@ -229,13 +229,13 @@ class _DiscountRequestsScreenState extends State<DiscountRequestsScreen> {
       if (!mounted) return;
 
       messenger.showSnackBar(
-        const SnackBar(content: Text(AppTexts.discountRejected)),
+        SnackBar(content: Text(AppTexts.discountRejected)),
       );
     } catch (_) {
       if (!mounted) return;
 
       messenger.showSnackBar(
-        const SnackBar(content: Text(AppTexts.discountDecisionError)),
+        SnackBar(content: Text(AppTexts.discountDecisionError)),
       );
     } finally {
       if (mounted) {
@@ -250,7 +250,7 @@ class _DiscountRequestsScreenState extends State<DiscountRequestsScreen> {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => Scaffold(
-          appBar: AppBar(title: const Text(AppTexts.discountDocumentPreview)),
+          appBar: AppBar(title: Text(AppTexts.discountDocumentPreview)),
           body: Center(
             child: InteractiveViewer(child: Image.network(imageUrl)),
           ),
@@ -262,14 +262,12 @@ class _DiscountRequestsScreenState extends State<DiscountRequestsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text(AppTexts.discountRequests)),
+      appBar: AppBar(title: Text(AppTexts.discountRequests)),
       body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
         stream: _service.watchPendingDiscountRequests(),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
-            return const Center(
-              child: Text(AppTexts.discountRequestsLoadError),
-            );
+            return Center(child: Text(AppTexts.discountRequestsLoadError));
           }
 
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -279,7 +277,7 @@ class _DiscountRequestsScreenState extends State<DiscountRequestsScreen> {
           final requests = snapshot.data?.docs ?? [];
 
           if (requests.isEmpty) {
-            return const Center(
+            return Center(
               child: Padding(
                 padding: EdgeInsets.all(AppSpacing.screenPadding),
                 child: Text(AppTexts.noDiscountRequests),
@@ -338,7 +336,7 @@ class _DiscountRequestsScreenState extends State<DiscountRequestsScreen> {
                             _openDocumentPreview(context, imageUrl);
                           },
                           icon: const Icon(Icons.image_outlined),
-                          label: const Text(AppTexts.discountDocumentPreview),
+                          label: Text(AppTexts.discountDocumentPreview),
                         ),
                       ],
                       const SizedBox(height: AppSpacing.cardGap),
@@ -352,7 +350,7 @@ class _DiscountRequestsScreenState extends State<DiscountRequestsScreen> {
                                       requestId: request.id,
                                       userId: userId,
                                     ),
-                              child: const Text(AppTexts.rejectDiscount),
+                              child: Text(AppTexts.rejectDiscount),
                             ),
                           ),
                           const SizedBox(width: AppSpacing.sm),
@@ -365,7 +363,7 @@ class _DiscountRequestsScreenState extends State<DiscountRequestsScreen> {
                                       userId: userId,
                                       requestedType: requestedType,
                                     ),
-                              child: const Text(AppTexts.approveDiscount),
+                              child: Text(AppTexts.approveDiscount),
                             ),
                           ),
                         ],

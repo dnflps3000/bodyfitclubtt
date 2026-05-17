@@ -255,7 +255,7 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          title: const Text(AppTexts.userCannotBeDeactivated),
+          title: Text(AppTexts.userCannotBeDeactivated),
           content: Text(
             '${AppTexts.userCannotBeDeactivatedDescription}\n\n'
             '${user.displayLabel}\n\n'
@@ -268,11 +268,11 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: const Text(AppTexts.back),
+              child: Text(AppTexts.back),
             ),
             FilledButton(
               onPressed: () => Navigator.of(dialogContext).pop(true),
-              child: const Text(AppTexts.showMemberships),
+              child: Text(AppTexts.showMemberships),
             ),
           ],
         );
@@ -339,7 +339,7 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
       builder: (dialogContext) {
         return AlertDialog(
           scrollable: true,
-          title: const Text(AppTexts.deactivateUser),
+          title: Text(AppTexts.deactivateUser),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -349,7 +349,7 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
               ),
               const SizedBox(height: AppSpacing.cardGap),
               TextField(
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: AppTexts.deactivationReason,
                 ),
                 maxLines: 2,
@@ -365,14 +365,14 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
                 FocusScope.of(dialogContext).unfocus();
                 Navigator.of(dialogContext).pop(false);
               },
-              child: const Text(AppTexts.cancel),
+              child: Text(AppTexts.cancel),
             ),
             FilledButton(
               onPressed: () {
                 FocusScope.of(dialogContext).unfocus();
                 Navigator.of(dialogContext).pop(true);
               },
-              child: const Text(AppTexts.deactivateUser),
+              child: Text(AppTexts.deactivateUser),
             ),
           ],
         );
@@ -412,9 +412,7 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
 
       if (!mounted) return;
 
-      messenger.showSnackBar(
-        const SnackBar(content: Text(AppTexts.userDeactivated)),
-      );
+      messenger.showSnackBar(SnackBar(content: Text(AppTexts.userDeactivated)));
     } catch (error) {
       await _createUserAuditLog(
         user: user,
@@ -440,7 +438,7 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          title: const Text(AppTexts.reactivateUser),
+          title: Text(AppTexts.reactivateUser),
           content: Text(
             '${AppTexts.reactivateUserQuestion}\n\n'
             '${user.displayLabel}',
@@ -448,11 +446,11 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: const Text(AppTexts.cancel),
+              child: Text(AppTexts.cancel),
             ),
             FilledButton(
               onPressed: () => Navigator.of(dialogContext).pop(true),
-              child: const Text(AppTexts.reactivateUser),
+              child: Text(AppTexts.reactivateUser),
             ),
           ],
         );
@@ -478,15 +476,11 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
 
       if (!mounted) return;
 
-      messenger.showSnackBar(
-        const SnackBar(content: Text(AppTexts.userReactivated)),
-      );
+      messenger.showSnackBar(SnackBar(content: Text(AppTexts.userReactivated)));
     } catch (_) {
       if (!mounted) return;
 
-      messenger.showSnackBar(
-        const SnackBar(content: Text(AppTexts.userUpdateError)),
-      );
+      messenger.showSnackBar(SnackBar(content: Text(AppTexts.userUpdateError)));
     }
   }
 
@@ -515,14 +509,14 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
                   (!trimmedEmail.contains('@') ||
                       !trimmedEmail.contains('.'))) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text(AppTexts.invalidEmailFormat)),
+                  SnackBar(content: Text(AppTexts.invalidEmailFormat)),
                 );
                 return;
               }
 
               if (isCurrentUser && selectedRole != user.role) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text(AppTexts.cannotChangeOwnRole)),
+                  SnackBar(content: Text(AppTexts.cannotChangeOwnRole)),
                 );
                 return;
               }
@@ -644,7 +638,7 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
                 horizontal: AppSpacing.screenPadding,
                 vertical: AppSpacing.screenPadding,
               ),
-              title: const Text(AppTexts.editUser),
+              title: Text(AppTexts.editUser),
               content: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -652,7 +646,7 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
                     TextFormField(
                       initialValue: firstName,
                       enabled: !isSaving,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         labelText: AppTexts.firstName,
                       ),
                       onChanged: (value) {
@@ -663,9 +657,7 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
                     TextFormField(
                       initialValue: lastName,
                       enabled: !isSaving,
-                      decoration: const InputDecoration(
-                        labelText: AppTexts.lastName,
-                      ),
+                      decoration: InputDecoration(labelText: AppTexts.lastName),
                       onChanged: (value) {
                         lastName = value;
                       },
@@ -674,7 +666,7 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
                     TextFormField(
                       initialValue: publicName,
                       enabled: !isSaving,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         labelText: AppTexts.publicName,
                         hintText: AppTexts.publicNameHint,
                       ),
@@ -687,9 +679,7 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
                       initialValue: email,
                       enabled: !isSaving,
                       keyboardType: TextInputType.emailAddress,
-                      decoration: const InputDecoration(
-                        labelText: AppTexts.email,
-                      ),
+                      decoration: InputDecoration(labelText: AppTexts.email),
                       onChanged: (value) {
                         email = value;
                       },
@@ -697,10 +687,8 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
                     const SizedBox(height: AppSpacing.cardGap),
                     DropdownButtonFormField<String>(
                       initialValue: selectedRole,
-                      decoration: const InputDecoration(
-                        labelText: AppTexts.role,
-                      ),
-                      items: const [
+                      decoration: InputDecoration(labelText: AppTexts.role),
+                      items: [
                         DropdownMenuItem(
                           value: AppRoles.user,
                           child: Text(AppTexts.roleUser),
@@ -726,13 +714,13 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
                     ),
                     if (isCurrentUser) ...[
                       const SizedBox(height: AppSpacing.sm),
-                      const Text(
+                      Text(
                         AppTexts.cannotChangeOwnRole,
                         textAlign: TextAlign.center,
                       ),
                     ] else ...[
                       const SizedBox(height: AppSpacing.sm),
-                      const Text(
+                      Text(
                         AppTexts.changeRoleWarning,
                         textAlign: TextAlign.center,
                       ),
@@ -745,7 +733,7 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
                   onPressed: isSaving
                       ? null
                       : () => Navigator.of(dialogContext).pop(false),
-                  child: const Text(AppTexts.cancel),
+                  child: Text(AppTexts.cancel),
                 ),
                 FilledButton(
                   onPressed: isSaving ? null : save,
@@ -755,7 +743,7 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
                           height: 18,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
-                      : const Text(AppTexts.save),
+                      : Text(AppTexts.save),
                 ),
               ],
             );
@@ -768,7 +756,7 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
 
     ScaffoldMessenger.of(
       context,
-    ).showSnackBar(const SnackBar(content: Text(AppTexts.userUpdated)));
+    ).showSnackBar(SnackBar(content: Text(AppTexts.userUpdated)));
   }
 
   Widget _buildFilters() {
@@ -776,7 +764,7 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
       children: [
         TextField(
           controller: _searchController,
-          decoration: const InputDecoration(
+          decoration: InputDecoration(
             labelText: AppTexts.searchUsers,
             prefixIcon: Icon(Icons.search),
           ),
@@ -785,8 +773,8 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
         const SizedBox(height: AppSpacing.cardGap),
         DropdownButtonFormField<String>(
           initialValue: _selectedRoleFilter,
-          decoration: const InputDecoration(labelText: AppTexts.role),
-          items: const [
+          decoration: InputDecoration(labelText: AppTexts.role),
+          items: [
             DropdownMenuItem(value: '', child: Text(AppTexts.allRoles)),
             DropdownMenuItem(
               value: AppRoles.user,
@@ -885,12 +873,12 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text(AppTexts.usersManagement)),
+      appBar: AppBar(title: Text(AppTexts.usersManagement)),
       body: StreamBuilder<List<_ManagedUser>>(
         stream: _watchUsers(),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
-            return const Center(child: Text(AppTexts.usersLoadError));
+            return Center(child: Text(AppTexts.usersLoadError));
           }
 
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -915,7 +903,7 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
               }
 
               if (users.isEmpty) {
-                return const Padding(
+                return Padding(
                   padding: EdgeInsets.all(24),
                   child: Text(
                     AppTexts.noUsersFound,

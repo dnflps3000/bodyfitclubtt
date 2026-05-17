@@ -45,7 +45,7 @@ class MyMembershipsScreen extends StatelessWidget {
         stream: MembershipService().watchMyMemberships(),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
-            return const Center(child: Text(AppTexts.membershipLoadError));
+            return Center(child: Text(AppTexts.membershipLoadError));
           }
 
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -82,7 +82,7 @@ class MyMembershipsScreen extends StatelessWidget {
                         );
                       },
                       icon: const Icon(Icons.card_membership),
-                      label: const Text(AppTexts.buyMembership),
+                      label: Text(AppTexts.buyMembership),
                     ),
                     const SizedBox(height: AppSpacing.sm),
                     OutlinedButton.icon(
@@ -99,11 +99,11 @@ class MyMembershipsScreen extends StatelessWidget {
                         );
                       },
                       icon: const Icon(Icons.confirmation_number_outlined),
-                      label: const Text(AppTexts.buySingleEntry),
+                      label: Text(AppTexts.buySingleEntry),
                     ),
                     if (memberships.isEmpty) ...[
                       const SizedBox(height: AppSpacing.sectionGap),
-                      const Card(
+                      Card(
                         child: Padding(
                           padding: EdgeInsets.all(AppSpacing.cardPadding),
                           child: Text(AppTexts.noMemberships),

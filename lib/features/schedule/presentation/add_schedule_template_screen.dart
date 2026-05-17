@@ -156,21 +156,21 @@ class _AddScheduleTemplateScreenState extends State<AddScheduleTemplateScreen> {
         capacity == null) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text(AppTexts.fillAllFields)));
+      ).showSnackBar(SnackBar(content: Text(AppTexts.fillAllFields)));
       return;
     }
 
     if (durationMinutes <= 0) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text(AppTexts.invalidDuration)));
+      ).showSnackBar(SnackBar(content: Text(AppTexts.invalidDuration)));
       return;
     }
 
     if (capacity <= 0) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text(AppTexts.invalidCapacity)));
+      ).showSnackBar(SnackBar(content: Text(AppTexts.invalidCapacity)));
       return;
     }
 
@@ -193,9 +193,9 @@ class _AddScheduleTemplateScreenState extends State<AddScheduleTemplateScreen> {
 
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text(AppTexts.scheduleTemplateCreated)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(AppTexts.scheduleTemplateCreated)));
 
       Navigator.of(context).pop(true);
     } catch (error) {
@@ -226,7 +226,7 @@ class _AddScheduleTemplateScreenState extends State<AddScheduleTemplateScreen> {
       stream: _watchTrainers(),
       builder: (context, trainerSnapshot) {
         if (trainerSnapshot.hasError) {
-          return const Text(AppTexts.trainersLoadError);
+          return Text(AppTexts.trainersLoadError);
         }
 
         if (trainerSnapshot.connectionState == ConnectionState.waiting) {
@@ -240,7 +240,7 @@ class _AddScheduleTemplateScreenState extends State<AddScheduleTemplateScreen> {
 
         return DropdownButtonFormField<String>(
           initialValue: _selectedTrainerId,
-          decoration: const InputDecoration(labelText: AppTexts.trainer),
+          decoration: InputDecoration(labelText: AppTexts.trainer),
           items: trainers.map((trainer) {
             return DropdownMenuItem<String>(
               value: trainer.id,
@@ -254,7 +254,7 @@ class _AddScheduleTemplateScreenState extends State<AddScheduleTemplateScreen> {
                     _selectedTrainerId = trainerId;
                   });
                 },
-          hint: const Text(AppTexts.selectTrainer),
+          hint: Text(AppTexts.selectTrainer),
         );
       },
     );
@@ -263,12 +263,12 @@ class _AddScheduleTemplateScreenState extends State<AddScheduleTemplateScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text(AppTexts.addScheduleTemplate)),
+      appBar: AppBar(title: Text(AppTexts.addScheduleTemplate)),
       body: StreamBuilder<List<TrainingType>>(
         stream: _scheduleService.watchTrainingTypes(),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
-            return const Center(child: Text(AppTexts.trainingTypesLoadError));
+            return Center(child: Text(AppTexts.trainingTypesLoadError));
           }
 
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -278,7 +278,7 @@ class _AddScheduleTemplateScreenState extends State<AddScheduleTemplateScreen> {
           final trainingTypes = snapshot.data ?? [];
 
           if (trainingTypes.isEmpty) {
-            return const Center(child: Text(AppTexts.noTrainings));
+            return Center(child: Text(AppTexts.noTrainings));
           }
 
           return ListView(
@@ -286,9 +286,7 @@ class _AddScheduleTemplateScreenState extends State<AddScheduleTemplateScreen> {
             children: [
               DropdownButtonFormField<String>(
                 initialValue: _selectedTrainingTypeId,
-                decoration: const InputDecoration(
-                  labelText: AppTexts.trainingType,
-                ),
+                decoration: InputDecoration(labelText: AppTexts.trainingType),
                 items: trainingTypes.map((trainingType) {
                   return DropdownMenuItem<String>(
                     value: trainingType.id,
@@ -300,14 +298,14 @@ class _AddScheduleTemplateScreenState extends State<AddScheduleTemplateScreen> {
                     : (trainingTypeId) {
                         _selectTrainingType(trainingTypeId, trainingTypes);
                       },
-                hint: const Text(AppTexts.selectTrainingType),
+                hint: Text(AppTexts.selectTrainingType),
               ),
               const SizedBox(height: AppSpacing.cardGap),
               _buildTrainerDropdown(),
               const SizedBox(height: AppSpacing.cardGap),
               DropdownButtonFormField<int>(
                 initialValue: _selectedWeekday,
-                decoration: const InputDecoration(labelText: AppTexts.weekday),
+                decoration: InputDecoration(labelText: AppTexts.weekday),
                 items: List.generate(7, (index) {
                   final weekday = index + 1;
 
@@ -323,7 +321,7 @@ class _AddScheduleTemplateScreenState extends State<AddScheduleTemplateScreen> {
                           _selectedWeekday = weekday;
                         });
                       },
-                hint: const Text(AppTexts.selectWeekday),
+                hint: Text(AppTexts.selectWeekday),
               ),
               const SizedBox(height: AppSpacing.cardGap),
               OutlinedButton.icon(
@@ -336,7 +334,7 @@ class _AddScheduleTemplateScreenState extends State<AddScheduleTemplateScreen> {
                 controller: _durationController,
                 enabled: !_isSaving,
                 keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: AppTexts.duration,
                   suffixText: AppTexts.minutes,
                 ),
@@ -346,7 +344,7 @@ class _AddScheduleTemplateScreenState extends State<AddScheduleTemplateScreen> {
                 controller: _capacityController,
                 enabled: !_isSaving,
                 keyboardType: TextInputType.number,
-                decoration: const InputDecoration(labelText: AppTexts.capacity),
+                decoration: InputDecoration(labelText: AppTexts.capacity),
               ),
               const SizedBox(height: AppSpacing.xl),
               FilledButton(
@@ -359,7 +357,7 @@ class _AddScheduleTemplateScreenState extends State<AddScheduleTemplateScreen> {
                         height: 20,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
-                    : const Text(AppTexts.save),
+                    : Text(AppTexts.save),
               ),
             ],
           );

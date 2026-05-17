@@ -87,6 +87,14 @@ class SettingsService extends ChangeNotifier {
   String _supportedLanguageCode(String? value) {
     switch (value) {
       case 'en':
+      case 'de':
+      case 'fr':
+      case 'pl':
+      case 'hu':
+      case 'uk':
+      case 'ru':
+      case 'sr':
+      case 'cs':
       case 'sk':
         return value!;
       default:

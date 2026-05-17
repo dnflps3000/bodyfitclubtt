@@ -90,16 +90,16 @@ class _ProfileTabState extends State<ProfileTab> {
       builder: (dialogContext) {
         return AlertDialog(
           scrollable: true,
-          title: const Text(AppTexts.deleteAccountRequestTitle),
+          title: Text(AppTexts.deleteAccountRequestTitle),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text(AppTexts.deleteAccountRequestDescription),
+              Text(AppTexts.deleteAccountRequestDescription),
               const SizedBox(height: AppSpacing.cardGap),
-              const Text(AppTexts.deleteAccountConfirm),
+              Text(AppTexts.deleteAccountConfirm),
               const SizedBox(height: AppSpacing.cardGap),
               TextField(
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: AppTexts.deleteAccountReason,
                 ),
                 maxLines: 2,
@@ -115,14 +115,14 @@ class _ProfileTabState extends State<ProfileTab> {
                 FocusScope.of(dialogContext).unfocus();
                 Navigator.of(dialogContext).pop(false);
               },
-              child: const Text(AppTexts.cancel),
+              child: Text(AppTexts.cancel),
             ),
             FilledButton(
               onPressed: () {
                 FocusScope.of(dialogContext).unfocus();
                 Navigator.of(dialogContext).pop(true);
               },
-              child: const Text(AppTexts.deleteAccountRequest),
+              child: Text(AppTexts.deleteAccountRequest),
             ),
           ],
         );
@@ -158,7 +158,7 @@ class _ProfileTabState extends State<ProfileTab> {
       await AuthService().signOut();
 
       messenger.showSnackBar(
-        const SnackBar(content: Text(AppTexts.deleteAccountRequestSent)),
+        SnackBar(content: Text(AppTexts.deleteAccountRequestSent)),
       );
     } on FirebaseFunctionsException catch (error) {
       if (!mounted) return;
@@ -184,7 +184,7 @@ class _ProfileTabState extends State<ProfileTab> {
       });
 
       messenger.showSnackBar(
-        const SnackBar(content: Text(AppTexts.deleteAccountRequestError)),
+        SnackBar(content: Text(AppTexts.deleteAccountRequestError)),
       );
     }
   }
@@ -270,7 +270,7 @@ class _ProfileTabState extends State<ProfileTab> {
                 children: [
                   ListTile(
                     leading: const Icon(Icons.email_outlined),
-                    title: const Text(AppTexts.email),
+                    title: Text(AppTexts.email),
                     subtitle: Text(
                       email ?? widget.user.email ?? AppTexts.emailNotProvided,
                     ),
@@ -278,13 +278,13 @@ class _ProfileTabState extends State<ProfileTab> {
                   const Divider(height: 1),
                   ListTile(
                     leading: const Icon(Icons.admin_panel_settings_outlined),
-                    title: const Text(AppTexts.role),
+                    title: Text(AppTexts.role),
                     subtitle: Text(_roleLabel(role)),
                   ),
                   const Divider(height: 1),
                   ListTile(
                     leading: const Icon(Icons.edit_outlined),
-                    title: const Text(AppTexts.editProfile),
+                    title: Text(AppTexts.editProfile),
                     onTap: () {
                       Navigator.of(context).push(
                         MaterialPageRoute(
@@ -310,7 +310,7 @@ class _ProfileTabState extends State<ProfileTab> {
                   children: [
                     ListTile(
                       leading: const Icon(Icons.discount_outlined),
-                      title: const Text(AppTexts.discountStatus),
+                      title: Text(AppTexts.discountStatus),
                       subtitle: Text(
                         '${_discountStatusLabel(discountStatus)}'
                         '${discountStatus == 'approved' ? ' • ${_discountTypeLabel(discountType)}' : ''}'
@@ -332,7 +332,7 @@ class _ProfileTabState extends State<ProfileTab> {
                               );
                             },
                             icon: const Icon(Icons.discount_outlined),
-                            label: const Text(AppTexts.requestDiscount),
+                            label: Text(AppTexts.requestDiscount),
                           ),
                         ),
                       ),
@@ -352,7 +352,7 @@ class _ProfileTabState extends State<ProfileTab> {
                         height: 18,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
-                    : const Text(AppTexts.deleteAccountRequest),
+                    : Text(AppTexts.deleteAccountRequest),
               ),
             ],
           ],

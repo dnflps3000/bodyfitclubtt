@@ -151,7 +151,7 @@ class _AuditLogsScreenState extends State<AuditLogsScreen> {
       children: [
         TextField(
           controller: _searchController,
-          decoration: const InputDecoration(
+          decoration: InputDecoration(
             labelText: AppTexts.searchAuditLogs,
             prefixIcon: Icon(Icons.search),
           ),
@@ -161,8 +161,8 @@ class _AuditLogsScreenState extends State<AuditLogsScreen> {
         DropdownButtonFormField<String>(
           initialValue: _selectedCategory,
           isExpanded: true,
-          decoration: const InputDecoration(labelText: AppTexts.auditCategory),
-          items: const [
+          decoration: InputDecoration(labelText: AppTexts.auditCategory),
+          items: [
             DropdownMenuItem(
               value: 'discount',
               child: Text(AppTexts.auditCategoryDiscounts),
@@ -213,8 +213,8 @@ class _AuditLogsScreenState extends State<AuditLogsScreen> {
         DropdownButtonFormField<String>(
           initialValue: _selectedAction,
           isExpanded: true,
-          decoration: const InputDecoration(labelText: AppTexts.auditAction),
-          items: const [
+          decoration: InputDecoration(labelText: AppTexts.auditAction),
+          items: [
             DropdownMenuItem(value: '', child: Text(AppTexts.auditAllActions)),
 
             DropdownMenuItem(
@@ -413,8 +413,8 @@ class _AuditLogsScreenState extends State<AuditLogsScreen> {
         DropdownButtonFormField<String>(
           initialValue: _selectedActorRole,
           isExpanded: true,
-          decoration: const InputDecoration(labelText: AppTexts.auditActorRole),
-          items: const [
+          decoration: InputDecoration(labelText: AppTexts.auditActorRole),
+          items: [
             DropdownMenuItem(
               value: '',
               child: Text(AppTexts.auditAllActorRoles),
@@ -435,8 +435,8 @@ class _AuditLogsScreenState extends State<AuditLogsScreen> {
         DropdownButtonFormField<String>(
           initialValue: _selectedPeriod,
           isExpanded: true,
-          decoration: const InputDecoration(labelText: AppTexts.auditPeriod),
-          items: const [
+          decoration: InputDecoration(labelText: AppTexts.auditPeriod),
+          items: [
             DropdownMenuItem(value: 'today', child: Text(AppTexts.today)),
             DropdownMenuItem(
               value: 'yesterday',
@@ -460,7 +460,7 @@ class _AuditLogsScreenState extends State<AuditLogsScreen> {
           child: FilledButton.icon(
             onPressed: _reloadLogs,
             icon: const Icon(Icons.refresh),
-            label: const Text(AppTexts.refresh),
+            label: Text(AppTexts.refresh),
           ),
         ),
       ],
@@ -497,7 +497,7 @@ class _AuditLogsScreenState extends State<AuditLogsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text(AppTexts.auditLogs)),
+      appBar: AppBar(title: Text(AppTexts.auditLogs)),
       body: FutureBuilder<List<AuditLog>>(
         future: _logsFuture,
         builder: (context, snapshot) {
@@ -531,7 +531,7 @@ class _AuditLogsScreenState extends State<AuditLogsScreen> {
                 }
 
                 if (snapshot.hasError) {
-                  return const Padding(
+                  return Padding(
                     padding: EdgeInsets.all(AppSpacing.xl),
                     child: Text(
                       AppTexts.auditLogsLoadError,
@@ -540,7 +540,7 @@ class _AuditLogsScreenState extends State<AuditLogsScreen> {
                   );
                 }
 
-                return const Padding(
+                return Padding(
                   padding: EdgeInsets.all(AppSpacing.xl),
                   child: Text(
                     AppTexts.noAuditLogs,

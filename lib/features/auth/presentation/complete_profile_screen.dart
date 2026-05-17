@@ -77,19 +77,19 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text(AppTexts.completeProfileTitle)),
+      appBar: AppBar(title: Text(AppTexts.completeProfileTitle)),
       body: Padding(
         padding: const EdgeInsets.all(AppSpacing.screenPadding),
         child: Column(
           children: [
             TextField(
               controller: _firstNameController,
-              decoration: const InputDecoration(labelText: AppTexts.firstName),
+              decoration: InputDecoration(labelText: AppTexts.firstName),
             ),
             const SizedBox(height: AppSpacing.cardGap),
             TextField(
               controller: _lastNameController,
-              decoration: const InputDecoration(labelText: AppTexts.lastName),
+              decoration: InputDecoration(labelText: AppTexts.lastName),
             ),
             const SizedBox(height: AppSpacing.xl),
             FilledButton(
@@ -100,7 +100,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                       height: 20,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
-                  : const Text(AppTexts.save),
+                  : Text(AppTexts.save),
             ),
           ],
         ),

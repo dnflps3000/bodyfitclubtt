@@ -49,3 +49,5 @@ app.*.map.json
 .secret.local
 local.properties
 android/local.properties
+
+lib/core/backuptexts/app_texts.dart

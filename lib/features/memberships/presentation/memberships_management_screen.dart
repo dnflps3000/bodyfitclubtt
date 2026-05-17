@@ -220,7 +220,7 @@ class _MembershipsManagementScreenState
       children: [
         TextField(
           controller: _searchController,
-          decoration: const InputDecoration(
+          decoration: InputDecoration(
             labelText: AppTexts.searchMemberships,
             prefixIcon: Icon(Icons.search),
           ),
@@ -229,8 +229,8 @@ class _MembershipsManagementScreenState
         const SizedBox(height: AppSpacing.cardGap),
         DropdownButtonFormField<String>(
           initialValue: _selectedStatusFilter,
-          decoration: const InputDecoration(labelText: AppTexts.status),
-          items: const [
+          decoration: InputDecoration(labelText: AppTexts.status),
+          items: [
             DropdownMenuItem(
               value: '',
               child: Text(AppTexts.allMembershipStatuses),
@@ -313,7 +313,7 @@ class _MembershipsManagementScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text(AppTexts.membershipsManagement)),
+      appBar: AppBar(title: Text(AppTexts.membershipsManagement)),
       body: StreamBuilder<Map<String, _MembershipUserInfo>>(
         stream: _watchUsersMap(),
         builder: (context, usersSnapshot) {
@@ -323,7 +323,7 @@ class _MembershipsManagementScreenState
             stream: MembershipService().watchAllMemberships(),
             builder: (context, membershipsSnapshot) {
               if (membershipsSnapshot.hasError) {
-                return const Center(child: Text(AppTexts.membershipLoadError));
+                return Center(child: Text(AppTexts.membershipLoadError));
               }
 
               if (membershipsSnapshot.connectionState ==
@@ -352,7 +352,7 @@ class _MembershipsManagementScreenState
                   }
 
                   if (memberships.isEmpty) {
-                    return const Padding(
+                    return Padding(
                       padding: EdgeInsets.all(AppSpacing.xl),
                       child: Text(
                         AppTexts.noMemberships,

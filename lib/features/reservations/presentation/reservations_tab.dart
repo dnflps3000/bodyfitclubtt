@@ -37,7 +37,7 @@ class ReservationsTab extends StatelessWidget {
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          title: const Text(AppTexts.cancelReservationTitle),
+          title: Text(AppTexts.cancelReservationTitle),
           content: Text(
             '${AppTexts.cancelReservationQuestion}\n\n'
             '${reservation.trainingName}\n'
@@ -47,11 +47,11 @@ class ReservationsTab extends StatelessWidget {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: const Text(AppTexts.cancel),
+              child: Text(AppTexts.cancel),
             ),
             FilledButton(
               onPressed: () => Navigator.of(dialogContext).pop(true),
-              child: const Text(AppTexts.cancelReservation),
+              child: Text(AppTexts.cancelReservation),
             ),
           ],
         );
@@ -70,15 +70,15 @@ class ReservationsTab extends StatelessWidget {
 
       if (!context.mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text(AppTexts.reservationCancelled)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(AppTexts.reservationCancelled)));
     } catch (_) {
       if (!context.mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text(AppTexts.reservationCancelError)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(AppTexts.reservationCancelError)));
     }
   }
 
@@ -217,7 +217,7 @@ class ReservationsTab extends StatelessWidget {
     final currentUser = FirebaseAuth.instance.currentUser;
 
     if (currentUser == null) {
-      return const Center(child: Text(AppTexts.noReservations));
+      return Center(child: Text(AppTexts.noReservations));
     }
 
     return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
@@ -234,7 +234,7 @@ class ReservationsTab extends StatelessWidget {
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.hasError) {
-          return const Center(child: Text(AppTexts.reservationsLoadError));
+          return Center(child: Text(AppTexts.reservationsLoadError));
         }
 
         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -244,7 +244,7 @@ class ReservationsTab extends StatelessWidget {
         final reservationDocuments = snapshot.data?.docs ?? [];
 
         if (reservationDocuments.isEmpty) {
-          return const Center(child: Text(AppTexts.noReservations));
+          return Center(child: Text(AppTexts.noReservations));
         }
 
         return FutureBuilder<List<_ReservationDetail>>(
@@ -255,13 +255,13 @@ class ReservationsTab extends StatelessWidget {
             }
 
             if (detailSnapshot.hasError) {
-              return const Center(child: Text(AppTexts.reservationsLoadError));
+              return Center(child: Text(AppTexts.reservationsLoadError));
             }
 
             final reservations = detailSnapshot.data ?? [];
 
             if (reservations.isEmpty) {
-              return const Center(child: Text(AppTexts.noReservations));
+              return Center(child: Text(AppTexts.noReservations));
             }
 
             return ListView.separated(
@@ -315,7 +315,7 @@ class ReservationsTab extends StatelessWidget {
                                 reservation,
                               ),
                               icon: const Icon(Icons.qr_code),
-                              label: const Text(AppTexts.showQrCode),
+                              label: Text(AppTexts.showQrCode),
                             ),
                           ),
                         ],

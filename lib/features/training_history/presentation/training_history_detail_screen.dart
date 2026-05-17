@@ -61,16 +61,16 @@ class _TrainingHistoryDetailScreenState
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text(AppTexts.trainingHistoryDetail),
+          title: Text(AppTexts.trainingHistoryDetail),
           content: Text(message),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: const Text(AppTexts.cancel),
+              child: Text(AppTexts.cancel),
             ),
             FilledButton(
               onPressed: () => Navigator.of(context).pop(true),
-              child: const Text(AppTexts.confirm),
+              child: Text(AppTexts.confirm),
             ),
           ],
         );
@@ -84,9 +84,13 @@ class _TrainingHistoryDetailScreenState
     required TrainingHistoryReservation reservation,
     required String confirmMessage,
     required Future<void> Function() action,
-    String successMessage = AppTexts.attendanceActionDone,
-    String errorMessage = AppTexts.attendanceActionError,
+    String? successMessage,
+    String? errorMessage,
   }) async {
+    final resolvedSuccessMessage =
+        successMessage ?? AppTexts.attendanceActionDone;
+    final resolvedErrorMessage = errorMessage ?? AppTexts.attendanceActionError;
+
     final confirmed = await _confirmAction(confirmMessage);
 
     if (!confirmed || !mounted) {
@@ -106,7 +110,7 @@ class _TrainingHistoryDetailScreenState
 
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text(successMessage)));
+      ).showSnackBar(SnackBar(content: Text(resolvedSuccessMessage)));
     } catch (_) {
       if (!mounted) {
         return;
@@ -114,7 +118,7 @@ class _TrainingHistoryDetailScreenState
 
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text(errorMessage)));
+      ).showSnackBar(SnackBar(content: Text(resolvedErrorMessage)));
     } finally {
       if (mounted) {
         setState(() {
@@ -309,17 +313,17 @@ class _TrainingHistoryDetailScreenState
                       OutlinedButton.icon(
                         onPressed: () => _markAsAttended(reservation),
                         icon: const Icon(Icons.check_circle_outline),
-                        label: const Text(AppTexts.markAsAttended),
+                        label: Text(AppTexts.markAsAttended),
                       ),
                       OutlinedButton.icon(
                         onPressed: () => _markAsNoShow(reservation),
                         icon: const Icon(Icons.highlight_off),
-                        label: const Text(AppTexts.markAsNoShow),
+                        label: Text(AppTexts.markAsNoShow),
                       ),
                       OutlinedButton.icon(
                         onPressed: () => _cancelReservation(reservation),
                         icon: const Icon(Icons.cancel_outlined),
-                        label: const Text(AppTexts.cancelReservation),
+                        label: Text(AppTexts.cancelReservation),
                       ),
                     ],
                     if (reservation.isAttended || reservation.isNoShow)
@@ -345,7 +349,7 @@ class _TrainingHistoryDetailScreenState
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(AppTexts.trainingHistoryDetail),
+        title: Text(AppTexts.trainingHistoryDetail),
         actions: [
           IconButton(
             tooltip: AppTexts.addTrainingAttendance,
@@ -360,7 +364,7 @@ class _TrainingHistoryDetailScreenState
         ),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
-            return const Center(
+            return Center(
               child: Text(AppTexts.trainingHistoryReservationsLoadError),
             );
           }
@@ -377,7 +381,7 @@ class _TrainingHistoryDetailScreenState
               _buildSessionSummary(reservations),
               const SizedBox(height: AppSpacing.cardGap),
               if (reservations.isEmpty)
-                const Card(
+                Card(
                   child: Padding(
                     padding: EdgeInsets.all(AppSpacing.cardPadding),
                     child: Text(AppTexts.noReservationsForTrainingHistory),

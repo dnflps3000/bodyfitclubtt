@@ -239,7 +239,7 @@ class ManagementScreen extends StatelessWidget {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text(AppTexts.management)),
+      appBar: AppBar(title: Text(AppTexts.management)),
       body: content,
     );
   }

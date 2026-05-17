@@ -112,7 +112,7 @@ class SettingsScreen extends StatelessWidget {
                         if (value == null) return;
                         settingsService.setLanguageCode(value);
                       },
-                      child: const Column(
+                      child: Column(
                         children: [
                           RadioListTile<String>(
                             value: 'en',

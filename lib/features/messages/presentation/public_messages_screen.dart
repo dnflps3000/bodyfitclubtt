@@ -109,16 +109,16 @@ class PublicMessagesScreen extends StatelessWidget {
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          title: const Text(AppTexts.deleteMessage),
-          content: const Text(AppTexts.deleteMessageQuestion),
+          title: Text(AppTexts.deleteMessage),
+          content: Text(AppTexts.deleteMessageQuestion),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: const Text(AppTexts.cancel),
+              child: Text(AppTexts.cancel),
             ),
             FilledButton(
               onPressed: () => Navigator.of(dialogContext).pop(true),
-              child: const Text(AppTexts.delete),
+              child: Text(AppTexts.delete),
             ),
           ],
         );
@@ -157,13 +157,13 @@ class PublicMessagesScreen extends StatelessWidget {
 
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text(AppTexts.messageDeleted)));
+      ).showSnackBar(SnackBar(content: Text(AppTexts.messageDeleted)));
     } catch (_) {
       if (!context.mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text(AppTexts.messageDeleteError)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(AppTexts.messageDeleteError)));
     }
   }
 
@@ -185,7 +185,7 @@ class PublicMessagesScreen extends StatelessWidget {
 
     ScaffoldMessenger.of(
       context,
-    ).showSnackBar(const SnackBar(content: Text(AppTexts.messageSaved)));
+    ).showSnackBar(SnackBar(content: Text(AppTexts.messageSaved)));
   }
 
   @override
@@ -198,12 +198,12 @@ class PublicMessagesScreen extends StatelessWidget {
         final currentUser = FirebaseAuth.instance.currentUser;
 
         return Scaffold(
-          appBar: AppBar(title: const Text(AppTexts.news)),
+          appBar: AppBar(title: Text(AppTexts.news)),
           floatingActionButton: _canCreateMessage(role)
               ? FloatingActionButton.extended(
                   onPressed: () => _openMessageEditor(context),
                   icon: const Icon(Icons.edit),
-                  label: const Text(AppTexts.writeMessageShort),
+                  label: Text(AppTexts.writeMessageShort),
                 )
               : null,
           body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
@@ -218,7 +218,7 @@ class PublicMessagesScreen extends StatelessWidget {
               }
 
               if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                return const Center(child: Text(AppTexts.noPublicMessages));
+                return Center(child: Text(AppTexts.noPublicMessages));
               }
 
               final messages = snapshot.data!.docs;
@@ -278,7 +278,7 @@ class PublicMessagesScreen extends StatelessWidget {
                                       Icons.more_vert,
                                       size: AppSpacing.messageMenuIconSize,
                                     ),
-                                    itemBuilder: (_) => const [
+                                    itemBuilder: (_) => [
                                       PopupMenuItem(
                                         value: 'edit',
                                         child: Text(AppTexts.editMessage),

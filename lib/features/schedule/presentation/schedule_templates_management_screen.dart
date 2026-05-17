@@ -157,22 +157,22 @@ class _ScheduleTemplatesManagementScreenState
                   selectedTime == null ||
                   durationMinutes == null ||
                   capacity == null) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text(AppTexts.fillAllFields)),
-                );
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(SnackBar(content: Text(AppTexts.fillAllFields)));
                 return;
               }
 
               if (durationMinutes <= 0) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text(AppTexts.invalidDuration)),
+                  SnackBar(content: Text(AppTexts.invalidDuration)),
                 );
                 return;
               }
 
               if (capacity <= 0) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text(AppTexts.invalidCapacity)),
+                  SnackBar(content: Text(AppTexts.invalidCapacity)),
                 );
                 return;
               }
@@ -254,7 +254,7 @@ class _ScheduleTemplatesManagementScreenState
                   children: [
                     DropdownButtonFormField<String>(
                       initialValue: selectedTrainingTypeId,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         labelText: AppTexts.trainingType,
                       ),
                       items: trainingTypes.map((trainingType) {
@@ -264,14 +264,12 @@ class _ScheduleTemplatesManagementScreenState
                         );
                       }).toList(),
                       onChanged: isDialogSaving ? null : selectTrainingType,
-                      hint: const Text(AppTexts.selectTrainingType),
+                      hint: Text(AppTexts.selectTrainingType),
                     ),
                     const SizedBox(height: AppSpacing.cardGap),
                     DropdownButtonFormField<String>(
                       initialValue: selectedTrainerId,
-                      decoration: const InputDecoration(
-                        labelText: AppTexts.trainer,
-                      ),
+                      decoration: InputDecoration(labelText: AppTexts.trainer),
                       items: trainers.map((trainer) {
                         return DropdownMenuItem<String>(
                           value: trainer.id,
@@ -285,14 +283,12 @@ class _ScheduleTemplatesManagementScreenState
                                 selectedTrainerId = trainerId;
                               });
                             },
-                      hint: const Text(AppTexts.selectTrainer),
+                      hint: Text(AppTexts.selectTrainer),
                     ),
                     const SizedBox(height: AppSpacing.cardGap),
                     DropdownButtonFormField<int>(
                       initialValue: selectedWeekday,
-                      decoration: const InputDecoration(
-                        labelText: AppTexts.weekday,
-                      ),
+                      decoration: InputDecoration(labelText: AppTexts.weekday),
                       items: List.generate(7, (index) {
                         final weekday = index + 1;
 
@@ -308,7 +304,7 @@ class _ScheduleTemplatesManagementScreenState
                                 selectedWeekday = weekday;
                               });
                             },
-                      hint: const Text(AppTexts.selectWeekday),
+                      hint: Text(AppTexts.selectWeekday),
                     ),
                     const SizedBox(height: AppSpacing.cardGap),
                     OutlinedButton.icon(
@@ -321,7 +317,7 @@ class _ScheduleTemplatesManagementScreenState
                       initialValue: durationText,
                       enabled: !isDialogSaving,
                       keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         labelText: AppTexts.duration,
                         suffixText: AppTexts.minutes,
                       ),
@@ -334,9 +330,7 @@ class _ScheduleTemplatesManagementScreenState
                       initialValue: capacityText,
                       enabled: !isDialogSaving,
                       keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
-                        labelText: AppTexts.capacity,
-                      ),
+                      decoration: InputDecoration(labelText: AppTexts.capacity),
                       onChanged: (value) {
                         capacityText = value;
                       },
@@ -349,7 +343,7 @@ class _ScheduleTemplatesManagementScreenState
                   onPressed: isDialogSaving
                       ? null
                       : () => Navigator.of(dialogContext).pop(),
-                  child: const Text(AppTexts.cancel),
+                  child: Text(AppTexts.cancel),
                 ),
                 FilledButton(
                   onPressed: isDialogSaving ? null : save,
@@ -359,7 +353,7 @@ class _ScheduleTemplatesManagementScreenState
                           height: 18,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
-                      : const Text(AppTexts.save),
+                      : Text(AppTexts.save),
                 ),
               ],
             );
@@ -380,16 +374,16 @@ class _ScheduleTemplatesManagementScreenState
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          title: const Text(AppTexts.deleteScheduleTemplate),
-          content: const Text(AppTexts.scheduleTemplateDeleteQuestion),
+          title: Text(AppTexts.deleteScheduleTemplate),
+          content: Text(AppTexts.scheduleTemplateDeleteQuestion),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: const Text(AppTexts.cancel),
+              child: Text(AppTexts.cancel),
             ),
             FilledButton(
               onPressed: () => Navigator.of(dialogContext).pop(true),
-              child: const Text(AppTexts.delete),
+              child: Text(AppTexts.delete),
             ),
           ],
         );
@@ -410,15 +404,15 @@ class _ScheduleTemplatesManagementScreenState
 
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text(AppTexts.scheduleTemplateDeleted)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(AppTexts.scheduleTemplateDeleted)));
     } catch (_) {
       if (!mounted) return;
 
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text(AppTexts.saveError)));
+      ).showSnackBar(SnackBar(content: Text(AppTexts.saveError)));
     }
   }
 
@@ -471,7 +465,7 @@ class _ScheduleTemplatesManagementScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text(AppTexts.scheduleTemplatesManagement)),
+      appBar: AppBar(title: Text(AppTexts.scheduleTemplatesManagement)),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
           final trainingTypes = await _scheduleService
@@ -487,13 +481,13 @@ class _ScheduleTemplatesManagementScreenState
           );
         },
         icon: const Icon(Icons.add),
-        label: const Text(AppTexts.addScheduleTemplate),
+        label: Text(AppTexts.addScheduleTemplate),
       ),
       body: StreamBuilder<List<TrainingType>>(
         stream: _scheduleService.watchTrainingTypes(),
         builder: (context, trainingTypesSnapshot) {
           if (trainingTypesSnapshot.hasError) {
-            return const Center(child: Text(AppTexts.trainingTypesLoadError));
+            return Center(child: Text(AppTexts.trainingTypesLoadError));
           }
 
           if (trainingTypesSnapshot.connectionState ==
@@ -507,7 +501,7 @@ class _ScheduleTemplatesManagementScreenState
             stream: _watchTrainers(),
             builder: (context, trainersSnapshot) {
               if (trainersSnapshot.hasError) {
-                return const Center(child: Text(AppTexts.trainersLoadError));
+                return Center(child: Text(AppTexts.trainersLoadError));
               }
 
               if (trainersSnapshot.connectionState == ConnectionState.waiting) {
@@ -520,9 +514,7 @@ class _ScheduleTemplatesManagementScreenState
                 stream: _scheduleService.watchScheduleTemplates(),
                 builder: (context, templatesSnapshot) {
                   if (templatesSnapshot.hasError) {
-                    return const Center(
-                      child: Text(AppTexts.trainingsLoadError),
-                    );
+                    return Center(child: Text(AppTexts.trainingsLoadError));
                   }
 
                   if (templatesSnapshot.connectionState ==
@@ -533,7 +525,7 @@ class _ScheduleTemplatesManagementScreenState
                   final templates = templatesSnapshot.data ?? [];
 
                   if (templates.isEmpty) {
-                    return const Center(
+                    return Center(
                       child: Padding(
                         padding: EdgeInsets.all(AppSpacing.xl),
                         child: Text(
