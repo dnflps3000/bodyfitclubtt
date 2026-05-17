@@ -11,18 +11,23 @@ class SettingsScreen extends StatelessWidget {
     final settingsService = SettingsService.instance;
 
     return Scaffold(
-      appBar: AppBar(title: const Text(AppTexts.settings)),
+      appBar: AppBar(title: Text(AppTexts.settings)),
       body: AnimatedBuilder(
         animation: settingsService,
         builder: (context, _) {
           return ListView(
-            padding: const EdgeInsets.all(AppSpacing.screenPadding),
+            padding: EdgeInsets.fromLTRB(
+              AppSpacing.screenPadding,
+              AppSpacing.screenPadding,
+              AppSpacing.screenPadding,
+              AppSpacing.xxl + MediaQuery.of(context).padding.bottom,
+            ),
             children: [
               Card(
                 child: Column(
                   children: [
-                    const ListTile(
-                      leading: Icon(Icons.palette_outlined),
+                    ListTile(
+                      leading: const Icon(Icons.palette_outlined),
                       title: Text(AppTexts.appearance),
                       subtitle: Text(
                         AppTexts.appearanceDescription,
@@ -35,7 +40,7 @@ class SettingsScreen extends StatelessWidget {
                         if (value == null) return;
                         settingsService.setThemeMode(value);
                       },
-                      child: const Column(
+                      child: Column(
                         children: [
                           RadioListTile<ThemeMode>(
                             value: ThemeMode.system,
@@ -56,22 +61,11 @@ class SettingsScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: AppSpacing.cardGap),
-              const Card(
-                child: ListTile(
-                  leading: Icon(Icons.language_outlined),
-                  title: Text(AppTexts.language),
-                  subtitle: Text(
-                    AppTexts.languageComingSoon,
-                    textAlign: TextAlign.justify,
-                  ),
-                ),
-              ),
-              const SizedBox(height: AppSpacing.cardGap),
               Card(
                 child: Column(
                   children: [
-                    const ListTile(
-                      leading: Icon(Icons.touch_app_outlined),
+                    ListTile(
+                      leading: const Icon(Icons.touch_app_outlined),
                       title: Text(AppTexts.menuPosition),
                       subtitle: Text(
                         AppTexts.menuPositionDescription,
@@ -96,6 +90,40 @@ class SettingsScreen extends StatelessWidget {
                             : Icons.keyboard_arrow_left,
                       ),
                       onChanged: settingsService.setIsRightHanded,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: AppSpacing.cardGap),
+              Card(
+                child: Column(
+                  children: [
+                    ListTile(
+                      leading: const Icon(Icons.language_outlined),
+                      title: Text(AppTexts.language),
+                      subtitle: Text(
+                        AppTexts.languageDescription,
+                        textAlign: TextAlign.justify,
+                      ),
+                    ),
+                    RadioGroup<String>(
+                      groupValue: settingsService.languageCode,
+                      onChanged: (value) {
+                        if (value == null) return;
+                        settingsService.setLanguageCode(value);
+                      },
+                      child: Column(
+                        children: [
+                          RadioListTile<String>(
+                            value: 'sk',
+                            title: Text(AppTexts.languageSlovak),
+                          ),
+                          RadioListTile<String>(
+                            value: 'en',
+                            title: Text(AppTexts.languageEnglish),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),

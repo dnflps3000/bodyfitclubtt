@@ -153,28 +153,29 @@ class ReservationService {
             .where('reservationDateId', isEqualTo: sessionDateId)
             .get();
 
-        final activeReservationsForDay = existingReservationSnapshot.docs.where((
-          reservationDocument,
-        ) {
-          final reservationData = reservationDocument.data();
-          final reservationStatus =
-              reservationData['status'] as String? ?? 'active';
+        final activeReservationsForDay = existingReservationSnapshot.docs.where(
+          (reservationDocument) {
+            final reservationData = reservationDocument.data();
+            final reservationStatus =
+                reservationData['status'] as String? ?? 'active';
 
-          return reservationStatus != 'cancelled';
-        }).length;
+            return reservationStatus != 'cancelled';
+          },
+        ).length;
 
-        final activeBaseReservationsForDay = existingReservationSnapshot.docs.where((
-          reservationDocument,
-        ) {
-          final reservationData = reservationDocument.data();
-          final reservationStatus =
-              reservationData['status'] as String? ?? 'active';
-          final reservationMembershipPlanId =
-              reservationData['membershipPlanId'] as String?;
+        final activeBaseReservationsForDay = existingReservationSnapshot.docs
+            .where((reservationDocument) {
+              final reservationData = reservationDocument.data();
+              final reservationStatus =
+                  reservationData['status'] as String? ?? 'active';
+              final reservationMembershipPlanId =
+                  reservationData['membershipPlanId'] as String?;
 
-          return reservationStatus != 'cancelled' &&
-              reservationMembershipPlanId != MembershipPlanIds.sameDayNextEntry;
-        }).length;
+              return reservationStatus != 'cancelled' &&
+                  reservationMembershipPlanId !=
+                      MembershipPlanIds.sameDayNextEntry;
+            })
+            .length;
 
         if (planId == MembershipPlanIds.sameDayNextEntry) {
           if (activeBaseReservationsForDay >= 1) {

@@ -182,7 +182,9 @@ class _RequestDiscountScreenState extends State<RequestDiscountScreen> {
                             ? null
                             : () => _pickDocument(ImageSource.gallery),
                         icon: const Icon(Icons.photo_library_outlined),
-                        label: const Text(AppTexts.chooseDiscountDocumentFromGallery),
+                        label: const Text(
+                          AppTexts.chooseDiscountDocumentFromGallery,
+                        ),
                       ),
                     ],
                   ),

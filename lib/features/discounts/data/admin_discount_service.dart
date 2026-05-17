@@ -4,11 +4,9 @@ import '../../audit/data/audit_log_service.dart';
 import '../../../core/theme/app_texts.dart';
 
 class AdminDiscountService {
-  AdminDiscountService({
-    FirebaseFirestore? firestore,
-    FirebaseAuth? auth,
-  }) : _firestore = firestore ?? FirebaseFirestore.instance,
-       _auth = auth ?? FirebaseAuth.instance;
+  AdminDiscountService({FirebaseFirestore? firestore, FirebaseAuth? auth})
+    : _firestore = firestore ?? FirebaseFirestore.instance,
+      _auth = auth ?? FirebaseAuth.instance;
 
   final FirebaseFirestore _firestore;
   final FirebaseAuth _auth;
@@ -35,7 +33,9 @@ class AdminDiscountService {
       throw Exception('not-authenticated');
     }
 
-    final requestRef = _firestore.collection('discount_requests').doc(requestId);
+    final requestRef = _firestore
+        .collection('discount_requests')
+        .doc(requestId);
     final userRef = _firestore.collection('users').doc(userId);
 
     final batch = _firestore.batch();
@@ -92,7 +92,9 @@ class AdminDiscountService {
       throw Exception('not-authenticated');
     }
 
-    final requestRef = _firestore.collection('discount_requests').doc(requestId);
+    final requestRef = _firestore
+        .collection('discount_requests')
+        .doc(requestId);
     final userRef = _firestore.collection('users').doc(userId);
 
     final batch = _firestore.batch();

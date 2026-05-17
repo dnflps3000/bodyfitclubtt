@@ -252,9 +252,7 @@ class _DiscountRequestsScreenState extends State<DiscountRequestsScreen> {
         builder: (_) => Scaffold(
           appBar: AppBar(title: const Text(AppTexts.discountDocumentPreview)),
           body: Center(
-            child: InteractiveViewer(
-              child: Image.network(imageUrl),
-            ),
+            child: InteractiveViewer(child: Image.network(imageUrl)),
           ),
         ),
       ),
@@ -264,9 +262,7 @@ class _DiscountRequestsScreenState extends State<DiscountRequestsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(AppTexts.discountRequests),
-      ),
+      appBar: AppBar(title: const Text(AppTexts.discountRequests)),
       body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
         stream: _service.watchPendingDiscountRequests(),
         builder: (context, snapshot) {
@@ -277,9 +273,7 @@ class _DiscountRequestsScreenState extends State<DiscountRequestsScreen> {
           }
 
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
+            return const Center(child: CircularProgressIndicator());
           }
 
           final requests = snapshot.data?.docs ?? [];
@@ -304,13 +298,13 @@ class _DiscountRequestsScreenState extends State<DiscountRequestsScreen> {
               final data = request.data();
 
               final userId = data['userId'] as String? ?? '';
-              final userName = data['userName'] as String? ?? AppTexts.unknownUser;
+              final userName =
+                  data['userName'] as String? ?? AppTexts.unknownUser;
               final userEmail = data['userEmail'] as String? ?? '';
               final requestedType = data['requestedType'] as String? ?? '';
               final note = data['note'] as String? ?? '';
               final imageUrl = data['documentImageUrl'] as String? ?? '';
-              final createdAt =
-                  (data['createdAt'] as Timestamp?)?.toDate();
+              final createdAt = (data['createdAt'] as Timestamp?)?.toDate();
 
               return Card(
                 child: Padding(
@@ -327,8 +321,12 @@ class _DiscountRequestsScreenState extends State<DiscountRequestsScreen> {
                         Text(userEmail),
                       ],
                       const SizedBox(height: AppSpacing.sm),
-                      Text('${AppTexts.discountType}: ${_discountTypeLabel(requestedType)}'),
-                      Text('${AppTexts.requestedAt}: ${_formatDateTime(createdAt)}'),
+                      Text(
+                        '${AppTexts.discountType}: ${_discountTypeLabel(requestedType)}',
+                      ),
+                      Text(
+                        '${AppTexts.requestedAt}: ${_formatDateTime(createdAt)}',
+                      ),
                       if (note.isNotEmpty) ...[
                         const SizedBox(height: AppSpacing.sm),
                         Text('${AppTexts.reason}: $note'),
@@ -351,9 +349,9 @@ class _DiscountRequestsScreenState extends State<DiscountRequestsScreen> {
                               onPressed: _isSaving
                                   ? null
                                   : () => _rejectRequest(
-                                        requestId: request.id,
-                                        userId: userId,
-                                      ),
+                                      requestId: request.id,
+                                      userId: userId,
+                                    ),
                               child: const Text(AppTexts.rejectDiscount),
                             ),
                           ),
@@ -363,10 +361,10 @@ class _DiscountRequestsScreenState extends State<DiscountRequestsScreen> {
                               onPressed: _isSaving
                                   ? null
                                   : () => _approveRequest(
-                                        requestId: request.id,
-                                        userId: userId,
-                                        requestedType: requestedType,
-                                      ),
+                                      requestId: request.id,
+                                      userId: userId,
+                                      requestedType: requestedType,
+                                    ),
                               child: const Text(AppTexts.approveDiscount),
                             ),
                           ),

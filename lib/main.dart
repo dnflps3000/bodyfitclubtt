@@ -19,6 +19,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'features/messages/data/notification_service.dart';
 
+
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
 
@@ -59,8 +60,19 @@ class MyApp extends StatelessWidget {
         return MaterialApp(
           debugShowCheckedModeBanner: false,
           title: AppTexts.appName,
-          locale: const Locale('sk', 'SK'),
-          supportedLocales: const [Locale('sk', 'SK')],
+          locale: settingsService.locale,
+          supportedLocales: const [
+            Locale('sk', 'SK'),
+            Locale('en', 'GB'),
+            Locale('de', 'DE'),
+            Locale('fr', 'FR'),
+            Locale('pl', 'PL'),
+            Locale('hu', 'HU'),
+            Locale('uk', 'UA'),
+            Locale('ru', 'RU'),
+            Locale('sr', 'RS'),
+            Locale('cs', 'CZ'),
+          ],
           localizationsDelegates: const [
             GlobalMaterialLocalizations.delegate,
             GlobalWidgetsLocalizations.delegate,

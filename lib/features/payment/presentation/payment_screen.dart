@@ -61,8 +61,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
     final userData = userSnapshot.data() ?? {};
     final discountStatus = userData['discountStatus'] as String? ?? 'none';
-    final discountValidUntil =
-        (userData['discountValidUntil'] as Timestamp?)?.toDate();
+    final discountValidUntil = (userData['discountValidUntil'] as Timestamp?)
+        ?.toDate();
 
     final now = DateTime.now();
 
@@ -264,7 +264,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
                   ? allPlans
                   : allPlans
                         .where(
-                          (plan) => plan.purchaseCategory == widget.purchaseCategory,
+                          (plan) =>
+                              plan.purchaseCategory == widget.purchaseCategory,
                         )
                         .toList();
 
@@ -274,7 +275,9 @@ class _PaymentScreenState extends State<PaymentScreen> {
               );
 
               if (plans.isEmpty) {
-                return const Center(child: Text(AppTexts.membershipPlansLoadError));
+                return const Center(
+                  child: Text(AppTexts.membershipPlansLoadError),
+                );
               }
 
               final initialSelectedPlan = widget.preselectedPlanId == null
@@ -295,7 +298,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 });
               }
 
-              final displayedSelectedPlan = _selectedPlan ?? initialSelectedPlan;
+              final displayedSelectedPlan =
+                  _selectedPlan ?? initialSelectedPlan;
 
               return ListView(
                 padding: const EdgeInsets.fromLTRB(

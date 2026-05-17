@@ -17,11 +17,7 @@ import '../../training_history/presentation/training_history_screen.dart';
 /*Obrazovka pre admina a trénera, ktorá združuje správcovské akcie mimo 
   bežného používateľského zobrazenia.*/
 class ManagementScreen extends StatelessWidget {
-  const ManagementScreen({
-    super.key,
-    this.role,
-    this.showAppBar = true,
-  });
+  const ManagementScreen({super.key, this.role, this.showAppBar = true});
 
   final String? role;
   final bool showAppBar;
@@ -93,9 +89,9 @@ class ManagementScreen extends StatelessWidget {
   }
 
   Future<void> _openDiscountRequestsScreen(BuildContext context) async {
-    await Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const DiscountRequestsScreen()),
-    );
+    await Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const DiscountRequestsScreen()));
   }
 
   Future<void> _openTrainingHistoryScreen(BuildContext context) async {

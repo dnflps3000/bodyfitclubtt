@@ -330,7 +330,10 @@ class HomeTab extends StatelessWidget {
                             ),
                             OutlinedButton.icon(
                               onPressed: () {
-                                _openReservationQrCode(context, nearestReservation);
+                                _openReservationQrCode(
+                                  context,
+                                  nearestReservation,
+                                );
                               },
                               icon: const Icon(Icons.qr_code, size: 18),
                               label: const Text(AppTexts.qrShort),
@@ -338,7 +341,8 @@ class HomeTab extends StatelessWidget {
                                 padding: const EdgeInsets.symmetric(
                                   horizontal:
                                       AppSpacing.compactButtonHorizontalPadding,
-                                  vertical: AppSpacing.compactButtonVerticalPadding,
+                                  vertical:
+                                      AppSpacing.compactButtonVerticalPadding,
                                 ),
                                 minimumSize: Size.zero,
                                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -617,9 +621,9 @@ class HomeTab extends StatelessWidget {
   }
 
   void _openDiscountRequests(BuildContext context) {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const DiscountRequestsScreen()),
-    );
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const DiscountRequestsScreen()));
   }
 
   void _openAccountDeletionRequests(BuildContext context) {

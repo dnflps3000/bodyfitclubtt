@@ -14,14 +14,286 @@ class AppTexts {
   static const String todayLower = 'dnes';
   static const String tomorrowLower = 'zajtra';
   static const String minutes = 'min.';
-  static const String role = 'Rola';
   static const String refresh = 'Aktualizovať';
   static const String yesterday = 'Včera';
   static const String last7Days = 'Posledných 7 dní';
   static const String last30Days = 'Posledných 30 dní';
   static const String allTime = 'Celé obdobie';
-  static const String menu = 'Menu';
   static const String close = 'Zavrieť';
+  static const String reason = 'Dôvod';
+  static const String unknownDate = 'Neznámy dátum';
+  static const String notSet = 'Nenastavené';
+  static const String confirm = 'Potvrdiť';
+
+  // Navigácia / menu
+  static const String menu = 'Menu';
+  static const String home = 'Domov';
+  static const String schedule = 'Rozvrh';
+  static const String reservations = 'Rezervácie';
+  static const String management = 'Správa';
+  static const String profile = 'Profil';
+
+  // Nastavenia
+  static const String settings = 'Nastavenia';
+  static const String appearance = 'Vzhľad';
+  static const String appearanceDescription =
+      'Vyberte svetlý, tmavý alebo systémový režim.';
+  static const String themeSystem = 'Podľa systému';
+  static const String themeLight = 'Svetlý režim';
+  static const String themeDark = 'Tmavý režim';
+  static const String menuPosition = 'Umiestnenie menu';
+  static const String menuPositionDescription =
+      'Vyberte, na ktorej strane sa má zobrazovať hlavné menu.';
+  static const String rightHanded = 'Pravák';
+  static const String leftHanded = 'Ľavák';
+  static const String menuRightPositionDescription = 'Menu bude vpravo hore.';
+  static const String menuLeftPositionDescription = 'Menu bude vľavo hore.';
+
+  // Jazyky
+  static const String language = 'Jazyk';
+  static const String languageDescription = 'Vyberte jazyk aplikácie.';
+  static const String languageSlovak = '🇸🇰 Slovenčina';
+  static const String languageEnglish = '🇬🇧 Angličtina';
+  static const String languageGerman = '🇩🇪 Nemčina';
+  static const String languageFrench = '🇫🇷 Francúzština';
+  static const String languagePolish = '🇵🇱 Poľština';
+  static const String languageHungarian = '🇭🇺 Maďarčina';
+  static const String languageUkrainian = '🇺🇦 Ukrajinčina';
+  static const String languageRussian = '🇷🇺 Ruština';
+  static const String languageSerbian = '🇷🇸 Srbčina';
+  static const String languageCzech = '🇨🇿 Čeština';
+
+  // Role
+  static const String role = 'Rola';
+  static const String roleUser = 'Používateľ';
+  static const String roleTrainer = 'Tréner';
+  static const String roleAdmin = 'Administrátor';
+  static const String roleUnknown = 'Neznáma rola';
+
+  // Auth / registrácia / prihlásenie
+  static const String privacyPolicy = 'Ochrana osobných údajov';
+  static const String emailContact = 'E-mail';
+  static const String loginTitle = 'Prihlásenie';
+  static const String registerTitle = 'Registrácia';
+  static const String continueWithGoogle = 'Pokračovať cez Google';
+  static const String continueWithFacebook = 'Pokračovať cez Facebook';
+  static const String or = 'alebo';
+  static const String email = 'E-mail';
+  static const String password = 'Heslo';
+  static const String login = 'Prihlásiť';
+  static const String register = 'Registrovať';
+  static const String logout = 'Odhlásiť';
+  static const String noAccountRegister = 'Nemáš účet? Registrovať';
+  static const String hasAccountLogin = 'Už máš účet? Prihlásiť';
+  static const String authError = 'Chyba prihlásenia';
+  static const String acceptTerms = 'Súhlasím s obchodnými podmienkami';
+  static const String acceptPrivacy = 'Súhlasím so spracovaním osobných údajov';
+  static const String termsConsentRequired =
+      'Pre registráciu je potrebné súhlasiť s obchodnými podmienkami.';
+  static const String privacyConsentRequired =
+      'Pre registráciu je potrebné súhlasiť so spracovaním osobných údajov.';
+  static const String openTerms = 'Otvoriť obchodné podmienky';
+  static const String openPrivacy = 'Otvoriť ochranu osobných údajov';
+  static const String termsVersion = '2026-05-16';
+  static const String privacyVersion = '2026-05-16';
+  static const String continueWithoutAccount = 'Pokračovať bez účtu';
+  static const String completeEmailOrLogout =
+      'Ak nechceš doplniť e-mail, môžeš pokračovať bez účtu a prihlásiť sa neskôr iným účtom.';
+  static const String fillEmailPassword = 'Vyplň e-mail aj heslo.';
+  static const String invalidEmailFormat = 'Zadaj platný e-mail.';
+  static const String passwordTooShort = 'Heslo musí mať aspoň 6 znakov.';
+  static const String wrongEmailOrPassword =
+      'Zadaný e-mail alebo heslo nie je správne.';
+  static const String userAlreadyExists =
+      'Používateľ s týmto e-mailom už existuje.';
+  static const String weakPassword = 'Zadané heslo je príliš slabé.';
+  static const String tooManyRequests =
+      'Príliš veľa pokusov. Skúste to neskôr.';
+  static const String networkError = 'Skontrolujte internetové pripojenie.';
+  static const String signInCancelled = 'Prihlásenie bolo zrušené.';
+  static const String facebookLoginFailed =
+      'Prihlásenie cez Facebook sa nepodarilo.';
+  static const String unknownAuthError =
+      'Nastala neznáma chyba pri prihlásení.';
+  static const String inactiveAccount =
+      'Váš účet je deaktivovaný. Kontaktujte administrátora.';
+  static const String verificationEmailSent =
+      'Registrácia prebehla úspešne. Poslali sme vám overovací e-mail. '
+      'Ak ho nevidíte v doručenej pošte, skontrolujte aj priečinok Spam.';
+  static const String emailNotVerified =
+      'Najskôr potvrďte registráciu kliknutím na odkaz v e-maile.';
+  static const String verificationEmailSentAgain =
+      'Overovací e-mail sme vám poslali opäť. '
+      'Ak ho nevidíte v doručenej pošte, skontrolujte aj priečinok Spam.';
+  static const String forgotPassword = 'Zabudli ste heslo?';
+  static const String resetPasswordTitle = 'Obnovenie hesla';
+  static const String sendResetEmail = 'Poslať e-mail';
+  static const String passwordResetEmailSent =
+      'Ak účet s týmto e-mailom existuje, poslali sme e-mail na obnovenie hesla.';
+  static const String emailRequired = 'Zadajte e-mail.';
+  static const String emailNotProvided = 'E-mail nebol poskytnutý';
+  static const String emailSaved = 'E-mail bol uložený.';
+  static const String emailSaveError = 'E-mail sa nepodarilo uložiť.';
+  static const String emailChangeVerificationSent =
+      'Na nový e-mail sme poslali overovací odkaz. Zmena sa dokončí po jeho potvrdení.';
+  static const String emailChangeRequestError =
+      'Zmenu e-mailu sa nepodarilo spustiť.';
+  static const String emailChangeNotAvailable =
+      'Zmena e-mailu je dostupná iba pre účty vytvorené e-mailom a heslom.';
+
+  // Profil / účet
+  static const String completeProfileTitle = 'Doplnenie profilu';
+  static const String editProfile = 'Upraviť profil';
+  static const String firstName = 'Meno';
+  static const String lastName = 'Priezvisko';
+  static const String publicName = 'Zobrazované meno';
+  static const String publicNameHint = 'Napr. Barbora, Katka, Aďo';
+  static const String firstNameRequired = 'Zadajte meno.';
+  static const String lastNameRequired = 'Zadajte priezvisko.';
+  static const String publicNameRequired = 'Zadajte zobrazované meno.';
+  static const String profileSaved = 'Profil bol uložený.';
+  static const String profileSaveError = 'Profil sa nepodarilo uložiť.';
+  static const String loggedInUser = 'Prihlásený používateľ';
+  static const String completeEmailTitle = 'Doplnenie e-mailu';
+  static const String completeEmailDescription =
+      'Pre používanie aplikácie potrebujeme vašu e-mailovú adresu. '
+      'Použijeme ju ako kontaktný e-mail k vášmu účtu.';
+  static const String deleteAccountRequest = 'Požiadať o vymazanie účtu';
+  static const String deleteAccountRequestTitle = 'Vymazanie účtu';
+  static const String deleteAccountRequestDescription =
+      'Po odoslaní žiadosti bude účet deaktivovaný a nebude možné sa doň prihlásiť. Údaje budú následne spracované administrátorom podľa pravidiel ochrany osobných údajov.';
+  static const String deleteAccountReason = 'Dôvod žiadosti';
+  static const String deleteAccountConfirm =
+      'Naozaj chcete požiadať o vymazanie účtu?';
+  static const String deleteAccountRequestSent =
+      'Žiadosť o vymazanie účtu bola odoslaná.';
+  static const String deleteAccountRequestError =
+      'Žiadosť o vymazanie účtu sa nepodarilo odoslať.';
+  static const String deleteAccountBlockedActiveReservations =
+      'Účet nie je možné vymazať, pretože máte aktívne rezervácie.';
+  static const String accountDeletionRequests = 'Žiadosti o vymazanie účtu';
+  static const String accountDeletionRequestsWithCount =
+      'Žiadosti o vymazanie účtu';
+  static const String accountDeletionRequestsLoadError =
+      'Žiadosti o vymazanie účtu sa nepodarilo načítať.';
+  static const String noAccountDeletionRequests =
+      'Nie sú evidované žiadne čakajúce žiadosti.';
+  static const String completeAccountDeletion = 'Anonymizovať účet';
+  static const String completeAccountDeletionTitle = 'Anonymizovať účet';
+  static const String completeAccountDeletionQuestion =
+      'Naozaj chcete anonymizovať tento účet? Táto akcia prepíše osobné údaje používateľa.';
+  static const String accountDeletionCompleted = 'Účet bol anonymizovaný.';
+  static const String accountDeletionCompleteError =
+      'Účet sa nepodarilo anonymizovať.';
+  static const String requestedAt = 'Požiadané';
+  static const String accountDeletionRequestsWaiting =
+      'Čakajúce žiadosti na spracovanie.';
+  static const String changeEmail = 'Zmeniť e-mail';
+  static const String changeEmailTitle = 'Zmena e-mailu';
+  static const String changeEmailDescription =
+      'Zadajte nový e-mail a aktuálne heslo. Na nový e-mail pošleme overovací odkaz. Zmena sa dokončí až po potvrdení odkazu v e-maile.';
+  static const String changeEmailProfileHint =
+      'Dostupné pre účty vytvorené e-mailom a heslom.';
+  static const String newEmail = 'Nový e-mail';
+  static const String currentPassword = 'Aktuálne heslo';
+  static const String sendVerificationEmail = 'Poslať overovací e-mail';
+  static const String wrongCurrentPassword = 'Aktuálne heslo nie je správne.';
+  static const String requiresRecentLogin =
+      'Pre túto akciu sa najskôr odhláste a znovu prihláste.';
+  static const String changeProfilePhoto = 'Zmeniť profilovú fotku';
+  static const String chooseFromGallery = 'Vybrať z galérie';
+  static const String takePhoto = 'Odfotiť';
+  static const String removePhoto = 'Odstrániť fotku';
+  static const String editPhoto = 'Upraviť fotku';
+  static const String cropProfilePhoto = 'Orezať profilovú fotku';
+  static const String profilePhotoUpdated = 'Profilová fotka bola uložená.';
+  static const String profilePhotoUpdateError =
+      'Profilovú fotku sa nepodarilo uložiť.';
+  static const String profilePhotoRemoveError =
+      'Profilovú fotku sa nepodarilo odstrániť.';
+
+  // Zľavy
+  static const String requestDiscount = 'Požiadať o zľavu';
+  static const String discountStatus = 'Zľavový status';
+  static const String discountStatusNone = 'Bez zľavy';
+  static const String discountStatusPending = 'Čaká na schválenie';
+  static const String discountStatusApproved = 'Schválená zľava';
+  static const String discountStatusRejected = 'Zamietnutá žiadosť';
+  static const String discountStatusExpired = 'Platnosť zľavy skončila';
+  static const String discountType = 'Typ zľavy';
+  static const String discountTypeNormal = 'Bežný používateľ';
+  static const String discountTypeStudent = 'Študent';
+  static const String discountTypeSenior = 'Senior';
+  static const String discountTypeZtp = 'ZŤP';
+  static const String discountTypeIndividual = 'Individuálna zľava';
+  static const String discountRequestDescription =
+      'Vyberte typ zľavy, o ktorú žiadate. Po odoslaní žiadosť skontroluje administrátor.';
+  static const String discountRequestNote = 'Poznámka k žiadosti';
+  static const String discountRequestSent = 'Žiadosť o zľavu bola odoslaná.';
+  static const String discountRequestError =
+      'Žiadosť o zľavu sa nepodarilo odoslať.';
+  static const String discountRequestAlreadyPending =
+      'Už máte rozpracovanú žiadosť o zľavu.';
+  static const String discountRequestPending = 'Žiadosť čaká na schválenie';
+  static const String sendRequest = 'Odoslať žiadosť';
+  static const String discountDocument = 'Doklad k zľave';
+  static const String discountDocumentDescription =
+      'Nahrajte fotografiu dokladu, podľa ktorého administrátor overí nárok na zľavu.';
+  static const String chooseDiscountDocument = 'Vybrať doklad';
+  static const String discountDocumentRequired =
+      'Pre odoslanie žiadosti je potrebné priložiť doklad.';
+  static const String discountDocumentSelected = 'Doklad bol vybraný';
+  static const String takeDiscountDocumentPhoto = 'Odfotiť doklad';
+  static const String chooseDiscountDocumentFromGallery = 'Vybrať z galérie';
+  static const String discountRequests = 'Žiadosti o zľavu';
+  static const String discountRequestsDescription =
+      'Schvaľovanie alebo zamietnutie žiadostí používateľov o zľavu.';
+  static const String discountRequestsLoadError =
+      'Žiadosti o zľavu sa nepodarilo načítať.';
+  static const String noDiscountRequests =
+      'Nie sú evidované žiadne čakajúce žiadosti o zľavu.';
+  static const String approveDiscount = 'Schváliť zľavu';
+  static const String rejectDiscount = 'Zamietnuť žiadosť';
+  static const String discountApproved = 'Zľava bola schválená.';
+  static const String discountRejected = 'Žiadosť o zľavu bola zamietnutá.';
+  static const String discountDecisionError =
+      'Rozhodnutie k žiadosti sa nepodarilo uložiť.';
+  static const String discountValidUntilRequired =
+      'Vyberte dátum platnosti zľavy.';
+  static const String discountAdminNote = 'Poznámka administrátora';
+  static const String selectDiscountValidUntil = 'Vyberte platnosť zľavy';
+  static const String discountDocumentPreview = 'Náhľad dokladu';
+
+  // Home obrazovka
+  static const String todayReservations = 'Dnešné rezervácie';
+  static const String noTodayReservations =
+      'Dnes nemáte rezervované žiadne cvičenie.';
+  static const String nearestTraining = 'Najbližšie cvičenie';
+  static const String nearestTrainings = 'Najbližšie cvičenia';
+  static const String noNearestTraining =
+      'Nie je naplánované žiadne najbližšie cvičenie.';
+  static const String todaysTrainings = 'Dnešné cvičenia';
+  static const String noTodaysTrainings =
+      'Dnes nie sú naplánované žiadne cvičenia.';
+  static const String myMemberships = 'Moje permanentky';
+  static const String activeMembershipsCount = 'Aktívne permanentky';
+  static const String availableEntriesSummary = 'Dostupné vstupy';
+  static const String reservedEntriesSummary = 'Alokované vstupy';
+  static const String dailyMembershipsSummary = 'Denné permanentky';
+  static const String tapToShowQrCode = 'Kliknutím zobrazíte QR kód.';
+  static const String nearestReservations = 'Najbližšie rezervácie';
+  static const String noNearestReservations =
+      'Nemáte žiadne najbližšie rezervácie.';
+  static const String qrShort = 'QR';
+  static const String membershipStatus = 'Stav permanentky';
+  static const String remainingEntries = 'Zostávajúce vstupy';
+  static const String upcomingTraining = 'Najbližšie dnešné cvičenie';
+  static const String schedulePlaceholder = 'Tu bude rozvrh tréningov.';
+  static const String reservationsPlaceholder = 'Tu budú rezervácie.';
+  static const String newsPlaceholder =
+      'Tu sa budú zobrazovať novinky a správy od trénerov.';
+
+  // Info obrazovky
   static const String aboutApp = 'O aplikácii';
   static const String aboutUs = 'O nás';
   static const String aboutAppDescription =
@@ -31,7 +303,6 @@ class AppTexts {
   static const String bodyFitClubWebsite = 'https://bodyfitclub.sk/';
   static const String openWebsite = 'Otvoriť webovú stránku';
   static const String businessTerms = 'Obchodné podmienky';
-  static const String privacyPolicy = 'Ochrana osobných údajov';
   static const String legalDocumentsInfo =
       'Obchodné podmienky a informácie o ochrane osobných údajov budú dostupné na webovej stránke Body Fit Club.';
   static const String contacts = 'Kontakty';
@@ -39,7 +310,6 @@ class AppTexts {
   static const String address = 'Adresa';
   static const String phone = 'Telefón';
   static const String website = 'Webová stránka';
-  static const String emailContact = 'E-mail';
   static const String socialNetworks = 'Sociálne siete';
   static const String openMap = 'Otvoriť mapu';
   static const String openFacebook = 'Facebook';
@@ -74,206 +344,7 @@ class AppTexts {
   static const String notVatPayer = 'Spoločnosť nie je platiteľom DPH';
   static const String legalDocuments = 'Právne dokumenty';
 
-  // Role
-  static const String roleUser = 'Používateľ';
-  static const String roleTrainer = 'Tréner';
-  static const String roleAdmin = 'Administrátor';
-  static const String roleUnknown = 'Neznáma rola';
-
-  // Hlavná navigácia
-  static const String home = 'Domov';
-  static const String schedule = 'Rozvrh';
-  static const String reservations = 'Rezervácie';
-  static const String management = 'Správa';
-  static const String profile = 'Profil';
-
-  // Auth obrazovka
-  static const String loginTitle = 'Prihlásenie';
-  static const String registerTitle = 'Registrácia';
-  static const String continueWithGoogle = 'Pokračovať cez Google';
-  static const String continueWithFacebook = 'Pokračovať cez Facebook';
-  static const String or = 'alebo';
-  static const String email = 'E-mail';
-  static const String password = 'Heslo';
-  static const String login = 'Prihlásiť';
-  static const String register = 'Registrovať';
-  static const String logout = 'Odhlásiť';
-  static const String noAccountRegister = 'Nemáš účet? Registrovať';
-  static const String hasAccountLogin = 'Už máš účet? Prihlásiť';
-  static const String authError = 'Chyba prihlásenia';
-  static const String acceptTerms = 'Súhlasím s obchodnými podmienkami';
-  static const String acceptPrivacy = 'Súhlasím so spracovaním osobných údajov';
-  static const String termsConsentRequired =
-      'Pre registráciu je potrebné súhlasiť s obchodnými podmienkami.';
-  static const String privacyConsentRequired =
-      'Pre registráciu je potrebné súhlasiť so spracovaním osobných údajov.';
-  static const String openTerms = 'Otvoriť obchodné podmienky';
-  static const String openPrivacy = 'Otvoriť ochranu osobných údajov';
-  static const String termsVersion = '2026-05-16';
-  static const String privacyVersion = '2026-05-16';
-  static const String continueWithoutAccount = 'Pokračovať bez účtu';
-  static const String completeEmailOrLogout =
-      'Ak nechceš doplniť e-mail, môžeš pokračovať bez účtu a prihlásiť sa neskôr iným účtom.';
-
-  // Validácia auth
-  static const String fillEmailPassword = 'Vyplň e-mail aj heslo.';
-  static const String invalidEmailFormat = 'Zadaj platný e-mail.';
-  static const String passwordTooShort = 'Heslo musí mať aspoň 6 znakov.';
-
-  // Firebase Auth chyby
-  static const String wrongEmailOrPassword =
-      'Zadaný e-mail alebo heslo nie je správne.';
-  static const String userAlreadyExists =
-      'Používateľ s týmto e-mailom už existuje.';
-  static const String weakPassword = 'Zadané heslo je príliš slabé.';
-  static const String tooManyRequests =
-      'Príliš veľa pokusov. Skúste to neskôr.';
-  static const String networkError = 'Skontrolujte internetové pripojenie.';
-  static const String signInCancelled = 'Prihlásenie bolo zrušené.';
-  static const String facebookLoginFailed =
-      'Prihlásenie cez Facebook sa nepodarilo.';
-  static const String unknownAuthError =
-      'Nastala neznáma chyba pri prihlásení.';
-  static const String inactiveAccount =
-      'Váš účet je deaktivovaný. Kontaktujte administrátora.';
-
-  // Overenie e-mailu
-  static const String verificationEmailSent =
-      'Registrácia prebehla úspešne. Poslali sme vám overovací e-mail. '
-      'Ak ho nevidíte v doručenej pošte, skontrolujte aj priečinok Spam.';
-  static const String emailNotVerified =
-      'Najskôr potvrďte registráciu kliknutím na odkaz v e-maile.';
-  static const String verificationEmailSentAgain =
-      'Overovací e-mail sme vám poslali opäť. '
-      'Ak ho nevidíte v doručenej pošte, skontrolujte aj priečinok Spam.';
-  static const String forgotPassword = 'Zabudli ste heslo?';
-  static const String resetPasswordTitle = 'Obnovenie hesla';
-  static const String sendResetEmail = 'Poslať e-mail';
-  static const String passwordResetEmailSent =
-      'Ak účet s týmto e-mailom existuje, poslali sme e-mail na obnovenie hesla.';
-  static const String emailRequired = 'Zadajte e-mail.';
-
-  // Complete profile / profil
-  static const String completeProfileTitle = 'Doplnenie profilu';
-  static const String editProfile = 'Upraviť profil';
-  static const String firstName = 'Meno';
-  static const String lastName = 'Priezvisko';
-  static const String publicName = 'Zobrazované meno';
-  static const String publicNameHint = 'Napr. Barbora, Katka, Aďo';
-  static const String firstNameRequired = 'Zadajte meno.';
-  static const String lastNameRequired = 'Zadajte priezvisko.';
-  static const String publicNameRequired = 'Zadajte zobrazované meno.';
-  static const String profileSaved = 'Profil bol uložený.';
-  static const String profileSaveError = 'Profil sa nepodarilo uložiť.';
-  static const String emailNotProvided = 'E-mail nebol poskytnutý';
-  static const String loggedInUser = 'Prihlásený používateľ';
-  static const String completeEmailTitle = 'Doplnenie e-mailu';
-  static const String completeEmailDescription =
-      'Pre používanie aplikácie potrebujeme vašu e-mailovú adresu. '
-      'Použijeme ju ako kontaktný e-mail k vášmu účtu.';
-  static const String emailSaved = 'E-mail bol uložený.';
-  static const String emailSaveError = 'E-mail sa nepodarilo uložiť.';
-  static const String deleteAccountRequest = 'Požiadať o vymazanie účtu';
-  static const String deleteAccountRequestTitle = 'Vymazanie účtu';
-  static const String deleteAccountRequestDescription =
-      'Po odoslaní žiadosti bude účet deaktivovaný a nebude možné sa doň prihlásiť. Údaje budú následne spracované administrátorom podľa pravidiel ochrany osobných údajov.';
-  static const String deleteAccountReason = 'Dôvod žiadosti';
-  static const String deleteAccountConfirm =
-      'Naozaj chcete požiadať o vymazanie účtu?';
-  static const String deleteAccountRequestSent =
-      'Žiadosť o vymazanie účtu bola odoslaná.';
-  static const String deleteAccountRequestError =
-      'Žiadosť o vymazanie účtu sa nepodarilo odoslať.';
-  static const String deleteAccountBlockedActiveReservations =
-      'Účet nie je možné vymazať, pretože máte aktívne rezervácie.';
-  static const String accountDeletionRequests = 'Žiadosti o vymazanie účtu';
-  static const String accountDeletionRequestsWithCount =
-      'Žiadosti o vymazanie účtu';
-  static const String accountDeletionRequestsLoadError =
-      'Žiadosti o vymazanie účtu sa nepodarilo načítať.';
-  static const String noAccountDeletionRequests =
-      'Nie sú evidované žiadne čakajúce žiadosti.';
-  static const String completeAccountDeletion = 'Anonymizovať účet';
-  static const String completeAccountDeletionTitle = 'Anonymizovať účet';
-  static const String completeAccountDeletionQuestion =
-      'Naozaj chcete anonymizovať tento účet? Táto akcia prepíše osobné údaje používateľa.';
-  static const String accountDeletionCompleted = 'Účet bol anonymizovaný.';
-  static const String accountDeletionCompleteError =
-      'Účet sa nepodarilo anonymizovať.';
-  static const String requestedAt = 'Požiadané';
-  static const String reason = 'Dôvod';
-  static const String unknownDate = 'Neznámy dátum';
-  static const String accountDeletionRequestsWaiting =
-      'Čakajúce žiadosti na spracovanie.';
-  static const String changeEmail = 'Zmeniť e-mail';
-  static const String changeEmailTitle = 'Zmena e-mailu';
-  static const String changeEmailDescription =
-      'Zadajte nový e-mail a aktuálne heslo. Na nový e-mail pošleme overovací odkaz. Zmena sa dokončí až po potvrdení odkazu v e-maile.';
-  static const String changeEmailProfileHint =
-      'Dostupné pre účty vytvorené e-mailom a heslom.';
-  static const String newEmail = 'Nový e-mail';
-  static const String currentPassword = 'Aktuálne heslo';
-  static const String sendVerificationEmail = 'Poslať overovací e-mail';
-  static const String emailChangeVerificationSent =
-      'Na nový e-mail sme poslali overovací odkaz. Zmena sa dokončí po jeho potvrdení.';
-  static const String emailChangeRequestError =
-      'Zmenu e-mailu sa nepodarilo spustiť.';
-  static const String wrongCurrentPassword = 'Aktuálne heslo nie je správne.';
-  static const String requiresRecentLogin =
-      'Pre túto akciu sa najskôr odhláste a znovu prihláste.';
-  static const String emailChangeNotAvailable =
-      'Zmena e-mailu je dostupná iba pre účty vytvorené e-mailom a heslom.';
-  static const String requestDiscount = 'Požiadať o zľavu';
-  static const String discountStatus = 'Zľavový status';
-  static const String discountStatusNone = 'Bez zľavy';
-  static const String discountStatusPending = 'Čaká na schválenie';
-  static const String discountStatusApproved = 'Schválená zľava';
-  static const String discountStatusRejected = 'Zamietnutá žiadosť';
-  static const String discountStatusExpired = 'Platnosť zľavy skončila';
-  static const String discountType = 'Typ zľavy';
-  static const String discountTypeNormal = 'Bežný používateľ';
-  static const String discountTypeStudent = 'Študent';
-  static const String discountTypeSenior = 'Senior';
-  static const String discountTypeZtp = 'ZŤP';
-  static const String discountTypeIndividual = 'Individuálna zľava';
-  static const String discountRequestDescription =
-      'Vyberte typ zľavy, o ktorú žiadate. Po odoslaní žiadosť skontroluje administrátor.';
-  static const String discountRequestNote = 'Poznámka k žiadosti';
-  static const String discountRequestSent = 'Žiadosť o zľavu bola odoslaná.';
-  static const String discountRequestError =
-      'Žiadosť o zľavu sa nepodarilo odoslať.';
-  static const String discountRequestAlreadyPending =
-      'Už máte rozpracovanú žiadosť o zľavu.';
-  static const String discountRequestPending = 'Žiadosť čaká na schválenie';
-  static const String sendRequest = 'Odoslať žiadosť';
-  static const String notSet = 'Nenastavené';
-  static const String discountDocument = 'Doklad k zľave';
-  static const String discountDocumentDescription =
-      'Nahrajte fotografiu dokladu, podľa ktorého administrátor overí nárok na zľavu.';
-  static const String chooseDiscountDocument = 'Vybrať doklad';
-  static const String discountDocumentRequired =
-      'Pre odoslanie žiadosti je potrebné priložiť doklad.';
-  static const String discountDocumentSelected = 'Doklad bol vybraný';
-  static const String takeDiscountDocumentPhoto = 'Odfotiť doklad';
-  static const String chooseDiscountDocumentFromGallery = 'Vybrať z galérie';
-  static const String discountRequests = 'Žiadosti o zľavu';
-  static const String discountRequestsDescription =
-      'Schvaľovanie alebo zamietnutie žiadostí používateľov o zľavu.';
-  static const String discountRequestsLoadError =
-      'Žiadosti o zľavu sa nepodarilo načítať.';
-  static const String noDiscountRequests =
-      'Nie sú evidované žiadne čakajúce žiadosti o zľavu.';
-  static const String approveDiscount = 'Schváliť zľavu';
-  static const String rejectDiscount = 'Zamietnuť žiadosť';
-  static const String discountApproved = 'Zľava bola schválená.';
-  static const String discountRejected = 'Žiadosť o zľavu bola zamietnutá.';
-  static const String discountDecisionError =
-      'Rozhodnutie k žiadosti sa nepodarilo uložiť.';
-  static const String discountValidUntilRequired =
-      'Vyberte dátum platnosti zľavy.';
-  static const String discountAdminNote = 'Poznámka administrátora';
-  static const String selectDiscountValidUntil = 'Vyberte platnosť zľavy';
-  static const String discountDocumentPreview = 'Náhľad dokladu';
+  // Cenník
   static const String priceList = 'Cenník';
   static const String priceListAudience = 'Pre';
   static const String priceListAudienceNormal = 'bežní používatelia';
@@ -283,42 +354,8 @@ class AppTexts {
   static const String singleEntries = 'Jednorazové vstupy';
   static const String priceListMemberships = 'Permanentky';
   static const String chooseEntry = 'Vyberte vstup';
-  static const String noAvailablePlans = 'Momentálne nie sú dostupné žiadne možnosti nákupu.';
-
-  // Profilová fotka
-  static const String changeProfilePhoto = 'Zmeniť profilovú fotku';
-  static const String chooseFromGallery = 'Vybrať z galérie';
-  static const String takePhoto = 'Odfotiť';
-  static const String removePhoto = 'Odstrániť fotku';
-  static const String editPhoto = 'Upraviť fotku';
-  static const String cropProfilePhoto = 'Orezať profilovú fotku';
-  static const String profilePhotoUpdated = 'Profilová fotka bola uložená.';
-  static const String profilePhotoUpdateError =
-      'Profilovú fotku sa nepodarilo uložiť.';
-  static const String profilePhotoRemoveError =
-      'Profilovú fotku sa nepodarilo odstrániť.';
-
-  // Home obrazovka
-  static const String todayReservations = 'Dnešné rezervácie';
-  static const String noTodayReservations =
-      'Dnes nemáte rezervované žiadne cvičenie.';
-  static const String nearestTraining = 'Najbližšie cvičenie';
-  static const String nearestTrainings = 'Najbližšie cvičenia';
-  static const String noNearestTraining =
-      'Nie je naplánované žiadne najbližšie cvičenie.';
-  static const String todaysTrainings = 'Dnešné cvičenia';
-  static const String noTodaysTrainings =
-      'Dnes nie sú naplánované žiadne cvičenia.';
-  static const String myMemberships = 'Moje permanentky';
-  static const String activeMembershipsCount = 'Aktívne permanentky';
-  static const String availableEntriesSummary = 'Dostupné vstupy';
-  static const String reservedEntriesSummary = 'Alokované vstupy';
-  static const String dailyMembershipsSummary = 'Denné permanentky';
-  static const String tapToShowQrCode = 'Kliknutím zobrazíte QR kód.';
-  static const String nearestReservations = 'Najbližšie rezervácie';
-  static const String noNearestReservations =
-      'Nemáte žiadne najbližšie rezervácie.';
-  static const String qrShort = 'QR';
+  static const String noAvailablePlans =
+      'Momentálne nie sú dostupné žiadne možnosti nákupu.';
 
   // Novinky / verejné správy
   static const String news = 'Novinky';
@@ -341,15 +378,6 @@ class AppTexts {
   static const String editedByAdmin = 'Upravené administrátorom';
   static const String editedByTrainer = 'Upravené trénerom';
   static const String userFallback = 'Používateľ';
-
-  // Verejné / placeholder texty
-  static const String membershipStatus = 'Stav permanentky';
-  static const String remainingEntries = 'Zostávajúce vstupy';
-  static const String upcomingTraining = 'Najbližšie dnešné cvičenie';
-  static const String schedulePlaceholder = 'Tu bude rozvrh tréningov.';
-  static const String reservationsPlaceholder = 'Tu budú rezervácie.';
-  static const String newsPlaceholder =
-      'Tu sa budú zobrazovať novinky a správy od trénerov.';
 
   // Rozvrh tréningov
   static const String noTrainings =
@@ -450,7 +478,7 @@ class AppTexts {
         '$trainingName – $weekday o $time.';
   }
 
-  // Správa
+  // Správa rozvrhu
   static const String managementDescription =
       'Tu môžete spravovať termíny cvičení, dochádzku, permanentky a používateľov.';
   static const String scheduleManagement = 'Správa rozvrhu';
@@ -465,8 +493,6 @@ class AppTexts {
   static const String reactivateUserQuestion =
       'Naozaj chcete znovu aktivovať tohto používateľa?';
   static const String userReactivated = 'Používateľ bol znovu aktivovaný.';
-
-  // Správa typov cvičení
   static const String trainingTypesManagement = 'Správa typov cvičení';
   static const String addTrainingType = 'Pridať typ cvičenia';
   static const String editTrainingType = 'Upraviť typ cvičenia';
@@ -492,8 +518,6 @@ class AppTexts {
       'Typ cvičenia nie je možné vymazať, pretože sa používa v aktívnej šablóne rozvrhu.';
   static const String trainingTypeUsedBySession =
       'Typ cvičenia nie je možné vymazať, pretože sa používa v budúcom termíne cvičenia.';
-
-  // Správa konkrétnych termínov cvičení
   static const String addTrainingSession = 'Pridať termín cvičenia';
   static const String editTrainingSession = 'Upraviť detaily cvičenia';
   static const String trainingSessionCreated = 'Termín tréningu bol vytvorený.';
@@ -518,8 +542,6 @@ class AppTexts {
       'Tréner môže zrušiť iba vlastný termín.';
   static const String trainerCannotCancelStartedSession =
       'Tréner nemôže zrušiť termín, ktorý už začal alebo prebehol.';
-
-  // Formuláre rozvrhu
   static const String date = 'Dátum';
   static const String startTime = 'Začiatok';
   static const String duration = 'Trvanie';
@@ -531,8 +553,6 @@ class AppTexts {
   static const String invalidCapacity = 'Kapacita musí byť väčšia ako 0.';
   static const String invalidDuration = 'Trvanie musí byť väčšie ako 0.';
   static const String saveError = 'Uloženie sa nepodarilo.';
-
-  // Šablóny rozvrhu
   static const String addScheduleTemplate = 'Pridať šablónu rozvrhu';
   static const String editScheduleTemplate = 'Upraviť šablónu rozvrhu';
   static const String deleteScheduleTemplate = 'Vymazať šablónu rozvrhu';
@@ -554,7 +574,6 @@ class AppTexts {
       'Nepodarilo sa načítať šablóny rozvrhu.';
   static const String scheduleTemplateOverlap =
       'V tomto čase už existuje iná šablóna rozvrhu.';
-
   static const List<String> weekdays = [
     'Pondelok',
     'Utorok',
@@ -564,6 +583,7 @@ class AppTexts {
     'Sobota',
     'Nedeľa',
   ];
+  static const String capacityLabel = 'Kapacita';
 
   // Rezervácie
   static const String reservationCreated = 'Rezervácia bola vytvorená.';
@@ -586,8 +606,19 @@ class AppTexts {
       'Rezerváciu sa nepodarilo zrušiť.';
   static const String reservationsLoadError =
       'Rezervácie sa nepodarilo načítať.';
+  static const String cancelReservations = 'Zrušiť rezervácie';
+  static const String cancelReservationsBeforeDeactivation =
+      'Pred deaktiváciou alebo zrušením permanentky najskôr zrušte alokované rezervácie.';
+  static const String cancelReservationForMembership = 'Zrušiť túto rezerváciu';
+  static const String cancelReservationForMembershipQuestion =
+      'Naozaj chcete zrušiť túto rezerváciu naviazanú na permanentku? Alokovaný vstup sa uvoľní.';
+  static const String reservationForMembershipCancelled =
+      'Rezervácia bola zrušená a alokovaný vstup bol uvoľnený.';
+  static const String noReservationsForTrainingHistory =
+      'Na tomto tréningu nie sú žiadne rezervácie.';
+  static const String reservationQrCode = 'QR kód rezervácie';
 
-  // Permanentky
+  // Permanentky / platby
   static const String memberships = 'Permanentky';
   static const String assignMembership = 'Priradiť permanentku';
   static const String selectUser = 'Vyberte používateľa';
@@ -641,7 +672,6 @@ class AppTexts {
       'Zrušiť alokované rezervácie';
   static const String cancelAllocatedReservationsQuestion =
       'Naozaj chcete zrušiť aktívne rezervácie naviazané na túto permanentku? Alokované vstupy sa uvoľnia.';
-  static const String cancelReservations = 'Zrušiť rezervácie';
   static const String cancelAllReservations = 'Zrušiť všetky rezervácie';
   static const String cancelAllocatedReservationsError =
       'Alokované rezervácie sa nepodarilo zrušiť.';
@@ -661,15 +691,10 @@ class AppTexts {
       'Zostávajúce vstupy nemôžu byť vyššie ako celkový počet vstupov.';
   static const String invalidRemainingEntriesLowerThanReserved =
       'Zostávajúce vstupy nemôžu byť nižšie ako počet alokovaných vstupov.';
-  static const String cancelReservationsBeforeDeactivation =
-      'Pred deaktiváciou alebo zrušením permanentky najskôr zrušte alokované rezervácie.';
-  static const String cancelReservationForMembership = 'Zrušiť túto rezerváciu';
-  static const String cancelReservationForMembershipQuestion =
-      'Naozaj chcete zrušiť túto rezerváciu naviazanú na permanentku? Alokovaný vstup sa uvoľní.';
-  static const String reservationForMembershipCancelled =
-      'Rezervácia bola zrušená a alokovaný vstup bol uvoľnený.';
+  static const String membershipPrefix = 'Permanentka';
+  static const String statusPrefix = 'Stav';
 
-  // Dochádzka
+  // Dochádzka / QR
   static const String attendance = 'Dochádzka';
   static const String attendanceLoadError = 'Nepodarilo sa načítať dochádzku.';
   static const String noActiveReservationsForAttendance =
@@ -684,6 +709,26 @@ class AppTexts {
       'Naozaj chcete označiť používateľa ako neprítomného?';
   static const String attendanceMarked = 'Dochádzka bola uložená.';
   static const String attendanceMarkError = 'Dochádzku sa nepodarilo uložiť.';
+  static const String attendedStatus = 'Prišiel';
+  static const String noShowStatus = 'Neprišiel';
+  static const String attendedCountLabel = 'Prišli';
+  static const String noShowCountLabel = 'Neprišli';
+  static const String attendanceActionDone = 'Zmena účasti bola uložená.';
+  static const String attendanceActionError =
+      'Zmenu účasti sa nepodarilo uložiť.';
+  static const String showQrCode = 'QR kód';
+  static const String showQrToTrainer =
+      'Ukážte tento QR kód trénerovi pri príchode na tréning.';
+  static const String scanQrCode = 'Skenovať QR kód';
+  static const String scanQrCodes = 'Skenovať QR kódy';
+  static const String scanQrCodeHint =
+      'Namierte kameru na QR kód rezervácie používateľa.';
+  static const String invalidQrCode = 'Neplatný QR kód rezervácie.';
+  static const String qrCodeScanned = 'QR kód bol naskenovaný.';
+  static const String qrScanSuccessful =
+      'QR kód bol naskenovaný. Môžete skenovať ďalšieho používateľa.';
+  static const String trainerQrScanTooEarly =
+      'QR kód je možné naskenovať najskôr 30 minút pred začiatkom cvičenia.';
 
   // História tréningov
   static const String trainingHistory = 'História tréningov';
@@ -694,23 +739,14 @@ class AppTexts {
       'Účasť na tréningu sa nepodarilo načítať.';
   static const String noTrainingHistoryInSelectedPeriod =
       'V zvolenom období nie sú žiadne tréningy.';
-  static const String noReservationsForTrainingHistory =
-      'Na tomto tréningu nie sú žiadne rezervácie.';
   static const String fromDatePrefix = 'Od';
   static const String toDatePrefix = 'Do';
   static const String planned = 'Naplánované';
   static const String cancelled = 'Zrušené';
   static const String finished = 'Prebehlo';
-  static const String attendedStatus = 'Prišiel';
-  static const String noShowStatus = 'Neprišiel';
   static const String reservedStatus = 'Rezervované';
-  static const String capacityLabel = 'Kapacita';
-  static const String attendedCountLabel = 'Prišli';
-  static const String noShowCountLabel = 'Neprišli';
   static const String reservedCountLabel = 'Rezervované';
   static const String cancelledCountLabel = 'Zrušené';
-  static const String membershipPrefix = 'Permanentka';
-  static const String statusPrefix = 'Stav';
   static const String markedAtPrefix = 'Označené';
   static const String markAsAttended = 'Označiť ako prišiel';
   static const String markAsNoShow = 'Označiť ako neprišiel';
@@ -724,10 +760,6 @@ class AppTexts {
       'Naozaj chcete zrušiť označenú účasť? Použitý vstup sa vráti späť na permanentku.';
   static const String revertNoShowQuestion =
       'Naozaj chcete zrušiť označenú neúčasť? Použitý vstup sa vráti späť na permanentku.';
-  static const String attendanceActionDone = 'Zmena účasti bola uložená.';
-  static const String attendanceActionError =
-      'Zmenu účasti sa nepodarilo uložiť.';
-  static const String confirm = 'Potvrdiť';
   static const String addTrainingAttendance = 'Pridať účastníka';
   static const String selectAttendanceUser = 'Vyberte používateľa';
   static const String selectAttendanceMembership = 'Vyberte permanentku';
@@ -743,22 +775,6 @@ class AppTexts {
       'Účastníka sa nepodarilo pridať.';
   static const String userAlreadyHasReservationForTraining =
       'Používateľ už má na tento tréning vytvorený záznam.';
-
-  // QR dochádzka
-  static const String reservationQrCode = 'QR kód rezervácie';
-  static const String showQrCode = 'QR kód';
-  static const String showQrToTrainer =
-      'Ukážte tento QR kód trénerovi pri príchode na tréning.';
-  static const String scanQrCode = 'Skenovať QR kód';
-  static const String scanQrCodes = 'Skenovať QR kódy';
-  static const String scanQrCodeHint =
-      'Namierte kameru na QR kód rezervácie používateľa.';
-  static const String invalidQrCode = 'Neplatný QR kód rezervácie.';
-  static const String qrCodeScanned = 'QR kód bol naskenovaný.';
-  static const String qrScanSuccessful =
-      'QR kód bol naskenovaný. Môžete skenovať ďalšieho používateľa.';
-  static const String trainerQrScanTooEarly =
-      'QR kód je možné naskenovať najskôr 30 minút pred začiatkom cvičenia.';
 
   // Správa používateľov
   static const String usersLoadError = 'Nepodarilo sa načítať používateľov.';
@@ -795,26 +811,7 @@ class AppTexts {
   static const String activeReservationsCount = 'Aktívne rezervácie';
   static const String showMemberships = 'Zobraziť permanentky';
 
-  // Nastavenia
-  static const String settings = 'Nastavenia';
-  static const String appearance = 'Vzhľad';
-  static const String appearanceDescription =
-      'Vyberte svetlý, tmavý alebo systémový režim.';
-  static const String themeSystem = 'Podľa systému';
-  static const String themeLight = 'Svetlý režim';
-  static const String themeDark = 'Tmavý režim';
-  static const String language = 'Jazyk';
-  static const String languageComingSoon =
-      'Prepínanie jazyka pripravíme neskôr.';
-  static const String menuPosition = 'Umiestnenie menu';
-  static const String menuPositionDescription =
-      'Vyberte, na ktorej strane sa má zobrazovať hlavné menu.';
-  static const String rightHanded = 'Pravák';
-  static const String leftHanded = 'Ľavák';
-  static const String menuRightPositionDescription = 'Menu bude vpravo hore.';
-  static const String menuLeftPositionDescription = 'Menu bude vľavo hore.';
-
-  // História zásahov
+  // História zásahov / audit logy
   static const String auditLogs = 'História zásahov';
   static const String auditLogsDescription =
       'Prehľad dôležitých zásahov v aplikácii.';
@@ -1063,10 +1060,12 @@ class AppTexts {
       'Žiadosť o vymazanie účtu';
   static const String auditAccountDeletionRequestedDescription =
       'Používateľ požiadal o vymazanie účtu.';
-  static const String auditEmailChangeRequestedTitle = 'Žiadosť o zmenu e-mailu';
+  static const String auditEmailChangeRequestedTitle =
+      'Žiadosť o zmenu e-mailu';
   static const String auditEmailChangeRequestedDescription =
       'Používateľ požiadal o zmenu e-mailovej adresy.';
-  static const String auditEmailChangeCompletedTitle = 'Dokončenie zmeny e-mailu';
+  static const String auditEmailChangeCompletedTitle =
+      'Dokončenie zmeny e-mailu';
   static const String auditEmailChangeCompletedDescription =
       'Používateľ dokončil zmenu e-mailovej adresy.';
   static const String auditPasswordResetRequestedTitle =
@@ -1078,20 +1077,21 @@ class AppTexts {
   static const String auditActionDiscountRejected = 'Zamietnutie zľavy';
   static const String auditActionAccountDeletionRequested =
       'Žiadosť o vymazanie účtu';
-  static const String auditActionEmailChangeRequested = 'Žiadosť o zmenu e-mailu';
+  static const String auditActionEmailChangeRequested =
+      'Žiadosť o zmenu e-mailu';
   static const String auditActionEmailChangeCompleted =
       'Dokončenie zmeny e-mailu';
   static const String auditActionPasswordResetRequested =
       'Žiadosť o obnovenie hesla';
+
+  // Pomocné textové metódy
   static String allocatedReservationsCancelled(int count) {
     if (count == 1) {
       return 'Bola zrušená 1 rezervácia.';
     }
-
     if (count >= 2 && count <= 4) {
       return 'Boli zrušené $count rezervácie.';
     }
-
     return 'Bolo zrušených $count rezervácií.';
   }
 
@@ -1099,11 +1099,9 @@ class AppTexts {
     if (count == 1) {
       return '1 cvičenie';
     }
-
     if (count >= 2 && count <= 4) {
       return '$count cvičenia';
     }
-
     return '$count cvičení';
   }
 
@@ -1111,11 +1109,9 @@ class AppTexts {
     if (count == 1) {
       return '1 rezervácia';
     }
-
     if (count >= 2 && count <= 4) {
       return '$count rezervácie';
     }
-
     return '$count rezervácií';
   }
 }

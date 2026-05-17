@@ -109,9 +109,7 @@ class PriceListScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(AppTexts.priceList),
-      ),
+      appBar: AppBar(title: const Text(AppTexts.priceList)),
       body: StreamBuilder<List<MembershipPlan>>(
         stream: MembershipService().watchActiveMembershipPlans(),
         builder: (context, snapshot) {
@@ -130,11 +128,13 @@ class PriceListScreen extends StatelessWidget {
           }
 
           final singleEntryPlans = plans.where((plan) {
-            return plan.purchaseCategory == MembershipPurchaseCategories.singleEntry;
+            return plan.purchaseCategory ==
+                MembershipPurchaseCategories.singleEntry;
           }).toList();
 
           final membershipPlans = plans.where((plan) {
-            return plan.purchaseCategory == MembershipPurchaseCategories.membership;
+            return plan.purchaseCategory ==
+                MembershipPurchaseCategories.membership;
           }).toList();
 
           return ListView(
