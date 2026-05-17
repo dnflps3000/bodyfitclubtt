@@ -729,6 +729,79 @@ export const generateTrainingSessions = onSchedule(
   },
 );
 
+const SUPPORTED_LANGUAGE_CODES = [
+  "sk",
+  "en",
+  "cs",
+  "de",
+  "fr",
+  "pl",
+  "hu",
+  "uk",
+  "ru",
+  "sr",
+];
+
+function normalizeLanguageCode(value: unknown): string {
+  const languageCode = String(value ?? "sk").trim().toLowerCase();
+
+  if (SUPPORTED_LANGUAGE_CODES.includes(languageCode)) {
+    return languageCode;
+  }
+
+  return "sk";
+}
+
+function resolveLocalizedText(
+  textLocalized: unknown,
+  fallbackText: string,
+  languageCode: string,
+): string {
+  if (!textLocalized || typeof textLocalized !== "object") {
+    return fallbackText;
+  }
+
+  const localizedMap = textLocalized as Record<string, unknown>;
+  const localizedText = localizedMap[languageCode];
+
+  if (typeof localizedText === "string" && localizedText.trim()) {
+    return localizedText.trim();
+  }
+
+  const slovakText = localizedMap.sk;
+
+  if (typeof slovakText === "string" && slovakText.trim()) {
+    return slovakText.trim();
+  }
+
+  return fallbackText;
+}
+
+function resolveNotificationTitle(languageCode: string): string {
+  switch (languageCode) {
+  case "en":
+    return "New message";
+  case "cs":
+    return "Nová zpráva";
+  case "de":
+    return "Neue Nachricht";
+  case "fr":
+    return "Nouveau message";
+  case "pl":
+    return "Nowa wiadomość";
+  case "hu":
+    return "Új üzenet";
+  case "uk":
+    return "Нове повідомлення";
+  case "ru":
+    return "Новое сообщение";
+  case "sr":
+    return "Нова порука";
+  default:
+    return "Nová správa";
+  }
+}
+
 export const sendNotificationOnPublicMessageCreate = onDocumentCreated(
   {
     document: "public_messages/{messageId}",
@@ -743,6 +816,7 @@ export const sendNotificationOnPublicMessageCreate = onDocumentCreated(
     }
 
     const text = messageData.text as string | undefined;
+    const textLocalized = messageData.textLocalized;
     const authorName = messageData.authorName as string | undefined;
 
     if (!text) {
@@ -752,40 +826,65 @@ export const sendNotificationOnPublicMessageCreate = onDocumentCreated(
 
     const tokensSnapshot = await db.collection("fcmTokens").get();
 
-    const tokens = tokensSnapshot.docs
-      .map((doc) => doc.data().token as string | undefined)
-      .filter((token): token is string => Boolean(token));
+    const tokensByLanguage = new Map<string, string[]>();
 
-    if (tokens.length === 0) {
+    for (const tokenDocument of tokensSnapshot.docs) {
+      const tokenData = tokenDocument.data();
+      const token = tokenData.token as string | undefined;
+
+      if (!token) {
+        continue;
+      }
+
+      const languageCode = normalizeLanguageCode(tokenData.languageCode);
+      const tokens = tokensByLanguage.get(languageCode) ?? [];
+
+      tokens.push(token);
+      tokensByLanguage.set(languageCode, tokens);
+    }
+
+    if (tokensByLanguage.size === 0) {
       logger.info("No FCM tokens found.");
       return;
     }
 
-    const title = "Nová správa";
-    const body = authorName ? `${authorName}: ${text}` : text;
-
-    const chunks: string[][] = [];
-
-    for (let i = 0; i < tokens.length; i += 500) {
-      chunks.push(tokens.slice(i, i + 500));
-    }
-
-    for (const chunk of chunks) {
-      const response = await getMessaging().sendEachForMulticast({
-        tokens: chunk,
-        notification: {
-          title,
-          body,
-        },
-        data: {
-          type: "public_message",
-          messageId: event.params.messageId,
-        },
-      });
-
-      logger.info(
-        `Notifications sent: ${response.successCount}, failed: ${response.failureCount}`,
+    for (const [languageCode, tokens] of tokensByLanguage.entries()) {
+      const title = resolveNotificationTitle(languageCode);
+      const localizedText = resolveLocalizedText(
+        textLocalized,
+        text,
+        languageCode,
       );
+      const body = authorName ?
+        `${authorName}: ${localizedText}` :
+        localizedText;
+
+      const chunks: string[][] = [];
+
+      for (let i = 0; i < tokens.length; i += 500) {
+        chunks.push(tokens.slice(i, i + 500));
+      }
+
+      for (const chunk of chunks) {
+        const response = await getMessaging().sendEachForMulticast({
+          tokens: chunk,
+          notification: {
+            title,
+            body,
+          },
+          data: {
+            type: "public_message",
+            messageId: event.params.messageId,
+            languageCode,
+          },
+        });
+
+        logger.info(
+          "Notifications sent for language " +
+            `${languageCode}: ${response.successCount}, ` +
+            `failed: ${response.failureCount}`,
+        );
+      }
     }
   },
 );

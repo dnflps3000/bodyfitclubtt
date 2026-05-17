@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_texts.dart';
+import '../../messages/data/notification_service.dart';
 import '../data/settings_service.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -108,9 +109,11 @@ class SettingsScreen extends StatelessWidget {
                     ),
                     RadioGroup<String>(
                       groupValue: settingsService.languageCode,
-                      onChanged: (value) {
+                      onChanged: (value) async {
                         if (value == null) return;
-                        settingsService.setLanguageCode(value);
+
+                        await settingsService.setLanguageCode(value);
+                        await NotificationService.saveToken();
                       },
                       child: Column(
                         children: [

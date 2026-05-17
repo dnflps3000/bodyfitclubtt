@@ -35,12 +35,12 @@ void main() async {
 
   FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 
+  await SettingsService.instance.load();
+
   await NotificationService.initialize();
 
   Stripe.publishableKey =
       "pk_test_51TQtEE7i16mqcQZHN7bUfWOdwwmhreO884LAle2a2g3elrJcEONKIKtUvJdBcwAGg7oT9IP8tiRG58CfltSaQL6w00RUBrINmE";
-
-  await SettingsService.instance.load();
 
   runApp(MyApp(settingsService: SettingsService.instance));
 }

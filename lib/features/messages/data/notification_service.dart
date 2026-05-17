@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
+import '../../settings/data/settings_service.dart';
 
 class NotificationService {
   static Future<void> initialize() async {
@@ -33,7 +34,8 @@ class NotificationService {
         'token': token,
         'userId': user?.uid,
         'isLoggedIn': user != null,
-        'platform': 'android',
+        'languageCode': SettingsService.instance.languageCode,
+        'platform': defaultTargetPlatform.name,
         'updatedAt': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
 
