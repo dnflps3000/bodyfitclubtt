@@ -112,15 +112,47 @@ class SettingsScreen extends StatelessWidget {
                         if (value == null) return;
                         settingsService.setLanguageCode(value);
                       },
-                      child: Column(
+                      child: const Column(
                         children: [
+                          RadioListTile<String>(
+                            value: 'en',
+                            title: Text(AppTexts.languageEnglish),
+                          ),
+                          RadioListTile<String>(
+                            value: 'cs',
+                            title: Text(AppTexts.languageCzech),
+                          ),
+                          RadioListTile<String>(
+                            value: 'fr',
+                            title: Text(AppTexts.languageFrench),
+                          ),
+                          RadioListTile<String>(
+                            value: 'hu',
+                            title: Text(AppTexts.languageHungarian),
+                          ),
+                          RadioListTile<String>(
+                            value: 'de',
+                            title: Text(AppTexts.languageGerman),
+                          ),
+                          RadioListTile<String>(
+                            value: 'pl',
+                            title: Text(AppTexts.languagePolish),
+                          ),
+                          RadioListTile<String>(
+                            value: 'ru',
+                            title: Text(AppTexts.languageRussian),
+                          ),
                           RadioListTile<String>(
                             value: 'sk',
                             title: Text(AppTexts.languageSlovak),
                           ),
                           RadioListTile<String>(
-                            value: 'en',
-                            title: Text(AppTexts.languageEnglish),
+                            value: 'sr',
+                            title: Text(AppTexts.languageSerbian),
+                          ),
+                          RadioListTile<String>(
+                            value: 'uk',
+                            title: Text(AppTexts.languageUkrainian),
                           ),
                         ],
                       ),
