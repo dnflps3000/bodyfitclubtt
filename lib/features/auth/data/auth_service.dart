@@ -3,12 +3,15 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../../../core/constants/app_roles.dart';
+import '../../audit/data/audit_log_service.dart';
+import '../../../core/theme/app_texts.dart';
 
 // Trieda, ktorá rieši autentifikáciu.
 // UI iba zavolá metódy z tejto triedy, aby nebola login logika rozhádzaná v obrazovkách.
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final AuditLogService _auditLogService = AuditLogService();
 
   User? get currentUser => _auth.currentUser;
 
@@ -21,8 +24,23 @@ class AuthService {
   }
 
   Future<void> sendPasswordResetEmail(String email) async {
+    final trimmedEmail = email.trim();
+
     await _auth.setLanguageCode('sk');
-    await _auth.sendPasswordResetEmail(email: email.trim());
+    await _auth.sendPasswordResetEmail(email: trimmedEmail);
+
+    await _auditLogService.createLog(
+      category: 'profile',
+      action: 'password_reset_requested',
+      targetType: 'user',
+      targetId: trimmedEmail,
+      targetUserEmail: trimmedEmail,
+      title: AppTexts.auditPasswordResetRequestedTitle,
+      description: AppTexts.auditPasswordResetRequestedDescription,
+      changes: {
+        'email': {'oldValue': null, 'newValue': trimmedEmail},
+      },
+    );
   }
 
   Future<void> requestEmailChange({
@@ -61,6 +79,20 @@ class AuthService {
       'emailChangeSource': 'self_service',
       'updatedAt': FieldValue.serverTimestamp(),
     }, SetOptions(merge: true));
+
+    await _auditLogService.createLogWithUsers(
+      category: 'profile',
+      action: 'email_change_requested',
+      targetType: 'user',
+      targetId: user.uid,
+      targetUserId: user.uid,
+      actor: user,
+      title: AppTexts.auditEmailChangeRequestedTitle,
+      description: AppTexts.auditEmailChangeRequestedDescription,
+      changes: {
+        'email': {'oldValue': currentEmail, 'newValue': newEmail.trim()},
+      },
+    );
   }
 
   Future<void> ensureUserIsActive(User user) async {
@@ -89,6 +121,20 @@ class AuthService {
         if (pendingEmail != null && pendingEmail.isNotEmpty)
           'previousEmail': firestoreEmail ?? '',
       }, SetOptions(merge: true));
+
+      await _auditLogService.createLogWithUsers(
+        category: 'profile',
+        action: 'email_change_completed',
+        targetType: 'user',
+        targetId: user.uid,
+        targetUserId: user.uid,
+        actor: user,
+        title: AppTexts.auditEmailChangeCompletedTitle,
+        description: AppTexts.auditEmailChangeCompletedDescription,
+        changes: {
+          'email': {'oldValue': firestoreEmail, 'newValue': authEmail},
+        },
+      );
     }
   }
 

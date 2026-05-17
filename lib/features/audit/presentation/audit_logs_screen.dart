@@ -116,6 +116,8 @@ class _AuditLogsScreenState extends State<AuditLogsScreen> {
         return AppTexts.auditCategoryReservations;
       case 'attendance':
         return AppTexts.auditCategoryAttendance;
+      case 'discount':
+        return AppTexts.auditCategoryDiscounts;
       case 'user':
         return AppTexts.auditCategoryUsers;
       case 'schedule':
@@ -161,6 +163,10 @@ class _AuditLogsScreenState extends State<AuditLogsScreen> {
           isExpanded: true,
           decoration: const InputDecoration(labelText: AppTexts.auditCategory),
           items: const [
+            DropdownMenuItem(
+              value: 'discount',
+              child: Text(AppTexts.auditCategoryDiscounts),
+            ),
             DropdownMenuItem(
               value: '',
               child: Text(AppTexts.auditAllCategories),
@@ -368,6 +374,34 @@ class _AuditLogsScreenState extends State<AuditLogsScreen> {
             DropdownMenuItem(
               value: 'user_reactivated',
               child: Text(AppTexts.auditActionUserReactivated),
+            ),
+            DropdownMenuItem(
+              value: 'discount_requested',
+              child: Text(AppTexts.auditActionDiscountRequested),
+            ),
+            DropdownMenuItem(
+              value: 'discount_approved',
+              child: Text(AppTexts.auditActionDiscountApproved),
+            ),
+            DropdownMenuItem(
+              value: 'discount_rejected',
+              child: Text(AppTexts.auditActionDiscountRejected),
+            ),
+            DropdownMenuItem(
+              value: 'account_deletion_requested',
+              child: Text(AppTexts.auditActionAccountDeletionRequested),
+            ),
+            DropdownMenuItem(
+              value: 'email_change_requested',
+              child: Text(AppTexts.auditActionEmailChangeRequested),
+            ),
+            DropdownMenuItem(
+              value: 'email_change_completed',
+              child: Text(AppTexts.auditActionEmailChangeCompleted),
+            ),
+            DropdownMenuItem(
+              value: 'password_reset_requested',
+              child: Text(AppTexts.auditActionPasswordResetRequested),
             ),
           ],
           onChanged: (value) {

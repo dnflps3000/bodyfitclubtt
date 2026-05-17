@@ -2,6 +2,8 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import '../../audit/data/audit_log_service.dart';
+import '../../../core/theme/app_texts.dart';
 
 class DiscountService {
   DiscountService({
@@ -15,6 +17,7 @@ class DiscountService {
   final FirebaseFirestore _firestore;
   final FirebaseAuth _auth;
   final FirebaseStorage _storage;
+  final AuditLogService _auditLogService = AuditLogService();
 
   Future<void> requestDiscount({
     required String requestedType,
@@ -75,5 +78,20 @@ class DiscountService {
     }, SetOptions(merge: true));
 
     await batch.commit();
+
+    await _auditLogService.createLogWithUsers(
+      category: 'discount',
+      action: 'discount_requested',
+      targetType: 'discount_request',
+      targetId: requestRef.id,
+      targetUserId: currentUser.uid,
+      actor: currentUser,
+      title: AppTexts.auditDiscountRequestedTitle,
+      description: AppTexts.auditDiscountRequestedDescription,
+      changes: {
+        'requestedType': {'oldValue': null, 'newValue': requestedType},
+        'status': {'oldValue': null, 'newValue': 'pending'},
+      },
+    );
   }
 }

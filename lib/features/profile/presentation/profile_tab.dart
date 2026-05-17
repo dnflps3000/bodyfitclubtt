@@ -10,6 +10,7 @@ import '../../auth/data/auth_service.dart';
 import '../../discounts/presentation/request_discount_screen.dart';
 import '../data/account_service.dart';
 import 'edit_profile_screen.dart';
+import '../../audit/data/audit_log_service.dart';
 
 class ProfileTab extends StatefulWidget {
   const ProfileTab({super.key, required this.user});
@@ -22,6 +23,7 @@ class ProfileTab extends StatefulWidget {
 
 class _ProfileTabState extends State<ProfileTab> {
   final AccountService _accountService = AccountService();
+  final AuditLogService _auditLogService = AuditLogService();
   bool _isDeletingAccount = false;
 
   String _roleLabel(String? role) {
@@ -137,6 +139,21 @@ class _ProfileTabState extends State<ProfileTab> {
 
     try {
       await _accountService.requestAccountDeletion(reason: reason);
+
+      await _auditLogService.createLogWithUsers(
+        category: 'profile',
+        action: 'account_deletion_requested',
+        targetType: 'account_deletion_request',
+        targetId: widget.user.uid,
+        targetUserId: widget.user.uid,
+        actor: widget.user,
+        title: AppTexts.auditAccountDeletionRequestedTitle,
+        description: AppTexts.auditAccountDeletionRequestedDescription,
+        changes: {
+          if (reason.trim().isNotEmpty)
+            'reason': {'oldValue': null, 'newValue': reason.trim()},
+        },
+      );
 
       await AuthService().signOut();
 

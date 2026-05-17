@@ -1049,6 +1049,40 @@ class AppTexts {
   static const String auditActionUserEmailUpdated =
       'Úprava e-mailu používateľa';
   static const String auditActionUserReactivated = 'Aktivácia používateľa';
+  static const String auditCategoryDiscounts = 'Zľavy';
+  static const String auditDiscountRequestedTitle = 'Žiadosť o zľavu';
+  static const String auditDiscountRequestedDescription =
+      'Používateľ odoslal žiadosť o schválenie zľavy.';
+  static const String auditDiscountApprovedTitle = 'Schválenie zľavy';
+  static const String auditDiscountApprovedDescription =
+      'Administrátor schválil používateľovi zľavu.';
+  static const String auditDiscountRejectedTitle = 'Zamietnutie zľavy';
+  static const String auditDiscountRejectedDescription =
+      'Administrátor zamietol používateľovi žiadosť o zľavu.';
+  static const String auditAccountDeletionRequestedTitle =
+      'Žiadosť o vymazanie účtu';
+  static const String auditAccountDeletionRequestedDescription =
+      'Používateľ požiadal o vymazanie účtu.';
+  static const String auditEmailChangeRequestedTitle = 'Žiadosť o zmenu e-mailu';
+  static const String auditEmailChangeRequestedDescription =
+      'Používateľ požiadal o zmenu e-mailovej adresy.';
+  static const String auditEmailChangeCompletedTitle = 'Dokončenie zmeny e-mailu';
+  static const String auditEmailChangeCompletedDescription =
+      'Používateľ dokončil zmenu e-mailovej adresy.';
+  static const String auditPasswordResetRequestedTitle =
+      'Žiadosť o obnovenie hesla';
+  static const String auditPasswordResetRequestedDescription =
+      'Používateľ požiadal o odoslanie e-mailu na obnovenie hesla.';
+  static const String auditActionDiscountRequested = 'Žiadosť o zľavu';
+  static const String auditActionDiscountApproved = 'Schválenie zľavy';
+  static const String auditActionDiscountRejected = 'Zamietnutie zľavy';
+  static const String auditActionAccountDeletionRequested =
+      'Žiadosť o vymazanie účtu';
+  static const String auditActionEmailChangeRequested = 'Žiadosť o zmenu e-mailu';
+  static const String auditActionEmailChangeCompleted =
+      'Dokončenie zmeny e-mailu';
+  static const String auditActionPasswordResetRequested =
+      'Žiadosť o obnovenie hesla';
   static String allocatedReservationsCancelled(int count) {
     if (count == 1) {
       return 'Bola zrušená 1 rezervácia.';
