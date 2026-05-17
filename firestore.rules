@@ -171,11 +171,17 @@ service cloud.firestore {
     }
 
     match /discount_requests/{requestId} {
-      allow read: if signedIn();
+      allow read: if isStaff()
+        || (
+          signedIn()
+          && resource.data.userId == request.auth.uid
+        );
 
-      allow create: if signedIn();
+      allow create: if signedIn()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.status == 'pending';
 
-      allow update: if isStaff();
+      allow update: if isAdmin();
 
       allow delete: if isAdmin();
     }

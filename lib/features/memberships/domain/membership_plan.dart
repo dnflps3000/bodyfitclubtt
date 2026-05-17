@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../../core/constants/membership_constants.dart';
 
 /* Reprezentuje typ permanentky alebo vstupu z kolekcie membershipPlans. */
 class MembershipPlan {
@@ -13,6 +14,7 @@ class MembershipPlan {
     required this.validityDays,
     required this.isActive,
     required this.purchaseCategory,
+    required this.audience,
   });
 
   final String id;
@@ -25,13 +27,29 @@ class MembershipPlan {
   final int validityDays;
   final bool isActive;
   final String purchaseCategory;
+  final String audience;
+
   bool get isEntryBased => entriesTotal != null;
   bool get isDailyLimitBased => entriesPerDay != null;
+
+  bool get isSameDayNextEntry => id == MembershipPlanIds.sameDayNextEntry;
+  bool get isDiscountOnly => audience == 'discount';
+  bool get isNormalOnly => audience == 'normal';
+  bool get isForEveryone => audience == 'all';
 
   factory MembershipPlan.fromFirestore(
     DocumentSnapshot<Map<String, dynamic>> document,
   ) {
     final data = document.data() ?? {};
+    final rawAudience = data['audience'] as String?;
+
+    final fallbackAudience =
+        document.id == MembershipPlanIds.sameDayNextEntry ||
+            document.id == MembershipPlanIds.monthlyOneEntryPerDay
+        ? 'all'
+        : document.id == MembershipPlanIds.singleEntryDiscount
+        ? 'discount'
+        : 'normal';
 
     return MembershipPlan(
       id: document.id,
@@ -44,6 +62,7 @@ class MembershipPlan {
       validityDays: data['validityDays'] as int? ?? 0,
       isActive: data['isActive'] as bool? ?? false,
       purchaseCategory: data['purchaseCategory'] as String? ?? '',
+      audience: rawAudience ?? fallbackAudience,
     );
   }
 }

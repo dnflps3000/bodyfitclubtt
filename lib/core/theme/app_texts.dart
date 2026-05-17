@@ -224,6 +224,66 @@ class AppTexts {
   static const String emailChangeNotAvailable =
       'Zmena e-mailu je dostupná iba pre účty vytvorené e-mailom a heslom.';
   static const String requestDiscount = 'Požiadať o zľavu';
+  static const String discountStatus = 'Zľavový status';
+  static const String discountStatusNone = 'Bez zľavy';
+  static const String discountStatusPending = 'Čaká na schválenie';
+  static const String discountStatusApproved = 'Schválená zľava';
+  static const String discountStatusRejected = 'Zamietnutá žiadosť';
+  static const String discountStatusExpired = 'Platnosť zľavy skončila';
+  static const String discountType = 'Typ zľavy';
+  static const String discountTypeNormal = 'Bežný používateľ';
+  static const String discountTypeStudent = 'Študent';
+  static const String discountTypeSenior = 'Senior';
+  static const String discountTypeZtp = 'ZŤP';
+  static const String discountTypeIndividual = 'Individuálna zľava';
+  static const String discountRequestDescription =
+      'Vyberte typ zľavy, o ktorú žiadate. Po odoslaní žiadosť skontroluje administrátor.';
+  static const String discountRequestNote = 'Poznámka k žiadosti';
+  static const String discountRequestSent = 'Žiadosť o zľavu bola odoslaná.';
+  static const String discountRequestError =
+      'Žiadosť o zľavu sa nepodarilo odoslať.';
+  static const String discountRequestAlreadyPending =
+      'Už máte rozpracovanú žiadosť o zľavu.';
+  static const String discountRequestPending = 'Žiadosť čaká na schválenie';
+  static const String sendRequest = 'Odoslať žiadosť';
+  static const String notSet = 'Nenastavené';
+  static const String discountDocument = 'Doklad k zľave';
+  static const String discountDocumentDescription =
+      'Nahrajte fotografiu dokladu, podľa ktorého administrátor overí nárok na zľavu.';
+  static const String chooseDiscountDocument = 'Vybrať doklad';
+  static const String discountDocumentRequired =
+      'Pre odoslanie žiadosti je potrebné priložiť doklad.';
+  static const String discountDocumentSelected = 'Doklad bol vybraný';
+  static const String takeDiscountDocumentPhoto = 'Odfotiť doklad';
+  static const String chooseDiscountDocumentFromGallery = 'Vybrať z galérie';
+  static const String discountRequests = 'Žiadosti o zľavu';
+  static const String discountRequestsDescription =
+      'Schvaľovanie alebo zamietnutie žiadostí používateľov o zľavu.';
+  static const String discountRequestsLoadError =
+      'Žiadosti o zľavu sa nepodarilo načítať.';
+  static const String noDiscountRequests =
+      'Nie sú evidované žiadne čakajúce žiadosti o zľavu.';
+  static const String approveDiscount = 'Schváliť zľavu';
+  static const String rejectDiscount = 'Zamietnuť žiadosť';
+  static const String discountApproved = 'Zľava bola schválená.';
+  static const String discountRejected = 'Žiadosť o zľavu bola zamietnutá.';
+  static const String discountDecisionError =
+      'Rozhodnutie k žiadosti sa nepodarilo uložiť.';
+  static const String discountValidUntilRequired =
+      'Vyberte dátum platnosti zľavy.';
+  static const String discountAdminNote = 'Poznámka administrátora';
+  static const String selectDiscountValidUntil = 'Vyberte platnosť zľavy';
+  static const String discountDocumentPreview = 'Náhľad dokladu';
+  static const String priceList = 'Cenník';
+  static const String priceListAudience = 'Pre';
+  static const String priceListAudienceNormal = 'bežní používatelia';
+  static const String priceListAudienceDiscount = 'používatelia so zľavou';
+  static const String priceListAudienceAll = 'všetci';
+  static const String price = 'Cena';
+  static const String singleEntries = 'Jednorazové vstupy';
+  static const String priceListMemberships = 'Permanentky';
+  static const String chooseEntry = 'Vyberte vstup';
+  static const String noAvailablePlans = 'Momentálne nie sú dostupné žiadne možnosti nákupu.';
 
   // Profilová fotka
   static const String changeProfilePhoto = 'Zmeniť profilovú fotku';

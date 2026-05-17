@@ -6,8 +6,9 @@ import 'package:flutter/material.dart';
 import '../../../core/constants/app_roles.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_texts.dart';
-import '../data/account_service.dart';
 import '../../auth/data/auth_service.dart';
+import '../../discounts/presentation/request_discount_screen.dart';
+import '../data/account_service.dart';
 import 'edit_profile_screen.dart';
 
 class ProfileTab extends StatefulWidget {
@@ -34,6 +35,48 @@ class _ProfileTabState extends State<ProfileTab> {
       default:
         return AppTexts.roleUnknown;
     }
+  }
+
+  String _discountTypeLabel(String type) {
+    switch (type) {
+      case 'student':
+        return AppTexts.discountTypeStudent;
+      case 'senior':
+        return AppTexts.discountTypeSenior;
+      case 'ztp':
+        return AppTexts.discountTypeZtp;
+      case 'individual':
+        return AppTexts.discountTypeIndividual;
+      case 'normal':
+        return AppTexts.discountTypeNormal;
+      default:
+        return AppTexts.discountTypeNormal;
+    }
+  }
+
+  String _discountStatusLabel(String status) {
+    switch (status) {
+      case 'pending':
+        return AppTexts.discountStatusPending;
+      case 'approved':
+        return AppTexts.discountStatusApproved;
+      case 'rejected':
+        return AppTexts.discountStatusRejected;
+      case 'expired':
+        return AppTexts.discountStatusExpired;
+      case 'none':
+        return AppTexts.discountStatusNone;
+      default:
+        return AppTexts.discountStatusNone;
+    }
+  }
+
+  String _formatDiscountDate(DateTime? date) {
+    if (date == null) {
+      return AppTexts.notSet;
+    }
+
+    return '${date.day}. ${date.month}. ${date.year}';
   }
 
   Future<void> _requestAccountDeletion() async {
@@ -146,7 +189,17 @@ class _ProfileTabState extends State<ProfileTab> {
         final publicName = data?['publicName'] as String? ?? '';
         final email = data?['email'] as String?;
         final role = data?['role'] as String?;
-        final canRequestAccountDeletion = role == AppRoles.user;
+        final isRegularUser = role == AppRoles.user;
+        final canRequestAccountDeletion = isRegularUser;
+        final discountType = data?['discountType'] as String? ?? 'normal';
+        final discountStatus = data?['discountStatus'] as String? ?? 'none';
+        final discountValidUntil = (data?['discountValidUntil'] as Timestamp?)
+            ?.toDate();
+
+        final canRequestDiscount =
+            isRegularUser &&
+            discountStatus != 'pending' &&
+            discountStatus != 'approved';
         final photoUrl = data?['photoURL'] as String? ?? widget.user.photoURL;
         final providerPhotoUrl = data?['providerPhotoURL'] as String?;
 
@@ -234,11 +287,42 @@ class _ProfileTabState extends State<ProfileTab> {
               ),
             ),
             const SizedBox(height: AppSpacing.sectionGap),
-            OutlinedButton.icon(
-              onPressed: null,
-              icon: const Icon(Icons.discount_outlined),
-              label: const Text(AppTexts.requestDiscount),
-            ),
+            if (isRegularUser)
+              Card(
+                child: Column(
+                  children: [
+                    ListTile(
+                      leading: const Icon(Icons.discount_outlined),
+                      title: const Text(AppTexts.discountStatus),
+                      subtitle: Text(
+                        '${_discountStatusLabel(discountStatus)}'
+                        '${discountStatus == 'approved' ? ' • ${_discountTypeLabel(discountType)}' : ''}'
+                        '${discountStatus == 'approved' ? ' • ${AppTexts.validUntil}: ${_formatDiscountDate(discountValidUntil)}' : ''}',
+                      ),
+                    ),
+                    if (canRequestDiscount) ...[
+                      const Divider(height: 1),
+                      Padding(
+                        padding: const EdgeInsets.all(AppSpacing.cardGap),
+                        child: SizedBox(
+                          width: double.infinity,
+                          child: OutlinedButton.icon(
+                            onPressed: () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (_) => const RequestDiscountScreen(),
+                                ),
+                              );
+                            },
+                            icon: const Icon(Icons.discount_outlined),
+                            label: const Text(AppTexts.requestDiscount),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
 
             if (canRequestAccountDeletion) ...[
               const SizedBox(height: AppSpacing.cardGap),

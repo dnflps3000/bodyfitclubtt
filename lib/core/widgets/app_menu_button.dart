@@ -4,9 +4,18 @@ import '../../core/theme/app_texts.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/info/presentation/about_app_screen.dart';
 import '../../features/info/presentation/about_us_screen.dart';
+import '../../features/info/presentation/price_list_screen.dart';
 import '../../features/settings/presentation/settings_screen.dart';
 
-enum AppMenuAction { login, settings, aboutUs, aboutApp, logout, close }
+enum AppMenuAction {
+  login,
+  settings,
+  priceList,
+  aboutUs,
+  aboutApp,
+  logout,
+  close,
+}
 
 class AppMenuButton extends StatelessWidget {
   const AppMenuButton({
@@ -44,6 +53,12 @@ class AppMenuButton extends StatelessWidget {
           ).push(MaterialPageRoute(builder: (_) => const SettingsScreen()));
         }
 
+        if (value == AppMenuAction.priceList) {
+          Navigator.of(
+            context,
+          ).push(MaterialPageRoute(builder: (_) => const PriceListScreen()));
+        }
+
         if (value == AppMenuAction.aboutUs) {
           Navigator.of(
             context,
@@ -73,6 +88,12 @@ class AppMenuButton extends StatelessWidget {
           value: AppMenuAction.settings,
           icon: Icons.settings_outlined,
           text: AppTexts.settings,
+        ),
+        _menuItem(
+          context: context,
+          value: AppMenuAction.priceList,
+          icon: Icons.euro_outlined,
+          text: AppTexts.priceList,
         ),
         _menuItem(
           context: context,

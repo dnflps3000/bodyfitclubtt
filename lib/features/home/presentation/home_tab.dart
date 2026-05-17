@@ -5,6 +5,7 @@ import '../../../core/constants/app_roles.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_texts.dart';
 import '../../admin/presentation/account_deletion_requests_screen.dart';
+import '../../discounts/presentation/discount_requests_screen.dart';
 import '../../memberships/data/membership_service.dart';
 import '../../memberships/domain/membership.dart';
 import '../../reservations/presentation/attendance_qr_scanner_screen.dart';
@@ -52,6 +53,8 @@ class HomeTab extends StatelessWidget {
               const SizedBox(height: AppSpacing.cardGap),
               _buildNewsCard(),
               if (role == AppRoles.admin) ...[
+                const SizedBox(height: AppSpacing.cardGap),
+                _buildDiscountRequestsCard(context),
                 const SizedBox(height: AppSpacing.cardGap),
                 _buildAccountDeletionRequestsCard(context),
               ],
@@ -134,6 +137,62 @@ class HomeTab extends StatelessWidget {
     );
   }
 
+  Widget _buildDiscountRequestsCard(BuildContext context) {
+    return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+      stream: FirebaseFirestore.instance
+          .collection('discount_requests')
+          .where('status', isEqualTo: 'pending')
+          .snapshots(),
+      builder: (context, snapshot) {
+        final pendingCount = snapshot.data?.docs.length ?? 0;
+
+        if (snapshot.hasError) {
+          return Card(
+            child: ListTile(
+              leading: const Icon(Icons.discount_outlined),
+              title: Text(
+                AppTexts.discountRequests,
+                style: _homeCardTitleStyle(context),
+              ),
+              subtitle: const Text(AppTexts.discountRequestsLoadError),
+              onTap: () => _openDiscountRequests(context),
+            ),
+          );
+        }
+
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Card(
+            child: ListTile(
+              leading: const Icon(Icons.discount_outlined),
+              title: Text(
+                AppTexts.discountRequests,
+                style: _homeCardTitleStyle(context),
+              ),
+              subtitle: const Text(AppTexts.loading),
+              onTap: () => _openDiscountRequests(context),
+            ),
+          );
+        }
+
+        return Card(
+          child: ListTile(
+            leading: const Icon(Icons.discount_outlined),
+            title: Text(
+              '${AppTexts.discountRequests} ($pendingCount)',
+              style: _homeCardTitleStyle(context),
+            ),
+            subtitle: Text(
+              pendingCount == 0
+                  ? AppTexts.noDiscountRequests
+                  : AppTexts.discountRequestsDescription,
+            ),
+            onTap: () => _openDiscountRequests(context),
+          ),
+        );
+      },
+    );
+  }
+
   Widget _buildNearestTrainingsCard() {
     return FutureBuilder<List<_HomeTrainingSession>>(
       future: _loadNearestTrainingSessions(),
@@ -173,33 +232,34 @@ class HomeTab extends StatelessWidget {
             onTap: onOpenSchedule,
             child: Padding(
               padding: const EdgeInsets.all(AppSpacing.screenPadding),
-              child: Column(
+              child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: [
-                      const Icon(Icons.event_available),
-                      const SizedBox(width: AppSpacing.iconTextGap),
-                      Expanded(
-                        child: Text(
+                  const Icon(Icons.event_available),
+                  const SizedBox(width: AppSpacing.iconTextGap),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
                           AppTexts.nearestTrainings,
                           style: Theme.of(context).textTheme.titleLarge,
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: AppSpacing.cardGap),
-                  for (final session in sessions)
-                    Padding(
-                      padding: const EdgeInsets.only(
-                        bottom: AppSpacing.itemBottomGap,
-                      ),
-                      child: Text(
-                        '${session.trainingName} - '
-                        '${_formatNearestTrainingTime(session.startTime)}'
-                        ' · ${session.reservedCount}/${session.capacity}',
-                      ),
+                        const SizedBox(height: AppSpacing.sm),
+                        for (final session in sessions)
+                          Padding(
+                            padding: const EdgeInsets.only(
+                              bottom: AppSpacing.itemBottomGap,
+                            ),
+                            child: Text(
+                              '${session.trainingName} - '
+                              '${_formatNearestTrainingTime(session.startTime)}'
+                              ' · ${session.reservedCount}/${session.capacity}',
+                            ),
+                          ),
+                      ],
                     ),
+                  ),
                 ],
               ),
             ),
@@ -250,49 +310,56 @@ class HomeTab extends StatelessWidget {
             onTap: onOpenReservations,
             child: Padding(
               padding: const EdgeInsets.all(AppSpacing.screenPadding),
-              child: Column(
+              child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Icon(Icons.event_available),
-                      const SizedBox(width: AppSpacing.iconTextGap),
-                      Expanded(
-                        child: Text(
-                          AppTexts.nearestReservations,
-                          style: Theme.of(context).textTheme.titleLarge,
+                  const Icon(Icons.event_available),
+                  const SizedBox(width: AppSpacing.iconTextGap),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                AppTexts.nearestReservations,
+                                style: Theme.of(context).textTheme.titleLarge,
+                              ),
+                            ),
+                            OutlinedButton.icon(
+                              onPressed: () {
+                                _openReservationQrCode(context, nearestReservation);
+                              },
+                              icon: const Icon(Icons.qr_code, size: 18),
+                              label: const Text(AppTexts.qrShort),
+                              style: OutlinedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal:
+                                      AppSpacing.compactButtonHorizontalPadding,
+                                  vertical: AppSpacing.compactButtonVerticalPadding,
+                                ),
+                                minimumSize: Size.zero,
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
-                      OutlinedButton.icon(
-                        onPressed: () {
-                          _openReservationQrCode(context, nearestReservation);
-                        },
-                        icon: const Icon(Icons.qr_code, size: 18),
-                        label: const Text(AppTexts.qrShort),
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal:
-                                AppSpacing.compactButtonHorizontalPadding,
-                            vertical: AppSpacing.compactButtonVerticalPadding,
+                        const SizedBox(height: AppSpacing.sm),
+                        for (final reservation in reservations)
+                          Padding(
+                            padding: const EdgeInsets.only(
+                              bottom: AppSpacing.listBottomGap,
+                            ),
+                            child: Text(
+                              '${reservation.trainingName} - '
+                              '${_formatNearestTrainingTime(reservation.startTime)}',
+                            ),
                           ),
-                          minimumSize: Size.zero,
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: AppSpacing.sm),
-                  for (final reservation in reservations)
-                    Padding(
-                      padding: const EdgeInsets.only(
-                        bottom: AppSpacing.listBottomGap,
-                      ),
-                      child: Text(
-                        '${reservation.trainingName} - '
-                        '${_formatNearestTrainingTime(reservation.startTime)}',
-                      ),
+                      ],
                     ),
+                  ),
                 ],
               ),
             ),
@@ -546,6 +613,12 @@ class HomeTab extends StatelessWidget {
           trainerId: role == AppRoles.trainer ? currentUser.uid : null,
         ),
       ),
+    );
+  }
+
+  void _openDiscountRequests(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const DiscountRequestsScreen()),
     );
   }
 

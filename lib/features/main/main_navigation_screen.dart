@@ -9,7 +9,7 @@ import '../home/presentation/home_tab.dart';
 import '../profile/presentation/profile_tab.dart';
 import '../reservations/presentation/reservations_tab.dart';
 import '../schedule/presentation/schedule_tab.dart';
-import '../schedule/presentation/schedule_management_screen.dart';
+import '../admin/presentation/management_screen.dart';
 import '../settings/data/settings_service.dart';
 import '../memberships/presentation/my_memberships_screen.dart';
 
@@ -40,7 +40,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           },
         ),
         ScheduleTab(key: ValueKey('schedule-tab-$_scheduleTabVersion')),
-        ScheduleManagementScreen(role: role, showAppBar: false),
+        ManagementScreen(role: role, showAppBar: false),
         ProfileTab(user: widget.user),
       ];
     }

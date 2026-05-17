@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../../../core/constants/membership_constants.dart';
 import '../../../core/theme/app_texts.dart';
 import '../../audit/data/audit_log_service.dart';
 import '../../schedule/domain/training_session.dart';
@@ -143,6 +144,7 @@ class ReservationService {
       }
 
       if (entriesPerDay != null) {
+        final planId = data['planId'] as String? ?? '';
         final sessionDateId = _dateId(sessionStartTime);
 
         final existingReservationSnapshot = await _firestore
@@ -151,17 +153,38 @@ class ReservationService {
             .where('reservationDateId', isEqualTo: sessionDateId)
             .get();
 
-        final hasUsedOrActiveReservationForDay = existingReservationSnapshot
-            .docs
-            .any((reservationDocument) {
-              final reservationData = reservationDocument.data();
-              final reservationStatus =
-                  reservationData['status'] as String? ?? 'active';
+        final activeReservationsForDay = existingReservationSnapshot.docs.where((
+          reservationDocument,
+        ) {
+          final reservationData = reservationDocument.data();
+          final reservationStatus =
+              reservationData['status'] as String? ?? 'active';
 
-              return reservationStatus != 'cancelled';
-            });
+          return reservationStatus != 'cancelled';
+        }).length;
 
-        if (!hasUsedOrActiveReservationForDay) {
+        final activeBaseReservationsForDay = existingReservationSnapshot.docs.where((
+          reservationDocument,
+        ) {
+          final reservationData = reservationDocument.data();
+          final reservationStatus =
+              reservationData['status'] as String? ?? 'active';
+          final reservationMembershipPlanId =
+              reservationData['membershipPlanId'] as String?;
+
+          return reservationStatus != 'cancelled' &&
+              reservationMembershipPlanId != MembershipPlanIds.sameDayNextEntry;
+        }).length;
+
+        if (planId == MembershipPlanIds.sameDayNextEntry) {
+          if (activeBaseReservationsForDay >= 1) {
+            return document.reference;
+          }
+
+          continue;
+        }
+
+        if (activeReservationsForDay < entriesPerDay) {
           return document.reference;
         }
       }
@@ -308,7 +331,7 @@ class ReservationService {
       final userName = _displayNameFromUserData(userData);
       final userEmail = userData['email'] as String? ?? '';
       final membershipPlanName = membershipData['planName'] as String? ?? '';
-
+      final membershipPlanId = membershipData['planId'] as String? ?? '';
       final membershipStatus = membershipData['status'] as String? ?? '';
       final membershipEntriesTotal = membershipData['entriesTotal'] as int?;
       final membershipEntriesRemaining =
@@ -357,7 +380,7 @@ class ReservationService {
         'membershipId': membershipRef.id,
         'membershipRef': membershipRef,
         'membershipPlanName': membershipPlanName,
-
+        'membershipPlanId': membershipPlanId,
         'entryStatus': 'reserved',
         'reservationDateId': _dateId(startTime),
       }, SetOptions(merge: true));

@@ -3,10 +3,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../../../core/constants/app_roles.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_texts.dart';
-import 'schedule_templates_management_screen.dart';
-import 'add_training_session_screen.dart';
-import 'training_types_management_screen.dart';
-import '../../admin/presentation/users_management_screen.dart';
+import '../../schedule/presentation/schedule_templates_management_screen.dart';
+import '../../schedule/presentation/add_training_session_screen.dart';
+import '../../schedule/presentation/training_types_management_screen.dart';
+import 'users_management_screen.dart';
+import '../../discounts/presentation/discount_requests_screen.dart';
 import '../../memberships/presentation/assign_membership_screen.dart';
 import '../../memberships/presentation/memberships_management_screen.dart';
 import '../../reservations/presentation/attendance_screen.dart';
@@ -15,8 +16,8 @@ import '../../training_history/presentation/training_history_screen.dart';
 
 /*Obrazovka pre admina a trénera, ktorá združuje správcovské akcie mimo 
   bežného používateľského zobrazenia.*/
-class ScheduleManagementScreen extends StatelessWidget {
-  const ScheduleManagementScreen({
+class ManagementScreen extends StatelessWidget {
+  const ManagementScreen({
     super.key,
     this.role,
     this.showAppBar = true,
@@ -91,6 +92,12 @@ class ScheduleManagementScreen extends StatelessWidget {
     );
   }
 
+  Future<void> _openDiscountRequestsScreen(BuildContext context) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const DiscountRequestsScreen()),
+    );
+  }
+
   Future<void> _openTrainingHistoryScreen(BuildContext context) async {
     await Navigator.of(
       context,
@@ -156,6 +163,16 @@ class ScheduleManagementScreen extends StatelessWidget {
             icon: Icons.group_outlined,
             label: AppTexts.usersManagement,
             onPressed: () => _openUsersManagementScreen(context),
+          ),
+          const SizedBox(height: AppSpacing.cardGap),
+        ],
+
+        if (isAdmin) ...[
+          _buildManagementButton(
+            context: context,
+            icon: Icons.discount_outlined,
+            label: AppTexts.discountRequests,
+            onPressed: () => _openDiscountRequestsScreen(context),
           ),
           const SizedBox(height: AppSpacing.cardGap),
         ],
