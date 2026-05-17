@@ -635,6 +635,9 @@ export const generateTrainingSessions = onSchedule(
       const trainerData = trainerSnapshot.data() ?? {};
       const trainingName = String(trainingTypeData.name ?? "");
       const trainingDescription = String(trainingTypeData.description ?? "");
+      const trainingNameLocalized = trainingTypeData.nameLocalized ?? null;
+      const trainingDescriptionLocalized =
+        trainingTypeData.descriptionLocalized ?? null;
       const trainerName = resolveUserDisplayName(trainerData);
       const trainerRole = String(trainerData.role ?? "");
 
@@ -698,6 +701,8 @@ export const generateTrainingSessions = onSchedule(
           trainingTypeRef,
           trainingName,
           trainingDescription,
+          trainingNameLocalized,
+          trainingDescriptionLocalized,
           trainerId: template.trainerId,
           trainerRef,
           trainerName,
