@@ -153,7 +153,28 @@ service cloud.firestore {
     match /fcmTokens/{tokenId} {
       allow read: if isStaff();
 
-      allow create, update: if signedIn();
+      allow create, update: if
+        request.resource.data.token == tokenId
+        && request.resource.data.keys().hasOnly([
+          'token',
+          'userId',
+          'isLoggedIn',
+          'languageCode',
+          'platform',
+          'updatedAt'
+        ])
+        && request.resource.data.languageCode in [
+          'sk',
+          'en',
+          'cs',
+          'de',
+          'fr',
+          'pl',
+          'hu',
+          'uk',
+          'ru',
+          'sr'
+        ];
 
       allow delete: if signedIn();
     }
