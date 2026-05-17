@@ -161,7 +161,7 @@ Backend časť aplikácie využíva Firebase Functions. Funkcie zabezpečujú na
 ---
 
 ## Stav projektu
-Projekt je dokončený
+Projekt je dokončený - release možno nájsť tu: https://github.com/dnflps3000/bodyfitclubtt/releases/tag/v1.0-apk
 
 ---
 
