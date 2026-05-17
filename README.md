@@ -50,7 +50,7 @@ Aplikácia umožňuje používateľom rezervovať si tréningy, spravovať svoj 
 
 - Verzionovanie projektu
   - Git
-  - GitHubI
+  - GitHub
 
 - AI asistencia
   - ChatGPT
