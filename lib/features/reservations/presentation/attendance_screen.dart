@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_texts.dart';
+import '../../../core/utils/localized_firestore_text.dart';
 import '../../../core/widgets/day_card_selector.dart';
 import '../data/reservation_service.dart';
 import 'attendance_qr_scanner_screen.dart';
@@ -162,8 +163,14 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
           ? displayName
           : email,
       userEmail: email,
-      trainingName:
-          trainingTypeData?['name'] as String? ?? AppTexts.unknownTraining,
+      trainingName: trainingTypeData == null
+          ? AppTexts.unknownTraining
+          : LocalizedFirestoreText.resolve(
+              trainingTypeData,
+              field: 'name',
+              localizedField: 'nameLocalized',
+              fallback: AppTexts.unknownTraining,
+            ),
       startTime: startTime,
       endTime: endTime,
     );

@@ -2,11 +2,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../../core/constants/app_roles.dart';
 import '../../../core/theme/app_texts.dart';
+import '../../../core/utils/localized_firestore_text.dart';
 import '../../audit/data/audit_log_service.dart';
 import '../domain/schedule_item.dart';
 import '../domain/schedule_template.dart';
 import '../domain/training_session.dart';
 import '../domain/training_type.dart';
+import 'schedule_system_message_localizer.dart';
 
 /* Načítava dáta z Firestore z kolekcií trainingSessions, trainingTypes a users
    a skladá ich do zoznamu položiek rozvrhu. */
@@ -78,6 +80,8 @@ class ScheduleService {
       id: session.trainingTypeId,
       name: session.trainingName,
       description: session.trainingDescription,
+      nameLocalized: session.trainingNameLocalized,
+      descriptionLocalized: session.trainingDescriptionLocalized,
       defaultDurationMinutes: session.durationMinutes,
       defaultCapacity: session.capacity,
       isActive: true,
@@ -457,6 +461,9 @@ class ScheduleService {
       'trainingTypeRef': trainingTypeRef,
       'trainingName': trainingType.name,
       'trainingDescription': trainingType.description,
+      'trainingNameLocalized': trainingType.effectiveNameLocalized,
+      'trainingDescriptionLocalized':
+          trainingType.effectiveDescriptionLocalized,
       'trainerId': trainerId,
       'trainerRef': trainerRef,
       'trainerName': trainerName,
@@ -482,6 +489,12 @@ class ScheduleService {
       sourceAction: 'training_session_created',
       text: AppTexts.scheduleMessageTrainingSessionCreated(
         trainingName: trainingType.name,
+        date: _formatDate(startTime),
+        time: _formatTime(startTime),
+      ),
+      textLocalized: ScheduleSystemMessageLocalizer.trainingSessionCreated(
+        trainingNameLocalized: trainingType.effectiveNameLocalized,
+        fallbackTrainingName: trainingType.name,
         date: _formatDate(startTime),
         time: _formatTime(startTime),
       ),
@@ -575,16 +588,24 @@ class ScheduleService {
           'updatedAt': FieldValue.serverTimestamp(),
         });
 
+    final templateTime = _formatTemplateTime(
+      startHour: startHour,
+      startMinute: startMinute,
+    );
+
     await _createScheduleSystemMessage(
       currentUser: currentUser,
       sourceAction: 'schedule_template_created',
+      textLocalized: ScheduleSystemMessageLocalizer.templateCreated(
+        trainingNameLocalized: trainingType.effectiveNameLocalized,
+        fallbackTrainingName: trainingType.name,
+        weekday: weekday,
+        time: templateTime,
+      ),
       text: AppTexts.scheduleMessageTemplateCreated(
         trainingName: trainingType.name,
         weekday: _weekdayLabel(weekday),
-        time: _formatTemplateTime(
-          startHour: startHour,
-          startMinute: startMinute,
-        ),
+        time: templateTime,
       ),
     );
 
@@ -654,22 +675,37 @@ class ScheduleService {
           'updatedAt': FieldValue.serverTimestamp(),
         });
 
+    final oldTemplateTime = _formatTemplateTime(
+      startHour: oldStartHour,
+      startMinute: oldStartMinute,
+    );
+
+    final newTemplateTime = _formatTemplateTime(
+      startHour: startHour,
+      startMinute: startMinute,
+    );
+
     final oldSchedule = AppTexts.scheduleTimeLabel(
       weekday: _weekdayLabel(oldWeekday),
-      time: _formatTemplateTime(
-        startHour: oldStartHour,
-        startMinute: oldStartMinute,
-      ),
+      time: oldTemplateTime,
     );
 
     final newSchedule = AppTexts.scheduleTimeLabel(
       weekday: _weekdayLabel(weekday),
-      time: _formatTemplateTime(startHour: startHour, startMinute: startMinute),
+      time: newTemplateTime,
     );
 
     await _createScheduleSystemMessage(
       currentUser: currentUser,
       sourceAction: 'schedule_template_updated',
+      textLocalized: ScheduleSystemMessageLocalizer.templateUpdated(
+        trainingNameLocalized: trainingType.effectiveNameLocalized,
+        fallbackTrainingName: trainingType.name,
+        oldWeekday: oldWeekday,
+        oldTime: oldTemplateTime,
+        newWeekday: weekday,
+        newTime: newTemplateTime,
+      ),
       text: AppTexts.scheduleMessageTemplateUpdated(
         trainingName: trainingType.name,
         oldSchedule: oldSchedule,
@@ -721,6 +757,7 @@ class ScheduleService {
     required User currentUser,
   }) async {
     String trainingName = AppTexts.unknownTraining;
+    Map<String, String> trainingNameLocalized = {};
 
     final trainingTypeSnapshot = await _firestore
         .collection('trainingTypes')
@@ -729,8 +766,15 @@ class ScheduleService {
 
     if (trainingTypeSnapshot.exists) {
       final trainingTypeData = trainingTypeSnapshot.data() ?? {};
-      trainingName =
-          trainingTypeData['name'] as String? ?? AppTexts.unknownTraining;
+      trainingName = LocalizedFirestoreText.resolve(
+        trainingTypeData,
+        field: 'name',
+        localizedField: 'nameLocalized',
+        fallback: AppTexts.unknownTraining,
+      );
+      trainingNameLocalized = LocalizedFirestoreText.map(
+        trainingTypeData['nameLocalized'],
+      );
     }
 
     await _firestore
@@ -743,16 +787,24 @@ class ScheduleService {
           'updatedAt': FieldValue.serverTimestamp(),
         });
 
+    final templateTime = _formatTemplateTime(
+      startHour: scheduleTemplate.startHour,
+      startMinute: scheduleTemplate.startMinute,
+    );
+
     await _createScheduleSystemMessage(
       currentUser: currentUser,
       sourceAction: 'schedule_template_deactivated',
+      textLocalized: ScheduleSystemMessageLocalizer.templateDeactivated(
+        trainingNameLocalized: trainingNameLocalized,
+        fallbackTrainingName: trainingName,
+        weekday: scheduleTemplate.weekday,
+        time: templateTime,
+      ),
       text: AppTexts.scheduleMessageTemplateDeactivated(
         trainingName: trainingName,
         weekday: _weekdayLabel(scheduleTemplate.weekday),
-        time: _formatTemplateTime(
-          startHour: scheduleTemplate.startHour,
-          startMinute: scheduleTemplate.startMinute,
-        ),
+        time: templateTime,
       ),
     );
 
@@ -1067,6 +1119,21 @@ class ScheduleService {
         sourceAction: startTimeChanged
             ? 'training_session_time_changed'
             : 'training_session_updated',
+        textLocalized: startTimeChanged
+            ? ScheduleSystemMessageLocalizer.trainingSessionTimeChanged(
+                trainingNameLocalized: item.trainingType.effectiveNameLocalized,
+                fallbackTrainingName: item.trainingType.name,
+                oldDate: _formatDate(oldStartTime),
+                oldTime: _formatTime(oldStartTime),
+                newDate: _formatDate(startTime),
+                newTime: _formatTime(startTime),
+              )
+            : ScheduleSystemMessageLocalizer.trainingSessionUpdated(
+                trainingNameLocalized: item.trainingType.effectiveNameLocalized,
+                fallbackTrainingName: item.trainingType.name,
+                date: _formatDate(startTime),
+                time: _formatTime(startTime),
+              ),
         text: startTimeChanged
             ? AppTexts.scheduleMessageTrainingSessionTimeChanged(
                 trainingName: item.trainingType.name,
@@ -1119,6 +1186,7 @@ class ScheduleService {
     final sessionRef = _firestore.collection('trainingSessions').doc(sessionId);
 
     String cancelledTrainingName = AppTexts.unknownTraining;
+    Map<String, String> cancelledTrainingNameLocalized = {};
     DateTime? cancelledTrainingStartTime;
 
     final reservationsSnapshot = await _firestore
@@ -1147,8 +1215,15 @@ class ScheduleService {
 
         if (trainingTypeSnapshot.exists) {
           final trainingTypeData = trainingTypeSnapshot.data() ?? {};
-          cancelledTrainingName =
-              trainingTypeData['name'] as String? ?? AppTexts.unknownTraining;
+          cancelledTrainingName = LocalizedFirestoreText.resolve(
+            trainingTypeData,
+            field: 'name',
+            localizedField: 'nameLocalized',
+            fallback: AppTexts.unknownTraining,
+          );
+          cancelledTrainingNameLocalized = LocalizedFirestoreText.map(
+            trainingTypeData['nameLocalized'],
+          );
         }
       }
 
@@ -1309,6 +1384,12 @@ class ScheduleService {
       await _createScheduleSystemMessage(
         currentUser: currentUser,
         sourceAction: 'training_session_cancelled',
+        textLocalized: ScheduleSystemMessageLocalizer.trainingSessionCancelled(
+          trainingNameLocalized: cancelledTrainingNameLocalized,
+          fallbackTrainingName: cancelledTrainingName,
+          date: _formatDate(cancelledTrainingStartTime!),
+          time: _formatTime(cancelledTrainingStartTime!),
+        ),
         text: AppTexts.scheduleMessageTrainingSessionCancelled(
           trainingName: cancelledTrainingName,
           date: _formatDate(cancelledTrainingStartTime!),
@@ -1484,10 +1565,12 @@ class ScheduleService {
   Future<void> _createScheduleSystemMessage({
     required User currentUser,
     required String text,
+    required Map<String, String> textLocalized,
     required String sourceAction,
   }) async {
     await _firestore.collection('public_messages').add({
       'text': text,
+      'textLocalized': textLocalized,
       'authorId': currentUser.uid,
       'authorName': AppTexts.appName,
       'authorRole': '',

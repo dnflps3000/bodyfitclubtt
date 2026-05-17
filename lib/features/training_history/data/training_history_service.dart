@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../../core/theme/app_texts.dart';
+import '../../../core/utils/localized_firestore_text.dart';
 import '../../audit/data/audit_log_service.dart';
 import '../../schedule/domain/training_session.dart';
 
@@ -529,8 +530,15 @@ class TrainingHistoryService {
 
         'trainingSessionId': session.id,
         'trainingSessionRef': sessionRef,
-        'trainingName':
-            sessionData['trainingName'] as String? ?? session.trainingName,
+        'trainingName': LocalizedFirestoreText.resolve(
+          sessionData,
+          field: 'trainingName',
+          localizedField: 'trainingNameLocalized',
+          fallback: session.trainingName,
+        ),
+        'trainingNameLocalized': LocalizedFirestoreText.map(
+          sessionData['trainingNameLocalized'],
+        ),
         'trainingStartTime': Timestamp.fromDate(startTime),
         'trainingEndTime': Timestamp.fromDate(endTime),
 
@@ -546,8 +554,15 @@ class TrainingHistoryService {
 
         'membershipId': membership.id,
         'membershipRef': membershipRef,
-        'membershipPlanName':
-            membershipData['planName'] as String? ?? membership.planName,
+        'membershipPlanName': LocalizedFirestoreText.resolve(
+          membershipData,
+          field: 'planName',
+          localizedField: 'planNameLocalized',
+          fallback: membership.planName,
+        ),
+        'membershipPlanNameLocalized': LocalizedFirestoreText.map(
+          membershipData['planNameLocalized'],
+        ),
 
         'createdByAdmin': true,
         'createdByUserId': FirebaseAuth.instance.currentUser?.uid,
@@ -753,7 +768,12 @@ class TrainingHistorySession {
 
     return TrainingHistorySession(
       id: document.id,
-      trainingName: data['trainingName'] as String? ?? AppTexts.unknownTraining,
+      trainingName: LocalizedFirestoreText.resolve(
+        data,
+        field: 'trainingName',
+        localizedField: 'trainingNameLocalized',
+        fallback: AppTexts.unknownTraining,
+      ),
       trainerName: data['trainerName'] as String? ?? AppTexts.unknownTrainer,
       startTime: startTime,
       endTime: endTime,
@@ -777,6 +797,8 @@ class TrainingHistorySession {
       isActive: isActive,
       trainingName: trainingName,
       trainingDescription: '',
+      trainingNameLocalized: {},
+      trainingDescriptionLocalized: {},
       trainerName: trainerName,
       trainerRole: '',
       durationMinutes: endTime.difference(startTime).inMinutes,
@@ -835,7 +857,11 @@ class TrainingHistoryReservation {
       userEmail: data['userEmail'] as String? ?? '',
       trainingSessionId: data['trainingSessionId'] as String? ?? '',
       membershipId: data['membershipId'] as String? ?? '',
-      membershipPlanName: data['membershipPlanName'] as String? ?? '',
+      membershipPlanName: LocalizedFirestoreText.resolve(
+        data,
+        field: 'membershipPlanName',
+        localizedField: 'membershipPlanNameLocalized',
+      ),
       status: data['status'] as String? ?? 'active',
       entryStatus: data['entryStatus'] as String? ?? '',
       attended: data['attended'] as bool? ?? false,
@@ -958,7 +984,11 @@ class TrainingHistoryMembershipOption {
 
     return TrainingHistoryMembershipOption(
       id: document.id,
-      planName: data['planName'] as String? ?? '',
+      planName: LocalizedFirestoreText.resolve(
+        data,
+        field: 'planName',
+        localizedField: 'planNameLocalized',
+      ),
       entriesTotal: data['entriesTotal'] as int?,
       entriesRemaining: data['entriesRemaining'] as int?,
       entriesReserved: data['entriesReserved'] as int? ?? 0,

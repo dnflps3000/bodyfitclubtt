@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../core/constants/app_roles.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_texts.dart';
+import '../../../core/utils/localized_firestore_text.dart';
 import 'public_messages_screen.dart';
 
 class LatestPublicMessageCard extends StatelessWidget {
@@ -119,7 +120,11 @@ class LatestPublicMessageCard extends StatelessWidget {
         }
 
         final data = snapshot.data!.docs.first.data();
-        final text = data['text'] as String? ?? '';
+        final text = LocalizedFirestoreText.resolve(
+          data,
+          field: 'text',
+          localizedField: 'textLocalized',
+        );
         final authorLabel = _authorLabel(data);
 
         return _buildContent(context: context, subtitle: '$authorLabel\n$text');

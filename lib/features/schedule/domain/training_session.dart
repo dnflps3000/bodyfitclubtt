@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../../core/utils/localized_firestore_text.dart';
 
 /*Reprezentuje konkrétny termín v rozvrhu z kolekcie trainingSessions, 
   teda dátum, čas, trénera, kapacitu a stav tréningu*/
@@ -15,6 +16,8 @@ class TrainingSession {
     required this.isActive,
     required this.trainingName,
     required this.trainingDescription,
+    required this.trainingNameLocalized,
+    required this.trainingDescriptionLocalized,
     required this.trainerName,
     required this.trainerRole,
     required this.durationMinutes,
@@ -29,9 +32,10 @@ class TrainingSession {
   final int reservedCount;
   final String status;
   final bool isActive;
-
   final String trainingName;
   final String trainingDescription;
+  final Map<String, String> trainingNameLocalized;
+  final Map<String, String> trainingDescriptionLocalized;
   final String trainerName;
   final String trainerRole;
   final int durationMinutes;
@@ -72,8 +76,22 @@ class TrainingSession {
       reservedCount: data['reservedCount'] as int? ?? 0,
       status: data['status'] as String? ?? 'scheduled',
       isActive: data['isActive'] as bool? ?? true,
-      trainingName: data['trainingName'] as String? ?? '',
-      trainingDescription: data['trainingDescription'] as String? ?? '',
+      trainingName: LocalizedFirestoreText.resolve(
+        data,
+        field: 'trainingName',
+        localizedField: 'trainingNameLocalized',
+      ),
+      trainingDescription: LocalizedFirestoreText.resolve(
+        data,
+        field: 'trainingDescription',
+        localizedField: 'trainingDescriptionLocalized',
+      ),
+      trainingNameLocalized: LocalizedFirestoreText.map(
+        data['trainingNameLocalized'],
+      ),
+      trainingDescriptionLocalized: LocalizedFirestoreText.map(
+        data['trainingDescriptionLocalized'],
+      ),
       trainerName: data['trainerName'] as String? ?? '',
       trainerRole: data['trainerRole'] as String? ?? '',
       durationMinutes: storedDurationMinutes ?? calculatedDurationMinutes,

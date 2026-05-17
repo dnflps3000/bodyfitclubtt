@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../../core/utils/localized_firestore_text.dart';
 
 /* Reprezentuje konkrétnu permanentku alebo vstup priradený používateľovi
    z kolekcie memberships. */
@@ -106,7 +107,11 @@ class Membership {
       id: document.id,
       userId: data['userId'] as String? ?? '',
       planId: data['planId'] as String? ?? '',
-      planName: data['planName'] as String? ?? '',
+      planName: LocalizedFirestoreText.resolve(
+        data,
+        field: 'planName',
+        localizedField: 'planNameLocalized',
+      ),
       entriesTotal: data['entriesTotal'] as int?,
       entriesRemaining: data['entriesRemaining'] as int?,
       entriesReserved: data['entriesReserved'] as int? ?? 0,

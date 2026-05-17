@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../../core/theme/app_texts.dart';
+import '../../../core/utils/localized_firestore_text.dart';
 import '../../audit/data/audit_log_service.dart';
 import '../domain/membership.dart';
 import '../domain/membership_plan.dart';
@@ -89,6 +90,7 @@ class MembershipService {
       'planId': plan.id,
       'planRef': planRef,
       'planName': plan.name,
+      'planNameLocalized': plan.effectiveNameLocalized,
       'entriesTotal': plan.entriesTotal,
       'entriesRemaining': plan.entriesTotal,
       'entriesReserved': plan.entriesTotal == null ? null : 0,
@@ -138,6 +140,7 @@ class MembershipService {
       'planId': plan.id,
       'planRef': planRef,
       'planName': plan.name,
+      'planNameLocalized': plan.effectiveNameLocalized,
       'entriesTotal': plan.entriesTotal,
       'entriesRemaining': plan.entriesTotal,
       'entriesReserved': plan.entriesTotal == null ? null : 0,
@@ -574,9 +577,12 @@ class MembershipService {
       final trainingSessionId =
           reservationData['trainingSessionId'] as String? ?? '';
 
-      final trainingName =
-          reservationData['trainingName'] as String? ??
-          AppTexts.unknownTraining;
+      final trainingName = LocalizedFirestoreText.resolve(
+        reservationData,
+        field: 'trainingName',
+        localizedField: 'trainingNameLocalized',
+        fallback: AppTexts.unknownTraining,
+      );
 
       final startTime = (reservationData['trainingStartTime'] as Timestamp?)
           ?.toDate();

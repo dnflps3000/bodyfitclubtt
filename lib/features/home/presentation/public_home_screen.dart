@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_texts.dart';
+import '../../../core/utils/localized_firestore_text.dart';
 import '../../messages/presentation/latest_public_message_card.dart';
 
 class PublicHomeScreen extends StatelessWidget {
@@ -78,8 +79,12 @@ class PublicHomeScreen extends StatelessWidget {
               final data = document.data();
 
               return _PublicHomeTraining(
-                trainingName:
-                    data['trainingName'] as String? ?? AppTexts.unknownTraining,
+                trainingName: LocalizedFirestoreText.resolve(
+                  data,
+                  field: 'trainingName',
+                  localizedField: 'trainingNameLocalized',
+                  fallback: AppTexts.unknownTraining,
+                ),
                 startTime:
                     (data['startTime'] as Timestamp?)?.toDate() ??
                     DateTime.now(),

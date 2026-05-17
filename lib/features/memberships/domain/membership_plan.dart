@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../core/constants/membership_constants.dart';
+import '../../../core/utils/localized_firestore_text.dart';
 
 /* Reprezentuje typ permanentky alebo vstupu z kolekcie membershipPlans. */
 class MembershipPlan {
@@ -7,6 +8,8 @@ class MembershipPlan {
     required this.id,
     required this.name,
     required this.description,
+    required this.nameLocalized,
+    required this.descriptionLocalized,
     required this.price,
     required this.currency,
     required this.entriesTotal,
@@ -20,6 +23,8 @@ class MembershipPlan {
   final String id;
   final String name;
   final String description;
+  final Map<String, String> nameLocalized;
+  final Map<String, String> descriptionLocalized;
   final num price;
   final String currency;
   final int? entriesTotal;
@@ -37,6 +42,22 @@ class MembershipPlan {
   bool get isNormalOnly => audience == 'normal';
   bool get isForEveryone => audience == 'all';
 
+  Map<String, String> get effectiveNameLocalized {
+    if (nameLocalized.isNotEmpty) {
+      return nameLocalized;
+    }
+
+    return {'sk': name};
+  }
+
+  Map<String, String> get effectiveDescriptionLocalized {
+    if (descriptionLocalized.isNotEmpty) {
+      return descriptionLocalized;
+    }
+
+    return {'sk': description};
+  }
+
   factory MembershipPlan.fromFirestore(
     DocumentSnapshot<Map<String, dynamic>> document,
   ) {
@@ -53,8 +74,20 @@ class MembershipPlan {
 
     return MembershipPlan(
       id: document.id,
-      name: data['name'] as String? ?? '',
-      description: data['description'] as String? ?? '',
+      name: LocalizedFirestoreText.resolve(
+        data,
+        field: 'name',
+        localizedField: 'nameLocalized',
+      ),
+      description: LocalizedFirestoreText.resolve(
+        data,
+        field: 'description',
+        localizedField: 'descriptionLocalized',
+      ),
+      nameLocalized: LocalizedFirestoreText.map(data['nameLocalized']),
+      descriptionLocalized: LocalizedFirestoreText.map(
+        data['descriptionLocalized'],
+      ),
       price: data['price'] as num? ?? 0,
       currency: data['currency'] as String? ?? 'EUR',
       entriesTotal: data['entriesTotal'] as int?,

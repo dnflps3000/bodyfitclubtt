@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../../core/constants/membership_constants.dart';
 import '../../../core/theme/app_texts.dart';
+import '../../../core/utils/localized_firestore_text.dart';
 import '../../audit/data/audit_log_service.dart';
 import '../../schedule/domain/training_session.dart';
 import '../domain/reservation.dart';
@@ -325,13 +326,30 @@ class ReservationService {
       final trainerData = trainerSnapshot.data() ?? {};
       final userData = userSnapshot.data() ?? {};
 
-      final trainingName =
-          trainingTypeData['name'] as String? ?? AppTexts.unknownTraining;
+      final trainingName = LocalizedFirestoreText.resolve(
+        trainingTypeData,
+        field: 'name',
+        localizedField: 'nameLocalized',
+        fallback: AppTexts.unknownTraining,
+      );
+
+      final trainingNameLocalized = LocalizedFirestoreText.map(
+        trainingTypeData['nameLocalized'],
+      );
 
       final trainerName = _displayNameFromUserData(trainerData);
       final userName = _displayNameFromUserData(userData);
       final userEmail = userData['email'] as String? ?? '';
-      final membershipPlanName = membershipData['planName'] as String? ?? '';
+
+      final membershipPlanName = LocalizedFirestoreText.resolve(
+        membershipData,
+        field: 'planName',
+        localizedField: 'planNameLocalized',
+      );
+
+      final membershipPlanNameLocalized = LocalizedFirestoreText.map(
+        membershipData['planNameLocalized'],
+      );
       final membershipPlanId = membershipData['planId'] as String? ?? '';
       final membershipStatus = membershipData['status'] as String? ?? '';
       final membershipEntriesTotal = membershipData['entriesTotal'] as int?;
@@ -367,6 +385,7 @@ class ReservationService {
         'trainingSessionId': session.id,
         'trainingSessionRef': sessionRef,
         'trainingName': trainingName,
+        'trainingNameLocalized': trainingNameLocalized,
         'trainingStartTime': Timestamp.fromDate(startTime),
         'trainingEndTime': Timestamp.fromDate(endTime),
 
@@ -381,6 +400,7 @@ class ReservationService {
         'membershipId': membershipRef.id,
         'membershipRef': membershipRef,
         'membershipPlanName': membershipPlanName,
+        'membershipPlanNameLocalized': membershipPlanNameLocalized,
         'membershipPlanId': membershipPlanId,
         'entryStatus': 'reserved',
         'reservationDateId': _dateId(startTime),

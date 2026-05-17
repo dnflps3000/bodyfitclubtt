@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_texts.dart';
+import '../../../core/utils/localized_firestore_text.dart';
 import '../data/reservation_service.dart';
 import 'reservation_qr_screen.dart';
 
@@ -190,8 +191,14 @@ class ReservationsTab extends StatelessWidget {
     return _ReservationDetail(
       reservationId: reservationDocument.id,
       trainingSessionId: sessionId,
-      trainingName:
-          trainingTypeData?['name'] as String? ?? AppTexts.unknownTraining,
+      trainingName: trainingTypeData == null
+          ? AppTexts.unknownTraining
+          : LocalizedFirestoreText.resolve(
+              trainingTypeData,
+              field: 'name',
+              localizedField: 'nameLocalized',
+              fallback: AppTexts.unknownTraining,
+            ),
       trainerName: trainerName,
       startTime: startTime,
       endTime: endTime,

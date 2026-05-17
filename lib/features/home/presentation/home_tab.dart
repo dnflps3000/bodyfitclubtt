@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../../core/constants/app_roles.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_texts.dart';
+import '../../../core/utils/localized_firestore_text.dart';
 import '../../admin/presentation/account_deletion_requests_screen.dart';
 import '../../discounts/presentation/discount_requests_screen.dart';
 import '../../memberships/data/membership_service.dart';
@@ -514,8 +515,12 @@ class HomeTab extends StatelessWidget {
       return _HomeReservation(
         reservationId: document.id,
         trainingSessionId: data['trainingSessionId'] as String? ?? '',
-        trainingName:
-            data['trainingName'] as String? ?? AppTexts.unknownTraining,
+        trainingName: LocalizedFirestoreText.resolve(
+          data,
+          field: 'trainingName',
+          localizedField: 'trainingNameLocalized',
+          fallback: AppTexts.unknownTraining,
+        ),
         startTime: startTime,
         endTime: endTime,
       );
@@ -543,8 +548,12 @@ class HomeTab extends StatelessWidget {
           (sessionData['startTime'] as Timestamp?)?.toDate() ?? DateTime.now();
 
       return _HomeTrainingSession(
-        trainingName:
-            sessionData['trainingName'] as String? ?? AppTexts.unknownTraining,
+        trainingName: LocalizedFirestoreText.resolve(
+          sessionData,
+          field: 'trainingName',
+          localizedField: 'trainingNameLocalized',
+          fallback: AppTexts.unknownTraining,
+        ),
         startTime: startTime,
         capacity: sessionData['capacity'] as int? ?? 0,
         reservedCount: sessionData['reservedCount'] as int? ?? 0,

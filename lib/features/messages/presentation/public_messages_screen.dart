@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../../core/constants/app_roles.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_texts.dart';
+import '../../../core/utils/localized_firestore_text.dart';
 import '../../audit/data/audit_log_service.dart';
 import 'edit_public_message_screen.dart';
 
@@ -237,7 +238,11 @@ class PublicMessagesScreen extends StatelessWidget {
                   final data = doc.data();
 
                   final authorId = data['authorId'] as String? ?? '';
-                  final text = data['text'] as String? ?? '';
+                  final text = LocalizedFirestoreText.resolve(
+                    data,
+                    field: 'text',
+                    localizedField: 'textLocalized',
+                  );
                   final authorLabel = _authorLabel(data);
                   final updatedByLabel = _updatedByLabel(data);
 

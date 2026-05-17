@@ -51,3 +51,6 @@ local.properties
 android/local.properties
 
 lib/core/backuptexts/app_texts.dart
+scripts/seed_localized_firestore_texts.js
+node_modules
+secrets/
