@@ -28,28 +28,19 @@ class PriceListScreen extends StatelessWidget {
 
   String _validityLabel(MembershipPlan plan) {
     if (plan.id == MembershipPlanIds.monthlyOneEntryPerDay) {
-      return '1 mesiac';
+      return AppTexts.monthCount(1);
     }
 
     if (plan.validityDays >= 30 && plan.validityDays % 30 == 0) {
       final months = plan.validityDays ~/ 30;
-
-      if (months == 1) {
-        return '1 mesiac';
-      }
-
-      if (months >= 2 && months <= 4) {
-        return '$months mesiace';
-      }
-
-      return '$months mesiacov';
+      return AppTexts.monthCount(months);
     }
 
     if (plan.validityDays <= 0) {
       return AppTexts.notSet;
     }
 
-    return '${plan.validityDays} dní';
+    return AppTexts.dayCount(plan.validityDays);
   }
 
   Widget _buildPlanCard(BuildContext context, MembershipPlan plan) {

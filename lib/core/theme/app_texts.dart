@@ -2094,4 +2094,140 @@ class AppTexts {
     }
     return '$count rezervácií';
   }
+
+  static String monthCount(int count) {
+    if (AppTextsResolver.isEnglish) {
+      return count == 1 ? '1 month' : '$count months';
+    }
+    if (AppTextsResolver.isGerman) {
+      return count == 1 ? '1 Monat' : '$count Monate';
+    }
+    if (AppTextsResolver.isFrench) {
+      return count == 1 ? '1 mois' : '$count mois';
+    }
+    if (AppTextsResolver.isHungarian) {
+      return '$count hónap';
+    }
+    if (AppTextsResolver.isPolish) {
+      if (count == 1) return '1 miesiąc';
+      if (count >= 2 && count <= 4) return '$count miesiące';
+      return '$count miesięcy';
+    }
+    if (AppTextsResolver.isUkrainian) {
+      final mod10 = count % 10;
+      final mod100 = count % 100;
+      if (mod10 == 1 && mod100 != 11) return '$count місяць';
+      if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) {
+        return '$count місяці';
+      }
+      return '$count місяців';
+    }
+    if (AppTextsResolver.isRussian) {
+      final mod10 = count % 10;
+      final mod100 = count % 100;
+      if (mod10 == 1 && mod100 != 11) return '$count месяц';
+      if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) {
+        return '$count месяца';
+      }
+      return '$count месяцев';
+    }
+    if (AppTextsResolver.isSerbian) {
+      if (count == 1) return '1 mesec';
+      if (count >= 2 && count <= 4) return '$count meseca';
+      return '$count meseci';
+    }
+    if (AppTextsResolver.isCzech) {
+      if (count == 1) return '1 měsíc';
+      if (count >= 2 && count <= 4) return '$count měsíce';
+      return '$count měsíců';
+    }
+
+    if (count == 1) return '1 mesiac';
+    if (count >= 2 && count <= 4) return '$count mesiace';
+    return '$count mesiacov';
+  }
+
+  static String dayCount(int count) {
+    if (AppTextsResolver.isEnglish) {
+      return count == 1 ? '1 day' : '$count days';
+    }
+    if (AppTextsResolver.isGerman) {
+      return count == 1 ? '1 Tag' : '$count Tage';
+    }
+    if (AppTextsResolver.isFrench) {
+      return count == 1 ? '1 jour' : '$count jours';
+    }
+    if (AppTextsResolver.isHungarian) {
+      return '$count nap';
+    }
+    if (AppTextsResolver.isPolish) {
+      return count == 1 ? '1 dzień' : '$count dni';
+    }
+    if (AppTextsResolver.isUkrainian) {
+      final mod10 = count % 10;
+      final mod100 = count % 100;
+      if (mod10 == 1 && mod100 != 11) return '$count день';
+      if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) {
+        return '$count дні';
+      }
+      return '$count днів';
+    }
+    if (AppTextsResolver.isRussian) {
+      final mod10 = count % 10;
+      final mod100 = count % 100;
+      if (mod10 == 1 && mod100 != 11) return '$count день';
+      if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) {
+        return '$count дня';
+      }
+      return '$count дней';
+    }
+    if (AppTextsResolver.isSerbian) {
+      if (count == 1) return '1 dan';
+      return '$count dana';
+    }
+    if (AppTextsResolver.isCzech) {
+      if (count == 1) return '1 den';
+      if (count >= 2 && count <= 4) return '$count dny';
+      return '$count dní';
+    }
+
+    if (count == 1) return '1 deň';
+    if (count >= 2 && count <= 4) return '$count dni';
+    return '$count dní';
+  }
+
+  static String scheduleTimeLabel({
+    required String weekday,
+    required String time,
+  }) {
+    if (AppTextsResolver.isEnglish) {
+      return '$weekday at $time';
+    }
+    if (AppTextsResolver.isGerman) {
+      return '$weekday um $time';
+    }
+    if (AppTextsResolver.isFrench) {
+      return '$weekday à $time';
+    }
+    if (AppTextsResolver.isHungarian) {
+      return '$weekday, $time';
+    }
+    if (AppTextsResolver.isPolish) {
+      return '$weekday o $time';
+    }
+    if (AppTextsResolver.isUkrainian) {
+      return '$weekday о $time';
+    }
+    if (AppTextsResolver.isRussian) {
+      return '$weekday в $time';
+    }
+    if (AppTextsResolver.isSerbian) {
+      return '$weekday u $time';
+    }
+    if (AppTextsResolver.isCzech) {
+      return '$weekday v $time';
+    }
+
+    return '$weekday o $time';
+  }
 }

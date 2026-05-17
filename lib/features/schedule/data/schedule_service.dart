@@ -654,11 +654,18 @@ class ScheduleService {
           'updatedAt': FieldValue.serverTimestamp(),
         });
 
-    final oldSchedule =
-        '${_weekdayLabel(oldWeekday)} o ${_formatTemplateTime(startHour: oldStartHour, startMinute: oldStartMinute)}';
+    final oldSchedule = AppTexts.scheduleTimeLabel(
+      weekday: _weekdayLabel(oldWeekday),
+      time: _formatTemplateTime(
+        startHour: oldStartHour,
+        startMinute: oldStartMinute,
+      ),
+    );
 
-    final newSchedule =
-        '${_weekdayLabel(weekday)} o ${_formatTemplateTime(startHour: startHour, startMinute: startMinute)}';
+    final newSchedule = AppTexts.scheduleTimeLabel(
+      weekday: _weekdayLabel(weekday),
+      time: _formatTemplateTime(startHour: startHour, startMinute: startMinute),
+    );
 
     await _createScheduleSystemMessage(
       currentUser: currentUser,

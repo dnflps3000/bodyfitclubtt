@@ -5,6 +5,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'features/auth/presentation/complete_email_screen.dart';
 import 'firebase_options.dart';
+import 'core/theme/app_spacing.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/app_texts.dart';
 import 'core/widgets/app_menu_button.dart';
@@ -185,7 +186,7 @@ class _ActiveUserGateState extends State<ActiveUserGate> {
           return Scaffold(
             body: Center(
               child: Padding(
-                padding: EdgeInsets.all(24),
+                padding: const EdgeInsets.all(AppSpacing.xl),
                 child: Text(
                   AppTexts.inactiveAccount,
                   textAlign: TextAlign.center,

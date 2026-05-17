@@ -595,11 +595,6 @@ class ReservationService {
         throw Exception('attendance-only-for-today');
       }
 
-      /*
-      // Zapnúť po testovaní/prezentácii:
-      // Tréner môže skenovať QR najskôr 30 minút pred začiatkom tréningu.
-      // Po začiatku tréningu môže skenovať až do polnoci daného dňa.
-      // Admin nemá časové obmedzenie, lebo trainerId je pri adminovi null.
       if (trainerId != null &&
           !_isTrainerQrScanAllowed(
             sessionStartTime: sessionStartTime,
@@ -607,7 +602,6 @@ class ReservationService {
           )) {
         throw Exception('trainer-qr-scan-too-early');
       }
-      */
 
       final reservationData = reservationSnapshot.data() ?? {};
 

@@ -203,7 +203,7 @@ class _AssignMembershipScreenState extends State<AssignMembershipScreen> {
               _buildUserDropdown(),
               const SizedBox(height: AppSpacing.cardGap),
               _buildPlanDropdown(plans),
-              const SizedBox(height: 24),
+              const SizedBox(height: AppSpacing.xl),
               FilledButton(
                 onPressed: _isSaving ? null : () => _assignMembership(plans),
                 child: _isSaving

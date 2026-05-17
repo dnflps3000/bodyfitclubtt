@@ -904,7 +904,7 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
 
               if (users.isEmpty) {
                 return Padding(
-                  padding: EdgeInsets.all(24),
+                  padding: const EdgeInsets.all(AppSpacing.xl),
                   child: Text(
                     AppTexts.noUsersFound,
                     textAlign: TextAlign.center,
