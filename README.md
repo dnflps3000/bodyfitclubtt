@@ -166,6 +166,11 @@ Pre náhlad aplikácie a jej fungovania možno použiť tento Figma link:
 https://www.figma.com/design/wnmbq6eeMzprgkjo7iQgJs/BodyFitClubTT?node-id=0-1&t=wXHttLAI2BEZ2ZT9-1
 
 ---
+## Reflexia využitia LLM nástrojov
+
+Pri vývoji aplikácie boli využité LLM nástroje (ChatGPT, Genie AI) ako podpora pri programovaní, návrhu UI, riešení technických problémov a tvorbe dokumentácie. Všetky vygenerované návrhy a úpravy boli následne manuálne overené, testované a prispôsobené požiadavkám projektu. Ale opäť sa potvrdilo pravidlo LLM je dobrý sluha ale zlý pán, častokrát sa riešenie, začínajúce vetou "poďme na to, spravíme rýchly fix",  ktoré bolo možno vyriešiť jednoduchým príkazom (napr. flutter clean, flutter pub get), zmenilo na niekoľko hodinový boj a opravovanie odporúčaných zmien. ChatGPT po pár promptoch zabúda riešiť úlohu ako celok, často bolo potrebné pripomenúť to, že daná úloha je súčasťou komplexného systému viacerých funkcií, pretože "rýchly fix" jedného problému spôsobilo XY problémov u iných funkicií. Niekoľkokrát riešenie jedného, možno menšieho problému docielilo pridanie ďalších, omnoho komplexnejších problémov, ktorých riešením bolo obnovenie zálohy kódu pred úpravou a potrebná zmena "chatovacieho" okna s LLM, akoby daný LLM začal myslieť iným, triezvejším smerom. Veľmi vítanou funkciou by bolo umožnenie prístupu umelej inteligencie priamo do priečinku aplikácie, pri každej pridanej funkcii bolo potrebné niekoľkokrát vložiť hlavnú zložku aplikácie do LLM. Taktiež nastával problém pri úprave celkového kódu zo súboru, LLM "zabúdal" doplniť všetky funkcie ktoré boli v kóde definované. Na druhú stranu musíme zhodnotiť, že bez použitia LLM by vývoj našej aplikácie trval omnoho dlhšie a nemožno stopercentne povedať, či by bola požadovaná funkčnosť aspoň z polovice dosiahnuteľná. Môžme skonštatovať, že spojenie LLM nástroja ChatGPT a doplnku Genie AI je výborná kombinácia pri tvorbe aplikácie, často bolo potrebné pozmeniť funkciu a takto nám bolo umožnené vykonať zmenu priamo v kóde.
+
+---
 
 ## 📄 Licencia
 Tento projekt je vytvorený pre študijné účely.
